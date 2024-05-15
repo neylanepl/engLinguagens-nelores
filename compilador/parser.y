@@ -29,18 +29,56 @@ extern char * yytext;
 
 %start prog
 
-%type decl_vars decl_variavel expressao expre_arit termo fator ops
-
+%type decl_vars decl_variavel expressao expre_arit termo fator ops main args subprogs subprog decl_funcao decl_procedimento bloco comando condicional retorno
 
 %%
-prog : decl_vars {} 
+prog : decl_vars main subprogs {} 
        ;
+
+main : VOID MAIN '(' args ')' '{' '}'
+     ;
+
+args : 
+      | decl_variavel args 
+      ;
+
+subprogs :                                                              
+      | subprog subprogs                                                    
+      ;
+
+subprog : decl_funcao                                                        
+     | decl_procedimento                                                  
+     ;
+
+decl_funcao : TYPE ID '(' args ')' '{' bloco '}'             
+       ;
+
+decl_procedimento : VOID ID '(' args ')' '{' bloco '}'                    
+             ;
+bloco : 
+      | decl_variavel bloco 
+      | comando bloco                                     
+      ;
+
+comando : condicional
+	| retorno
+        ;     
+
+retorno : RETURN PV
+       | RETURN expressao  PV
+       ;
+
+condicional : IF '(' expressao ')' '{' bloco '}' 
+            | IF '(' expressao ')' '{' bloco '}' ELSE '{' bloco '}'
+	    | IF '(' expressao ')' '{' bloco '}' ELSE IF '(' expressao ')' '{' bloco '}' ELSE '{' bloco '}'
+            ;
 
 decl_vars : decl_variavel  {}
           | decl_variavel decl_vars {}
           ;
 
 decl_variavel: TYPE ID '=' expressao PV{}
+	      | ID '=' expressao PV {}
 	      | CONST TYPE ID PV {}
               | FINAL TYPE ID PV {}
 	      | TYPE ID PV {}
@@ -81,4 +119,3 @@ int yyerror (char *msg) {
 	fprintf (stderr, "%d: %s at '%s'\n", yylineno, msg, yytext);
 	return 0;
 }
-
