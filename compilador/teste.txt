@@ -1,4 +1,12 @@
-int a = 5;
+int a = 2*3+(5*6);
+a = 2*(3+5)*6;
 const int a;
 final int a;
 float a;
+void main(int a; int b;){}
+int function1 (int b;){ b = 5; }
+int function2 (int b; float c;){ b = 5; if(2*2){a = 4;}}
+int function3 (int b; float c;){ b = 5; if(2*2){a = 4;} else if(3*3){a = 4;} else {a= 2;}}
+int function4 (int b; float c;){ b = 5; if(2*2){a = 4;} else {a= 2;}}
+int function5 (int b;){return;}
+int function6 (int b;){return b + 5;}
