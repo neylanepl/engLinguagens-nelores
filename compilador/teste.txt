@@ -1,0 +1,4 @@
+int a = 5;
+const int a;
+final int a;
+float a;
