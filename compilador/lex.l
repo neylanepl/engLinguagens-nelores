@@ -63,7 +63,7 @@
 "||"                {return(OR);}
 "!"                 {return(yytext[0]);}
 "//"                {return(SINGLELINECOMMENT);}
-";"                 {printf("Encontrei PV\n"); return(PV);}
+";"                 {return(PV);}
 "<="                {return(LESSTHENEQ);}
 ">="                {return(MORETHENEQ);}
 "<"                 {return(yytext[0]);}
@@ -101,7 +101,7 @@
                           return NUMBERFLOAT;
                       }
 [a-zA-Z][a-zA-Z0-9]*  {yylval.sValue = strdup(yytext);
-		       printf("Encontrei ID %s\n", yytext); 
+		       
                        return ID;}
 .                     {yyerror("invalid character");}
 

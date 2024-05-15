@@ -35,42 +35,43 @@ extern char * yytext;
 prog : decl_vars main subprogs {} 
        ;
 
-main : VOID MAIN '(' args ')' '{' '}'
+main : VOID MAIN '(' args ')' '{' '}' {}
      ;
 
 args : 
-      | decl_variavel args 
+      | TYPE ID args  {}
+      | TYPE ID ',' args  {}
       ;
 
 subprogs :                                                              
-      | subprog subprogs                                                    
+      | subprog subprogs       {}                                              
       ;
 
-subprog : decl_funcao                                                        
-     | decl_procedimento                                                  
+subprog : decl_funcao           {}                                              
+     | decl_procedimento        {}                                           
      ;
 
-decl_funcao : TYPE ID '(' args ')' '{' bloco '}'             
+decl_funcao : TYPE ID '(' args ')' '{' bloco '}'       {}        
        ;
 
-decl_procedimento : VOID ID '(' args ')' '{' bloco '}'                    
+decl_procedimento : VOID ID '(' args ')' '{' bloco '}'  {}                   
              ;
 bloco : 
-      | decl_variavel bloco 
-      | comando bloco                                     
+      | decl_variavel bloco  {}
+      | comando bloco       {}                               
       ;
 
-comando : condicional
-	| retorno
+comando : condicional {}
+	| retorno {}
         ;     
 
-retorno : RETURN PV
-       | RETURN expressao  PV
+retorno : RETURN PV  {}
+       | RETURN expressao  PV  {}
        ;
 
-condicional : IF '(' expressao ')' '{' bloco '}' 
-            | IF '(' expressao ')' '{' bloco '}' ELSE '{' bloco '}'
-	    | IF '(' expressao ')' '{' bloco '}' ELSE IF '(' expressao ')' '{' bloco '}' ELSE '{' bloco '}'
+condicional : IF '(' expressao ')' '{' bloco '}'   {}
+            | IF '(' expressao ')' '{' bloco '}' ELSE '{' bloco '}'  {}
+	    | IF '(' expressao ')' '{' bloco '}' ELSE IF '(' expressao ')' '{' bloco '}' ELSE '{' bloco '}'  {}
             ;
 
 decl_vars : decl_variavel  {}
@@ -79,8 +80,8 @@ decl_vars : decl_variavel  {}
 
 decl_variavel: TYPE ID '=' expressao PV{}
 	      | ID '=' expressao PV {}
-	      | CONST TYPE ID PV {}
-              | FINAL TYPE ID PV {}
+	      | CONST TYPE ID  '=' expressao PV {}
+              | FINAL TYPE ID  '=' expressao PV{}
 	      | TYPE ID PV {}
               ;
 
