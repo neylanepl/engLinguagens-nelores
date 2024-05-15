@@ -1,5 +1,15 @@
 int a = 2*3+(5*6);
 a = 2*(3-5)*6;
+b += 5;
+b-=5;
+int b+= 6+7;
+ c-=8*90;
+ int b = b++;
+b = c++;
+b = ++c;
+int b = a;
+int c = c--;
+int c = --c;
 const int a = 10;
 final int a = 10;
 float a=2*(3-5)*6;

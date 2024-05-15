@@ -79,6 +79,10 @@ decl_vars : decl_variavel  {}
           ;
 
 decl_variavel: TYPE ID '=' expressao PV{}
+	      | TYPE ID MOREISEQUAL expressao PV{}
+	      | ID MOREISEQUAL expressao PV{}
+	      | ID LESSISEQUAL expressao PV{}
+     	      | TYPE ID LESSISEQUAL expressao PV{}
 	      | ID '=' expressao PV {}
 	      | CONST TYPE ID  '=' expressao PV {}
               | FINAL TYPE ID  '=' expressao PV{}
@@ -90,8 +94,6 @@ expressao :  expre_arit {}
 	  	    
 expre_arit: expre_arit '+' termo {}
 	    | expre_arit '-' termo {}
-	    | expre_arit MOREISEQUAL termo {}
-	    | expre_arit LESSISEQUAL termo {}
 	    | ops termo {}
     	    | termo ops {}
 	    | termo {}

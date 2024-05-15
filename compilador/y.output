@@ -89,56 +89,58 @@ Grammar
    23          | decl_variavel decl_vars
 
    24 decl_variavel: TYPE ID '=' expressao PV
-   25              | ID '=' expressao PV
-   26              | CONST TYPE ID '=' expressao PV
-   27              | FINAL TYPE ID '=' expressao PV
-   28              | TYPE ID PV
+   25              | TYPE ID MOREISEQUAL expressao PV
+   26              | ID MOREISEQUAL expressao PV
+   27              | ID LESSISEQUAL expressao PV
+   28              | TYPE ID LESSISEQUAL expressao PV
+   29              | ID '=' expressao PV
+   30              | CONST TYPE ID '=' expressao PV
+   31              | FINAL TYPE ID '=' expressao PV
+   32              | TYPE ID PV
 
-   29 expressao: expre_arit
+   33 expressao: expre_arit
 
-   30 expre_arit: expre_arit '+' termo
-   31           | expre_arit '-' termo
-   32           | expre_arit MOREISEQUAL termo
-   33           | expre_arit LESSISEQUAL termo
-   34           | ops termo
-   35           | termo ops
-   36           | termo
+   34 expre_arit: expre_arit '+' termo
+   35           | expre_arit '-' termo
+   36           | ops termo
+   37           | termo ops
+   38           | termo
 
-   37 ops: INCREMENT
-   38    | DECREMENT
+   39 ops: INCREMENT
+   40    | DECREMENT
 
-   39 termo: termo '*' fator
-   40      | termo '/' fator
-   41      | fator
+   41 termo: termo '*' fator
+   42      | termo '/' fator
+   43      | fator
 
-   42 fator: ID
-   43      | NUMBER
-   44      | '(' expressao ')'
+   44 fator: ID
+   45      | NUMBER
+   46      | '(' expressao ')'
 
 
 Terminals, with rules where they appear
 
     $end (0) 0
-    '(' (40) 2 10 11 19 20 21 44
-    ')' (41) 2 10 11 19 20 21 44
-    '*' (42) 39
-    '+' (43) 30
+    '(' (40) 2 10 11 19 20 21 46
+    ')' (41) 2 10 11 19 20 21 46
+    '*' (42) 41
+    '+' (43) 34
     ',' (44) 5
-    '-' (45) 31
-    '/' (47) 40
-    '=' (61) 24 25 26 27
+    '-' (45) 35
+    '/' (47) 42
+    '=' (61) 24 29 30 31
     '{' (123) 2 10 11 19 20 21
     '}' (125) 2 10 11 19 20 21
     error (256)
-    ID <sValue> (258) 4 5 10 11 24 25 26 27 28 42
-    NUMBER <iValue> (259) 43
-    TYPE <sValue> (260) 4 5 10 24 26 27 28
+    ID <sValue> (258) 4 5 10 11 24 25 26 27 28 29 30 31 32 44
+    NUMBER <iValue> (259) 45
+    TYPE <sValue> (260) 4 5 10 24 25 28 30 31 32
     WHILE (261)
     FOR (262)
     IF (263) 19 20 21
     ELSE (264) 20 21
-    CONST (265) 26
-    FINAL (266) 27
+    CONST (265) 30
+    FINAL (266) 31
     ENUM (267)
     MAIN (268) 2
     VOID (269) 2 11
@@ -184,13 +186,13 @@ Terminals, with rules where they appear
     ANDCIRCUIT (309)
     ORCIRCUIT (310)
     NUMBERFLOAT (311)
-    PV (312) 17 18 24 25 26 27 28
+    PV (312) 17 18 24 25 26 27 28 29 30 31 32
     TRUE (313)
     FALSE (314)
-    DECREMENT (315) 38
-    INCREMENT (316) 37
-    MOREISEQUAL (317) 32
-    LESSISEQUAL (318) 33
+    DECREMENT (315) 40
+    INCREMENT (316) 39
+    MOREISEQUAL (317) 25 26
+    LESSISEQUAL (318) 27 28
     EQUAL (319)
 
 
@@ -235,23 +237,23 @@ Nonterminals, with rules where they appear
         on left: 22 23
         on right: 1 23
     decl_variavel (88)
-        on left: 24 25 26 27 28
+        on left: 24 25 26 27 28 29 30 31 32
         on right: 13 22 23
     expressao (89)
-        on left: 29
-        on right: 18 19 20 21 24 25 26 27 44
+        on left: 33
+        on right: 18 19 20 21 24 25 26 27 28 29 30 31 46
     expre_arit (90)
-        on left: 30 31 32 33 34 35 36
-        on right: 29 30 31 32 33
+        on left: 34 35 36 37 38
+        on right: 33 34 35
     ops (91)
-        on left: 37 38
-        on right: 34 35
+        on left: 39 40
+        on right: 36 37
     termo (92)
-        on left: 39 40 41
-        on right: 30 31 32 33 34 35 36 39 40
+        on left: 41 42 43
+        on right: 34 35 36 37 38 41 42
     fator (93)
-        on left: 42 43 44
-        on right: 39 40 41
+        on left: 44 45 46
+        on right: 41 42 43
 
 
 State 0
@@ -270,47 +272,53 @@ State 0
 
 State 1
 
-   25 decl_variavel: ID • '=' expressao PV
+   26 decl_variavel: ID • MOREISEQUAL expressao PV
+   27              | ID • LESSISEQUAL expressao PV
+   29              | ID • '=' expressao PV
 
-    '='  shift, and go to state 8
+    MOREISEQUAL  shift, and go to state 8
+    LESSISEQUAL  shift, and go to state 9
+    '='          shift, and go to state 10
 
 
 State 2
 
    24 decl_variavel: TYPE • ID '=' expressao PV
-   28              | TYPE • ID PV
+   25              | TYPE • ID MOREISEQUAL expressao PV
+   28              | TYPE • ID LESSISEQUAL expressao PV
+   32              | TYPE • ID PV
 
-    ID  shift, and go to state 9
+    ID  shift, and go to state 11
 
 
 State 3
 
-   26 decl_variavel: CONST • TYPE ID '=' expressao PV
+   30 decl_variavel: CONST • TYPE ID '=' expressao PV
 
-    TYPE  shift, and go to state 10
+    TYPE  shift, and go to state 12
 
 
 State 4
 
-   27 decl_variavel: FINAL • TYPE ID '=' expressao PV
+   31 decl_variavel: FINAL • TYPE ID '=' expressao PV
 
-    TYPE  shift, and go to state 11
+    TYPE  shift, and go to state 13
 
 
 State 5
 
     0 $accept: prog • $end
 
-    $end  shift, and go to state 12
+    $end  shift, and go to state 14
 
 
 State 6
 
     1 prog: decl_vars • main subprogs
 
-    VOID  shift, and go to state 13
+    VOID  shift, and go to state 15
 
-    main  go to state 14
+    main  go to state 16
 
 
 State 7
@@ -325,912 +333,988 @@ State 7
 
     $default  reduce using rule 22 (decl_vars)
 
-    decl_vars      go to state 15
+    decl_vars      go to state 17
     decl_variavel  go to state 7
 
 
 State 8
 
-   25 decl_variavel: ID '=' • expressao PV
+   26 decl_variavel: ID MOREISEQUAL • expressao PV
 
-    ID         shift, and go to state 16
-    NUMBER     shift, and go to state 17
-    DECREMENT  shift, and go to state 18
-    INCREMENT  shift, and go to state 19
-    '('        shift, and go to state 20
+    ID         shift, and go to state 18
+    NUMBER     shift, and go to state 19
+    DECREMENT  shift, and go to state 20
+    INCREMENT  shift, and go to state 21
+    '('        shift, and go to state 22
 
-    expressao   go to state 21
-    expre_arit  go to state 22
-    ops         go to state 23
-    termo       go to state 24
-    fator       go to state 25
+    expressao   go to state 23
+    expre_arit  go to state 24
+    ops         go to state 25
+    termo       go to state 26
+    fator       go to state 27
 
 
 State 9
 
-   24 decl_variavel: TYPE ID • '=' expressao PV
-   28              | TYPE ID • PV
+   27 decl_variavel: ID LESSISEQUAL • expressao PV
 
-    PV   shift, and go to state 26
-    '='  shift, and go to state 27
+    ID         shift, and go to state 18
+    NUMBER     shift, and go to state 19
+    DECREMENT  shift, and go to state 20
+    INCREMENT  shift, and go to state 21
+    '('        shift, and go to state 22
+
+    expressao   go to state 28
+    expre_arit  go to state 24
+    ops         go to state 25
+    termo       go to state 26
+    fator       go to state 27
 
 
 State 10
 
-   26 decl_variavel: CONST TYPE • ID '=' expressao PV
+   29 decl_variavel: ID '=' • expressao PV
 
-    ID  shift, and go to state 28
+    ID         shift, and go to state 18
+    NUMBER     shift, and go to state 19
+    DECREMENT  shift, and go to state 20
+    INCREMENT  shift, and go to state 21
+    '('        shift, and go to state 22
+
+    expressao   go to state 29
+    expre_arit  go to state 24
+    ops         go to state 25
+    termo       go to state 26
+    fator       go to state 27
 
 
 State 11
 
-   27 decl_variavel: FINAL TYPE • ID '=' expressao PV
+   24 decl_variavel: TYPE ID • '=' expressao PV
+   25              | TYPE ID • MOREISEQUAL expressao PV
+   28              | TYPE ID • LESSISEQUAL expressao PV
+   32              | TYPE ID • PV
 
-    ID  shift, and go to state 29
+    PV           shift, and go to state 30
+    MOREISEQUAL  shift, and go to state 31
+    LESSISEQUAL  shift, and go to state 32
+    '='          shift, and go to state 33
 
 
 State 12
+
+   30 decl_variavel: CONST TYPE • ID '=' expressao PV
+
+    ID  shift, and go to state 34
+
+
+State 13
+
+   31 decl_variavel: FINAL TYPE • ID '=' expressao PV
+
+    ID  shift, and go to state 35
+
+
+State 14
 
     0 $accept: prog $end •
 
     $default  accept
 
 
-State 13
+State 15
 
     2 main: VOID • MAIN '(' args ')' '{' '}'
 
-    MAIN  shift, and go to state 30
+    MAIN  shift, and go to state 36
 
 
-State 14
+State 16
 
     1 prog: decl_vars main • subprogs
 
-    TYPE  shift, and go to state 31
-    VOID  shift, and go to state 32
+    TYPE  shift, and go to state 37
+    VOID  shift, and go to state 38
 
     $default  reduce using rule 6 (subprogs)
 
-    subprogs           go to state 33
-    subprog            go to state 34
-    decl_funcao        go to state 35
-    decl_procedimento  go to state 36
+    subprogs           go to state 39
+    subprog            go to state 40
+    decl_funcao        go to state 41
+    decl_procedimento  go to state 42
 
 
-State 15
+State 17
 
    23 decl_vars: decl_variavel decl_vars •
 
     $default  reduce using rule 23 (decl_vars)
 
 
-State 16
-
-   42 fator: ID •
-
-    $default  reduce using rule 42 (fator)
-
-
-State 17
-
-   43 fator: NUMBER •
-
-    $default  reduce using rule 43 (fator)
-
-
 State 18
 
-   38 ops: DECREMENT •
+   44 fator: ID •
 
-    $default  reduce using rule 38 (ops)
+    $default  reduce using rule 44 (fator)
 
 
 State 19
 
-   37 ops: INCREMENT •
+   45 fator: NUMBER •
 
-    $default  reduce using rule 37 (ops)
+    $default  reduce using rule 45 (fator)
 
 
 State 20
 
-   44 fator: '(' • expressao ')'
+   40 ops: DECREMENT •
 
-    ID         shift, and go to state 16
-    NUMBER     shift, and go to state 17
-    DECREMENT  shift, and go to state 18
-    INCREMENT  shift, and go to state 19
-    '('        shift, and go to state 20
-
-    expressao   go to state 37
-    expre_arit  go to state 22
-    ops         go to state 23
-    termo       go to state 24
-    fator       go to state 25
+    $default  reduce using rule 40 (ops)
 
 
 State 21
 
-   25 decl_variavel: ID '=' expressao • PV
+   39 ops: INCREMENT •
 
-    PV  shift, and go to state 38
+    $default  reduce using rule 39 (ops)
 
 
 State 22
 
-   29 expressao: expre_arit •
-   30 expre_arit: expre_arit • '+' termo
-   31           | expre_arit • '-' termo
-   32           | expre_arit • MOREISEQUAL termo
-   33           | expre_arit • LESSISEQUAL termo
+   46 fator: '(' • expressao ')'
 
-    MOREISEQUAL  shift, and go to state 39
-    LESSISEQUAL  shift, and go to state 40
-    '+'          shift, and go to state 41
-    '-'          shift, and go to state 42
+    ID         shift, and go to state 18
+    NUMBER     shift, and go to state 19
+    DECREMENT  shift, and go to state 20
+    INCREMENT  shift, and go to state 21
+    '('        shift, and go to state 22
 
-    $default  reduce using rule 29 (expressao)
+    expressao   go to state 43
+    expre_arit  go to state 24
+    ops         go to state 25
+    termo       go to state 26
+    fator       go to state 27
 
 
 State 23
 
-   34 expre_arit: ops • termo
+   26 decl_variavel: ID MOREISEQUAL expressao • PV
 
-    ID      shift, and go to state 16
-    NUMBER  shift, and go to state 17
-    '('     shift, and go to state 20
-
-    termo  go to state 43
-    fator  go to state 25
+    PV  shift, and go to state 44
 
 
 State 24
 
-   35 expre_arit: termo • ops
-   36           | termo •
-   39 termo: termo • '*' fator
-   40      | termo • '/' fator
+   33 expressao: expre_arit •
+   34 expre_arit: expre_arit • '+' termo
+   35           | expre_arit • '-' termo
 
-    DECREMENT  shift, and go to state 18
-    INCREMENT  shift, and go to state 19
-    '*'        shift, and go to state 44
-    '/'        shift, and go to state 45
+    '+'  shift, and go to state 45
+    '-'  shift, and go to state 46
 
-    $default  reduce using rule 36 (expre_arit)
-
-    ops  go to state 46
+    $default  reduce using rule 33 (expressao)
 
 
 State 25
 
-   41 termo: fator •
+   36 expre_arit: ops • termo
 
-    $default  reduce using rule 41 (termo)
+    ID      shift, and go to state 18
+    NUMBER  shift, and go to state 19
+    '('     shift, and go to state 22
+
+    termo  go to state 47
+    fator  go to state 27
 
 
 State 26
 
-   28 decl_variavel: TYPE ID PV •
+   37 expre_arit: termo • ops
+   38           | termo •
+   41 termo: termo • '*' fator
+   42      | termo • '/' fator
 
-    $default  reduce using rule 28 (decl_variavel)
+    DECREMENT  shift, and go to state 20
+    INCREMENT  shift, and go to state 21
+    '*'        shift, and go to state 48
+    '/'        shift, and go to state 49
+
+    $default  reduce using rule 38 (expre_arit)
+
+    ops  go to state 50
 
 
 State 27
 
-   24 decl_variavel: TYPE ID '=' • expressao PV
+   43 termo: fator •
 
-    ID         shift, and go to state 16
-    NUMBER     shift, and go to state 17
-    DECREMENT  shift, and go to state 18
-    INCREMENT  shift, and go to state 19
-    '('        shift, and go to state 20
-
-    expressao   go to state 47
-    expre_arit  go to state 22
-    ops         go to state 23
-    termo       go to state 24
-    fator       go to state 25
+    $default  reduce using rule 43 (termo)
 
 
 State 28
 
-   26 decl_variavel: CONST TYPE ID • '=' expressao PV
+   27 decl_variavel: ID LESSISEQUAL expressao • PV
 
-    '='  shift, and go to state 48
+    PV  shift, and go to state 51
 
 
 State 29
 
-   27 decl_variavel: FINAL TYPE ID • '=' expressao PV
+   29 decl_variavel: ID '=' expressao • PV
 
-    '='  shift, and go to state 49
+    PV  shift, and go to state 52
 
 
 State 30
 
-    2 main: VOID MAIN • '(' args ')' '{' '}'
+   32 decl_variavel: TYPE ID PV •
 
-    '('  shift, and go to state 50
+    $default  reduce using rule 32 (decl_variavel)
 
 
 State 31
 
-   10 decl_funcao: TYPE • ID '(' args ')' '{' bloco '}'
+   25 decl_variavel: TYPE ID MOREISEQUAL • expressao PV
 
-    ID  shift, and go to state 51
+    ID         shift, and go to state 18
+    NUMBER     shift, and go to state 19
+    DECREMENT  shift, and go to state 20
+    INCREMENT  shift, and go to state 21
+    '('        shift, and go to state 22
+
+    expressao   go to state 53
+    expre_arit  go to state 24
+    ops         go to state 25
+    termo       go to state 26
+    fator       go to state 27
 
 
 State 32
 
-   11 decl_procedimento: VOID • ID '(' args ')' '{' bloco '}'
+   28 decl_variavel: TYPE ID LESSISEQUAL • expressao PV
 
-    ID  shift, and go to state 52
+    ID         shift, and go to state 18
+    NUMBER     shift, and go to state 19
+    DECREMENT  shift, and go to state 20
+    INCREMENT  shift, and go to state 21
+    '('        shift, and go to state 22
+
+    expressao   go to state 54
+    expre_arit  go to state 24
+    ops         go to state 25
+    termo       go to state 26
+    fator       go to state 27
 
 
 State 33
+
+   24 decl_variavel: TYPE ID '=' • expressao PV
+
+    ID         shift, and go to state 18
+    NUMBER     shift, and go to state 19
+    DECREMENT  shift, and go to state 20
+    INCREMENT  shift, and go to state 21
+    '('        shift, and go to state 22
+
+    expressao   go to state 55
+    expre_arit  go to state 24
+    ops         go to state 25
+    termo       go to state 26
+    fator       go to state 27
+
+
+State 34
+
+   30 decl_variavel: CONST TYPE ID • '=' expressao PV
+
+    '='  shift, and go to state 56
+
+
+State 35
+
+   31 decl_variavel: FINAL TYPE ID • '=' expressao PV
+
+    '='  shift, and go to state 57
+
+
+State 36
+
+    2 main: VOID MAIN • '(' args ')' '{' '}'
+
+    '('  shift, and go to state 58
+
+
+State 37
+
+   10 decl_funcao: TYPE • ID '(' args ')' '{' bloco '}'
+
+    ID  shift, and go to state 59
+
+
+State 38
+
+   11 decl_procedimento: VOID • ID '(' args ')' '{' bloco '}'
+
+    ID  shift, and go to state 60
+
+
+State 39
 
     1 prog: decl_vars main subprogs •
 
     $default  reduce using rule 1 (prog)
 
 
-State 34
+State 40
 
     7 subprogs: subprog • subprogs
 
-    TYPE  shift, and go to state 31
-    VOID  shift, and go to state 32
+    TYPE  shift, and go to state 37
+    VOID  shift, and go to state 38
 
     $default  reduce using rule 6 (subprogs)
 
-    subprogs           go to state 53
-    subprog            go to state 34
-    decl_funcao        go to state 35
-    decl_procedimento  go to state 36
+    subprogs           go to state 61
+    subprog            go to state 40
+    decl_funcao        go to state 41
+    decl_procedimento  go to state 42
 
 
-State 35
+State 41
 
     8 subprog: decl_funcao •
 
     $default  reduce using rule 8 (subprog)
 
 
-State 36
+State 42
 
     9 subprog: decl_procedimento •
 
     $default  reduce using rule 9 (subprog)
 
 
-State 37
-
-   44 fator: '(' expressao • ')'
-
-    ')'  shift, and go to state 54
-
-
-State 38
-
-   25 decl_variavel: ID '=' expressao PV •
-
-    $default  reduce using rule 25 (decl_variavel)
-
-
-State 39
-
-   32 expre_arit: expre_arit MOREISEQUAL • termo
-
-    ID      shift, and go to state 16
-    NUMBER  shift, and go to state 17
-    '('     shift, and go to state 20
-
-    termo  go to state 55
-    fator  go to state 25
-
-
-State 40
-
-   33 expre_arit: expre_arit LESSISEQUAL • termo
-
-    ID      shift, and go to state 16
-    NUMBER  shift, and go to state 17
-    '('     shift, and go to state 20
-
-    termo  go to state 56
-    fator  go to state 25
-
-
-State 41
-
-   30 expre_arit: expre_arit '+' • termo
-
-    ID      shift, and go to state 16
-    NUMBER  shift, and go to state 17
-    '('     shift, and go to state 20
-
-    termo  go to state 57
-    fator  go to state 25
-
-
-State 42
-
-   31 expre_arit: expre_arit '-' • termo
-
-    ID      shift, and go to state 16
-    NUMBER  shift, and go to state 17
-    '('     shift, and go to state 20
-
-    termo  go to state 58
-    fator  go to state 25
-
-
 State 43
 
-   34 expre_arit: ops termo •
-   39 termo: termo • '*' fator
-   40      | termo • '/' fator
+   46 fator: '(' expressao • ')'
 
-    '*'  shift, and go to state 44
-    '/'  shift, and go to state 45
-
-    $default  reduce using rule 34 (expre_arit)
+    ')'  shift, and go to state 62
 
 
 State 44
 
-   39 termo: termo '*' • fator
+   26 decl_variavel: ID MOREISEQUAL expressao PV •
 
-    ID      shift, and go to state 16
-    NUMBER  shift, and go to state 17
-    '('     shift, and go to state 20
-
-    fator  go to state 59
+    $default  reduce using rule 26 (decl_variavel)
 
 
 State 45
 
-   40 termo: termo '/' • fator
+   34 expre_arit: expre_arit '+' • termo
 
-    ID      shift, and go to state 16
-    NUMBER  shift, and go to state 17
-    '('     shift, and go to state 20
+    ID      shift, and go to state 18
+    NUMBER  shift, and go to state 19
+    '('     shift, and go to state 22
 
-    fator  go to state 60
+    termo  go to state 63
+    fator  go to state 27
 
 
 State 46
 
-   35 expre_arit: termo ops •
+   35 expre_arit: expre_arit '-' • termo
 
-    $default  reduce using rule 35 (expre_arit)
+    ID      shift, and go to state 18
+    NUMBER  shift, and go to state 19
+    '('     shift, and go to state 22
+
+    termo  go to state 64
+    fator  go to state 27
 
 
 State 47
 
-   24 decl_variavel: TYPE ID '=' expressao • PV
+   36 expre_arit: ops termo •
+   41 termo: termo • '*' fator
+   42      | termo • '/' fator
 
-    PV  shift, and go to state 61
+    '*'  shift, and go to state 48
+    '/'  shift, and go to state 49
+
+    $default  reduce using rule 36 (expre_arit)
 
 
 State 48
 
-   26 decl_variavel: CONST TYPE ID '=' • expressao PV
+   41 termo: termo '*' • fator
 
-    ID         shift, and go to state 16
-    NUMBER     shift, and go to state 17
-    DECREMENT  shift, and go to state 18
-    INCREMENT  shift, and go to state 19
-    '('        shift, and go to state 20
+    ID      shift, and go to state 18
+    NUMBER  shift, and go to state 19
+    '('     shift, and go to state 22
 
-    expressao   go to state 62
-    expre_arit  go to state 22
-    ops         go to state 23
-    termo       go to state 24
-    fator       go to state 25
+    fator  go to state 65
 
 
 State 49
 
-   27 decl_variavel: FINAL TYPE ID '=' • expressao PV
+   42 termo: termo '/' • fator
 
-    ID         shift, and go to state 16
-    NUMBER     shift, and go to state 17
-    DECREMENT  shift, and go to state 18
-    INCREMENT  shift, and go to state 19
-    '('        shift, and go to state 20
+    ID      shift, and go to state 18
+    NUMBER  shift, and go to state 19
+    '('     shift, and go to state 22
 
-    expressao   go to state 63
-    expre_arit  go to state 22
-    ops         go to state 23
-    termo       go to state 24
-    fator       go to state 25
+    fator  go to state 66
 
 
 State 50
 
-    2 main: VOID MAIN '(' • args ')' '{' '}'
+   37 expre_arit: termo ops •
 
-    TYPE  shift, and go to state 64
-
-    $default  reduce using rule 3 (args)
-
-    args  go to state 65
+    $default  reduce using rule 37 (expre_arit)
 
 
 State 51
 
-   10 decl_funcao: TYPE ID • '(' args ')' '{' bloco '}'
+   27 decl_variavel: ID LESSISEQUAL expressao PV •
 
-    '('  shift, and go to state 66
+    $default  reduce using rule 27 (decl_variavel)
 
 
 State 52
 
-   11 decl_procedimento: VOID ID • '(' args ')' '{' bloco '}'
+   29 decl_variavel: ID '=' expressao PV •
 
-    '('  shift, and go to state 67
+    $default  reduce using rule 29 (decl_variavel)
 
 
 State 53
 
-    7 subprogs: subprog subprogs •
+   25 decl_variavel: TYPE ID MOREISEQUAL expressao • PV
 
-    $default  reduce using rule 7 (subprogs)
+    PV  shift, and go to state 67
 
 
 State 54
 
-   44 fator: '(' expressao ')' •
-
-    $default  reduce using rule 44 (fator)
-
-
-State 55
-
-   32 expre_arit: expre_arit MOREISEQUAL termo •
-   39 termo: termo • '*' fator
-   40      | termo • '/' fator
-
-    '*'  shift, and go to state 44
-    '/'  shift, and go to state 45
-
-    $default  reduce using rule 32 (expre_arit)
-
-
-State 56
-
-   33 expre_arit: expre_arit LESSISEQUAL termo •
-   39 termo: termo • '*' fator
-   40      | termo • '/' fator
-
-    '*'  shift, and go to state 44
-    '/'  shift, and go to state 45
-
-    $default  reduce using rule 33 (expre_arit)
-
-
-State 57
-
-   30 expre_arit: expre_arit '+' termo •
-   39 termo: termo • '*' fator
-   40      | termo • '/' fator
-
-    '*'  shift, and go to state 44
-    '/'  shift, and go to state 45
-
-    $default  reduce using rule 30 (expre_arit)
-
-
-State 58
-
-   31 expre_arit: expre_arit '-' termo •
-   39 termo: termo • '*' fator
-   40      | termo • '/' fator
-
-    '*'  shift, and go to state 44
-    '/'  shift, and go to state 45
-
-    $default  reduce using rule 31 (expre_arit)
-
-
-State 59
-
-   39 termo: termo '*' fator •
-
-    $default  reduce using rule 39 (termo)
-
-
-State 60
-
-   40 termo: termo '/' fator •
-
-    $default  reduce using rule 40 (termo)
-
-
-State 61
-
-   24 decl_variavel: TYPE ID '=' expressao PV •
-
-    $default  reduce using rule 24 (decl_variavel)
-
-
-State 62
-
-   26 decl_variavel: CONST TYPE ID '=' expressao • PV
+   28 decl_variavel: TYPE ID LESSISEQUAL expressao • PV
 
     PV  shift, and go to state 68
 
 
-State 63
+State 55
 
-   27 decl_variavel: FINAL TYPE ID '=' expressao • PV
+   24 decl_variavel: TYPE ID '=' expressao • PV
 
     PV  shift, and go to state 69
 
 
-State 64
+State 56
 
-    4 args: TYPE • ID args
-    5     | TYPE • ID ',' args
+   30 decl_variavel: CONST TYPE ID '=' • expressao PV
 
-    ID  shift, and go to state 70
+    ID         shift, and go to state 18
+    NUMBER     shift, and go to state 19
+    DECREMENT  shift, and go to state 20
+    INCREMENT  shift, and go to state 21
+    '('        shift, and go to state 22
 
-
-State 65
-
-    2 main: VOID MAIN '(' args • ')' '{' '}'
-
-    ')'  shift, and go to state 71
-
-
-State 66
-
-   10 decl_funcao: TYPE ID '(' • args ')' '{' bloco '}'
-
-    TYPE  shift, and go to state 64
-
-    $default  reduce using rule 3 (args)
-
-    args  go to state 72
+    expressao   go to state 70
+    expre_arit  go to state 24
+    ops         go to state 25
+    termo       go to state 26
+    fator       go to state 27
 
 
-State 67
+State 57
 
-   11 decl_procedimento: VOID ID '(' • args ')' '{' bloco '}'
+   31 decl_variavel: FINAL TYPE ID '=' • expressao PV
 
-    TYPE  shift, and go to state 64
+    ID         shift, and go to state 18
+    NUMBER     shift, and go to state 19
+    DECREMENT  shift, and go to state 20
+    INCREMENT  shift, and go to state 21
+    '('        shift, and go to state 22
+
+    expressao   go to state 71
+    expre_arit  go to state 24
+    ops         go to state 25
+    termo       go to state 26
+    fator       go to state 27
+
+
+State 58
+
+    2 main: VOID MAIN '(' • args ')' '{' '}'
+
+    TYPE  shift, and go to state 72
 
     $default  reduce using rule 3 (args)
 
     args  go to state 73
 
 
+State 59
+
+   10 decl_funcao: TYPE ID • '(' args ')' '{' bloco '}'
+
+    '('  shift, and go to state 74
+
+
+State 60
+
+   11 decl_procedimento: VOID ID • '(' args ')' '{' bloco '}'
+
+    '('  shift, and go to state 75
+
+
+State 61
+
+    7 subprogs: subprog subprogs •
+
+    $default  reduce using rule 7 (subprogs)
+
+
+State 62
+
+   46 fator: '(' expressao ')' •
+
+    $default  reduce using rule 46 (fator)
+
+
+State 63
+
+   34 expre_arit: expre_arit '+' termo •
+   41 termo: termo • '*' fator
+   42      | termo • '/' fator
+
+    '*'  shift, and go to state 48
+    '/'  shift, and go to state 49
+
+    $default  reduce using rule 34 (expre_arit)
+
+
+State 64
+
+   35 expre_arit: expre_arit '-' termo •
+   41 termo: termo • '*' fator
+   42      | termo • '/' fator
+
+    '*'  shift, and go to state 48
+    '/'  shift, and go to state 49
+
+    $default  reduce using rule 35 (expre_arit)
+
+
+State 65
+
+   41 termo: termo '*' fator •
+
+    $default  reduce using rule 41 (termo)
+
+
+State 66
+
+   42 termo: termo '/' fator •
+
+    $default  reduce using rule 42 (termo)
+
+
+State 67
+
+   25 decl_variavel: TYPE ID MOREISEQUAL expressao PV •
+
+    $default  reduce using rule 25 (decl_variavel)
+
+
 State 68
 
-   26 decl_variavel: CONST TYPE ID '=' expressao PV •
+   28 decl_variavel: TYPE ID LESSISEQUAL expressao PV •
 
-    $default  reduce using rule 26 (decl_variavel)
+    $default  reduce using rule 28 (decl_variavel)
 
 
 State 69
 
-   27 decl_variavel: FINAL TYPE ID '=' expressao PV •
+   24 decl_variavel: TYPE ID '=' expressao PV •
 
-    $default  reduce using rule 27 (decl_variavel)
+    $default  reduce using rule 24 (decl_variavel)
 
 
 State 70
 
-    4 args: TYPE ID • args
-    5     | TYPE ID • ',' args
+   30 decl_variavel: CONST TYPE ID '=' expressao • PV
 
-    TYPE  shift, and go to state 64
-    ','   shift, and go to state 74
-
-    $default  reduce using rule 3 (args)
-
-    args  go to state 75
+    PV  shift, and go to state 76
 
 
 State 71
 
-    2 main: VOID MAIN '(' args ')' • '{' '}'
+   31 decl_variavel: FINAL TYPE ID '=' expressao • PV
 
-    '{'  shift, and go to state 76
+    PV  shift, and go to state 77
 
 
 State 72
 
-   10 decl_funcao: TYPE ID '(' args • ')' '{' bloco '}'
+    4 args: TYPE • ID args
+    5     | TYPE • ID ',' args
 
-    ')'  shift, and go to state 77
+    ID  shift, and go to state 78
 
 
 State 73
 
-   11 decl_procedimento: VOID ID '(' args • ')' '{' bloco '}'
+    2 main: VOID MAIN '(' args • ')' '{' '}'
 
-    ')'  shift, and go to state 78
+    ')'  shift, and go to state 79
 
 
 State 74
 
-    5 args: TYPE ID ',' • args
+   10 decl_funcao: TYPE ID '(' • args ')' '{' bloco '}'
 
-    TYPE  shift, and go to state 64
+    TYPE  shift, and go to state 72
 
     $default  reduce using rule 3 (args)
 
-    args  go to state 79
+    args  go to state 80
 
 
 State 75
+
+   11 decl_procedimento: VOID ID '(' • args ')' '{' bloco '}'
+
+    TYPE  shift, and go to state 72
+
+    $default  reduce using rule 3 (args)
+
+    args  go to state 81
+
+
+State 76
+
+   30 decl_variavel: CONST TYPE ID '=' expressao PV •
+
+    $default  reduce using rule 30 (decl_variavel)
+
+
+State 77
+
+   31 decl_variavel: FINAL TYPE ID '=' expressao PV •
+
+    $default  reduce using rule 31 (decl_variavel)
+
+
+State 78
+
+    4 args: TYPE ID • args
+    5     | TYPE ID • ',' args
+
+    TYPE  shift, and go to state 72
+    ','   shift, and go to state 82
+
+    $default  reduce using rule 3 (args)
+
+    args  go to state 83
+
+
+State 79
+
+    2 main: VOID MAIN '(' args ')' • '{' '}'
+
+    '{'  shift, and go to state 84
+
+
+State 80
+
+   10 decl_funcao: TYPE ID '(' args • ')' '{' bloco '}'
+
+    ')'  shift, and go to state 85
+
+
+State 81
+
+   11 decl_procedimento: VOID ID '(' args • ')' '{' bloco '}'
+
+    ')'  shift, and go to state 86
+
+
+State 82
+
+    5 args: TYPE ID ',' • args
+
+    TYPE  shift, and go to state 72
+
+    $default  reduce using rule 3 (args)
+
+    args  go to state 87
+
+
+State 83
 
     4 args: TYPE ID args •
 
     $default  reduce using rule 4 (args)
 
 
-State 76
+State 84
 
     2 main: VOID MAIN '(' args ')' '{' • '}'
 
-    '}'  shift, and go to state 80
+    '}'  shift, and go to state 88
 
 
-State 77
+State 85
 
    10 decl_funcao: TYPE ID '(' args ')' • '{' bloco '}'
 
-    '{'  shift, and go to state 81
+    '{'  shift, and go to state 89
 
 
-State 78
+State 86
 
    11 decl_procedimento: VOID ID '(' args ')' • '{' bloco '}'
 
-    '{'  shift, and go to state 82
+    '{'  shift, and go to state 90
 
 
-State 79
+State 87
 
     5 args: TYPE ID ',' args •
 
     $default  reduce using rule 5 (args)
 
 
-State 80
+State 88
 
     2 main: VOID MAIN '(' args ')' '{' '}' •
 
     $default  reduce using rule 2 (main)
 
 
-State 81
+State 89
 
    10 decl_funcao: TYPE ID '(' args ')' '{' • bloco '}'
 
     ID      shift, and go to state 1
     TYPE    shift, and go to state 2
-    IF      shift, and go to state 83
+    IF      shift, and go to state 91
     CONST   shift, and go to state 3
     FINAL   shift, and go to state 4
-    RETURN  shift, and go to state 84
+    RETURN  shift, and go to state 92
 
     $default  reduce using rule 12 (bloco)
 
-    bloco          go to state 85
-    comando        go to state 86
-    retorno        go to state 87
-    condicional    go to state 88
-    decl_variavel  go to state 89
+    bloco          go to state 93
+    comando        go to state 94
+    retorno        go to state 95
+    condicional    go to state 96
+    decl_variavel  go to state 97
 
 
-State 82
+State 90
 
    11 decl_procedimento: VOID ID '(' args ')' '{' • bloco '}'
 
     ID      shift, and go to state 1
     TYPE    shift, and go to state 2
-    IF      shift, and go to state 83
+    IF      shift, and go to state 91
     CONST   shift, and go to state 3
     FINAL   shift, and go to state 4
-    RETURN  shift, and go to state 84
+    RETURN  shift, and go to state 92
 
     $default  reduce using rule 12 (bloco)
 
-    bloco          go to state 90
-    comando        go to state 86
-    retorno        go to state 87
-    condicional    go to state 88
-    decl_variavel  go to state 89
+    bloco          go to state 98
+    comando        go to state 94
+    retorno        go to state 95
+    condicional    go to state 96
+    decl_variavel  go to state 97
 
 
-State 83
+State 91
 
    19 condicional: IF • '(' expressao ')' '{' bloco '}'
    20            | IF • '(' expressao ')' '{' bloco '}' ELSE '{' bloco '}'
    21            | IF • '(' expressao ')' '{' bloco '}' ELSE IF '(' expressao ')' '{' bloco '}' ELSE '{' bloco '}'
 
-    '('  shift, and go to state 91
+    '('  shift, and go to state 99
 
 
-State 84
+State 92
 
    17 retorno: RETURN • PV
    18        | RETURN • expressao PV
 
-    ID         shift, and go to state 16
-    NUMBER     shift, and go to state 17
-    PV         shift, and go to state 92
-    DECREMENT  shift, and go to state 18
-    INCREMENT  shift, and go to state 19
-    '('        shift, and go to state 20
+    ID         shift, and go to state 18
+    NUMBER     shift, and go to state 19
+    PV         shift, and go to state 100
+    DECREMENT  shift, and go to state 20
+    INCREMENT  shift, and go to state 21
+    '('        shift, and go to state 22
 
-    expressao   go to state 93
-    expre_arit  go to state 22
-    ops         go to state 23
-    termo       go to state 24
-    fator       go to state 25
+    expressao   go to state 101
+    expre_arit  go to state 24
+    ops         go to state 25
+    termo       go to state 26
+    fator       go to state 27
 
 
-State 85
+State 93
 
    10 decl_funcao: TYPE ID '(' args ')' '{' bloco • '}'
 
-    '}'  shift, and go to state 94
+    '}'  shift, and go to state 102
 
 
-State 86
+State 94
 
    14 bloco: comando • bloco
 
     ID      shift, and go to state 1
     TYPE    shift, and go to state 2
-    IF      shift, and go to state 83
+    IF      shift, and go to state 91
     CONST   shift, and go to state 3
     FINAL   shift, and go to state 4
-    RETURN  shift, and go to state 84
+    RETURN  shift, and go to state 92
 
     $default  reduce using rule 12 (bloco)
 
-    bloco          go to state 95
-    comando        go to state 86
-    retorno        go to state 87
-    condicional    go to state 88
-    decl_variavel  go to state 89
+    bloco          go to state 103
+    comando        go to state 94
+    retorno        go to state 95
+    condicional    go to state 96
+    decl_variavel  go to state 97
 
 
-State 87
+State 95
 
    16 comando: retorno •
 
     $default  reduce using rule 16 (comando)
 
 
-State 88
+State 96
 
    15 comando: condicional •
 
     $default  reduce using rule 15 (comando)
 
 
-State 89
+State 97
 
    13 bloco: decl_variavel • bloco
 
     ID      shift, and go to state 1
     TYPE    shift, and go to state 2
-    IF      shift, and go to state 83
+    IF      shift, and go to state 91
     CONST   shift, and go to state 3
     FINAL   shift, and go to state 4
-    RETURN  shift, and go to state 84
+    RETURN  shift, and go to state 92
 
     $default  reduce using rule 12 (bloco)
 
-    bloco          go to state 96
-    comando        go to state 86
-    retorno        go to state 87
-    condicional    go to state 88
-    decl_variavel  go to state 89
+    bloco          go to state 104
+    comando        go to state 94
+    retorno        go to state 95
+    condicional    go to state 96
+    decl_variavel  go to state 97
 
 
-State 90
+State 98
 
    11 decl_procedimento: VOID ID '(' args ')' '{' bloco • '}'
 
-    '}'  shift, and go to state 97
+    '}'  shift, and go to state 105
 
 
-State 91
+State 99
 
    19 condicional: IF '(' • expressao ')' '{' bloco '}'
    20            | IF '(' • expressao ')' '{' bloco '}' ELSE '{' bloco '}'
    21            | IF '(' • expressao ')' '{' bloco '}' ELSE IF '(' expressao ')' '{' bloco '}' ELSE '{' bloco '}'
 
-    ID         shift, and go to state 16
-    NUMBER     shift, and go to state 17
-    DECREMENT  shift, and go to state 18
-    INCREMENT  shift, and go to state 19
-    '('        shift, and go to state 20
+    ID         shift, and go to state 18
+    NUMBER     shift, and go to state 19
+    DECREMENT  shift, and go to state 20
+    INCREMENT  shift, and go to state 21
+    '('        shift, and go to state 22
 
-    expressao   go to state 98
-    expre_arit  go to state 22
-    ops         go to state 23
-    termo       go to state 24
-    fator       go to state 25
+    expressao   go to state 106
+    expre_arit  go to state 24
+    ops         go to state 25
+    termo       go to state 26
+    fator       go to state 27
 
 
-State 92
+State 100
 
    17 retorno: RETURN PV •
 
     $default  reduce using rule 17 (retorno)
 
 
-State 93
+State 101
 
    18 retorno: RETURN expressao • PV
 
-    PV  shift, and go to state 99
+    PV  shift, and go to state 107
 
 
-State 94
+State 102
 
    10 decl_funcao: TYPE ID '(' args ')' '{' bloco '}' •
 
     $default  reduce using rule 10 (decl_funcao)
 
 
-State 95
+State 103
 
    14 bloco: comando bloco •
 
     $default  reduce using rule 14 (bloco)
 
 
-State 96
+State 104
 
    13 bloco: decl_variavel bloco •
 
     $default  reduce using rule 13 (bloco)
 
 
-State 97
+State 105
 
    11 decl_procedimento: VOID ID '(' args ')' '{' bloco '}' •
 
     $default  reduce using rule 11 (decl_procedimento)
 
 
-State 98
+State 106
 
    19 condicional: IF '(' expressao • ')' '{' bloco '}'
    20            | IF '(' expressao • ')' '{' bloco '}' ELSE '{' bloco '}'
    21            | IF '(' expressao • ')' '{' bloco '}' ELSE IF '(' expressao ')' '{' bloco '}' ELSE '{' bloco '}'
 
-    ')'  shift, and go to state 100
+    ')'  shift, and go to state 108
 
 
-State 99
+State 107
 
    18 retorno: RETURN expressao PV •
 
     $default  reduce using rule 18 (retorno)
 
 
-State 100
+State 108
 
    19 condicional: IF '(' expressao ')' • '{' bloco '}'
    20            | IF '(' expressao ')' • '{' bloco '}' ELSE '{' bloco '}'
    21            | IF '(' expressao ')' • '{' bloco '}' ELSE IF '(' expressao ')' '{' bloco '}' ELSE '{' bloco '}'
 
-    '{'  shift, and go to state 101
+    '{'  shift, and go to state 109
 
 
-State 101
+State 109
 
    19 condicional: IF '(' expressao ')' '{' • bloco '}'
    20            | IF '(' expressao ')' '{' • bloco '}' ELSE '{' bloco '}'
@@ -1238,190 +1322,190 @@ State 101
 
     ID      shift, and go to state 1
     TYPE    shift, and go to state 2
-    IF      shift, and go to state 83
+    IF      shift, and go to state 91
     CONST   shift, and go to state 3
     FINAL   shift, and go to state 4
-    RETURN  shift, and go to state 84
+    RETURN  shift, and go to state 92
 
     $default  reduce using rule 12 (bloco)
 
-    bloco          go to state 102
-    comando        go to state 86
-    retorno        go to state 87
-    condicional    go to state 88
-    decl_variavel  go to state 89
+    bloco          go to state 110
+    comando        go to state 94
+    retorno        go to state 95
+    condicional    go to state 96
+    decl_variavel  go to state 97
 
 
-State 102
+State 110
 
    19 condicional: IF '(' expressao ')' '{' bloco • '}'
    20            | IF '(' expressao ')' '{' bloco • '}' ELSE '{' bloco '}'
    21            | IF '(' expressao ')' '{' bloco • '}' ELSE IF '(' expressao ')' '{' bloco '}' ELSE '{' bloco '}'
 
-    '}'  shift, and go to state 103
+    '}'  shift, and go to state 111
 
 
-State 103
+State 111
 
    19 condicional: IF '(' expressao ')' '{' bloco '}' •
    20            | IF '(' expressao ')' '{' bloco '}' • ELSE '{' bloco '}'
    21            | IF '(' expressao ')' '{' bloco '}' • ELSE IF '(' expressao ')' '{' bloco '}' ELSE '{' bloco '}'
 
-    ELSE  shift, and go to state 104
+    ELSE  shift, and go to state 112
 
     $default  reduce using rule 19 (condicional)
 
 
-State 104
+State 112
 
    20 condicional: IF '(' expressao ')' '{' bloco '}' ELSE • '{' bloco '}'
    21            | IF '(' expressao ')' '{' bloco '}' ELSE • IF '(' expressao ')' '{' bloco '}' ELSE '{' bloco '}'
 
-    IF   shift, and go to state 105
-    '{'  shift, and go to state 106
+    IF   shift, and go to state 113
+    '{'  shift, and go to state 114
 
 
-State 105
+State 113
 
    21 condicional: IF '(' expressao ')' '{' bloco '}' ELSE IF • '(' expressao ')' '{' bloco '}' ELSE '{' bloco '}'
 
-    '('  shift, and go to state 107
+    '('  shift, and go to state 115
 
 
-State 106
+State 114
 
    20 condicional: IF '(' expressao ')' '{' bloco '}' ELSE '{' • bloco '}'
 
     ID      shift, and go to state 1
     TYPE    shift, and go to state 2
-    IF      shift, and go to state 83
+    IF      shift, and go to state 91
     CONST   shift, and go to state 3
     FINAL   shift, and go to state 4
-    RETURN  shift, and go to state 84
+    RETURN  shift, and go to state 92
 
     $default  reduce using rule 12 (bloco)
 
-    bloco          go to state 108
-    comando        go to state 86
-    retorno        go to state 87
-    condicional    go to state 88
-    decl_variavel  go to state 89
+    bloco          go to state 116
+    comando        go to state 94
+    retorno        go to state 95
+    condicional    go to state 96
+    decl_variavel  go to state 97
 
 
-State 107
+State 115
 
    21 condicional: IF '(' expressao ')' '{' bloco '}' ELSE IF '(' • expressao ')' '{' bloco '}' ELSE '{' bloco '}'
 
-    ID         shift, and go to state 16
-    NUMBER     shift, and go to state 17
-    DECREMENT  shift, and go to state 18
-    INCREMENT  shift, and go to state 19
-    '('        shift, and go to state 20
+    ID         shift, and go to state 18
+    NUMBER     shift, and go to state 19
+    DECREMENT  shift, and go to state 20
+    INCREMENT  shift, and go to state 21
+    '('        shift, and go to state 22
 
-    expressao   go to state 109
-    expre_arit  go to state 22
-    ops         go to state 23
-    termo       go to state 24
-    fator       go to state 25
+    expressao   go to state 117
+    expre_arit  go to state 24
+    ops         go to state 25
+    termo       go to state 26
+    fator       go to state 27
 
 
-State 108
+State 116
 
    20 condicional: IF '(' expressao ')' '{' bloco '}' ELSE '{' bloco • '}'
 
-    '}'  shift, and go to state 110
+    '}'  shift, and go to state 118
 
 
-State 109
+State 117
 
    21 condicional: IF '(' expressao ')' '{' bloco '}' ELSE IF '(' expressao • ')' '{' bloco '}' ELSE '{' bloco '}'
 
-    ')'  shift, and go to state 111
+    ')'  shift, and go to state 119
 
 
-State 110
+State 118
 
    20 condicional: IF '(' expressao ')' '{' bloco '}' ELSE '{' bloco '}' •
 
     $default  reduce using rule 20 (condicional)
 
 
-State 111
+State 119
 
    21 condicional: IF '(' expressao ')' '{' bloco '}' ELSE IF '(' expressao ')' • '{' bloco '}' ELSE '{' bloco '}'
 
-    '{'  shift, and go to state 112
+    '{'  shift, and go to state 120
 
 
-State 112
+State 120
 
    21 condicional: IF '(' expressao ')' '{' bloco '}' ELSE IF '(' expressao ')' '{' • bloco '}' ELSE '{' bloco '}'
 
     ID      shift, and go to state 1
     TYPE    shift, and go to state 2
-    IF      shift, and go to state 83
+    IF      shift, and go to state 91
     CONST   shift, and go to state 3
     FINAL   shift, and go to state 4
-    RETURN  shift, and go to state 84
+    RETURN  shift, and go to state 92
 
     $default  reduce using rule 12 (bloco)
 
-    bloco          go to state 113
-    comando        go to state 86
-    retorno        go to state 87
-    condicional    go to state 88
-    decl_variavel  go to state 89
+    bloco          go to state 121
+    comando        go to state 94
+    retorno        go to state 95
+    condicional    go to state 96
+    decl_variavel  go to state 97
 
 
-State 113
+State 121
 
    21 condicional: IF '(' expressao ')' '{' bloco '}' ELSE IF '(' expressao ')' '{' bloco • '}' ELSE '{' bloco '}'
 
-    '}'  shift, and go to state 114
+    '}'  shift, and go to state 122
 
 
-State 114
+State 122
 
    21 condicional: IF '(' expressao ')' '{' bloco '}' ELSE IF '(' expressao ')' '{' bloco '}' • ELSE '{' bloco '}'
 
-    ELSE  shift, and go to state 115
+    ELSE  shift, and go to state 123
 
 
-State 115
+State 123
 
    21 condicional: IF '(' expressao ')' '{' bloco '}' ELSE IF '(' expressao ')' '{' bloco '}' ELSE • '{' bloco '}'
 
-    '{'  shift, and go to state 116
+    '{'  shift, and go to state 124
 
 
-State 116
+State 124
 
    21 condicional: IF '(' expressao ')' '{' bloco '}' ELSE IF '(' expressao ')' '{' bloco '}' ELSE '{' • bloco '}'
 
     ID      shift, and go to state 1
     TYPE    shift, and go to state 2
-    IF      shift, and go to state 83
+    IF      shift, and go to state 91
     CONST   shift, and go to state 3
     FINAL   shift, and go to state 4
-    RETURN  shift, and go to state 84
+    RETURN  shift, and go to state 92
 
     $default  reduce using rule 12 (bloco)
 
-    bloco          go to state 117
-    comando        go to state 86
-    retorno        go to state 87
-    condicional    go to state 88
-    decl_variavel  go to state 89
+    bloco          go to state 125
+    comando        go to state 94
+    retorno        go to state 95
+    condicional    go to state 96
+    decl_variavel  go to state 97
 
 
-State 117
+State 125
 
    21 condicional: IF '(' expressao ')' '{' bloco '}' ELSE IF '(' expressao ')' '{' bloco '}' ELSE '{' bloco • '}'
 
-    '}'  shift, and go to state 118
+    '}'  shift, and go to state 126
 
 
-State 118
+State 126
 
    21 condicional: IF '(' expressao ')' '{' bloco '}' ELSE IF '(' expressao ')' '{' bloco '}' ELSE '{' bloco '}' •
 
