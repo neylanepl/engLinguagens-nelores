@@ -36,11 +36,34 @@ for (int a;  a + 5; a++){
 return a;
 }
 bool a =1;
-switch(ana){
-case 1: return a;
-break;
 
+enum diasDaSemana { DOMINGO, SEGUNDA, TERCA, QUARTA, QUINTA, SEXTA, SABADO } ;
+
+struct Ponto {
+    int a;
+    int[1] a;
 }
+
+ struct int pessoa;
+ pessoa.idade = 25;
+ pessoa.r = 25;
+ pessoa.a = 25;
+ pessoa.e = 25;
+ pessoa.kk = 25;
+
+
+ switch(ana){
+ case 1: return a;
+ break;
+
+case 2: return b;
+break;
+case 3: return c;
+break;
+default: return d;
+break;
+ }
+ 
 bool a = true;
 bool b = false;
 b= true;
