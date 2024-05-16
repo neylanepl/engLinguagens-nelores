@@ -72,6 +72,8 @@ comando : condicional {}
       | retorno {}
       | iteracao {} 
       | selecao {}
+      | entrada {}
+      | saida {}
       ;
 
 iteracao : WHILE '(' expressao ')' '{' bloco '}' {}
@@ -101,6 +103,15 @@ retorno : RETURN PV  {}
 condicional : IF '(' expressao ')' '{' bloco '}'   {}
       | IF '(' expressao ')' '{' bloco '}' ELSE '{' bloco '}'  {}
       | IF '(' expressao ')' '{' bloco '}' ELSE IF '(' expressao ')' '{' bloco '}' ELSE '{' bloco '}'  {}
+      ;
+
+entrada : PRINTLN '(' expressao '+' expressao ')' PV {}
+      | PRINTLN '(' expressao ')' PV {}
+      | PRINT '(' expressao '+' expressao ')' PV {}
+      | PRINT '(' expressao ')' PV {}
+      ;
+
+saida : TYPE ID '=' SCANF '(' ')' PV {}
       ;
 
 decl_vars : decl_variavel  {}
