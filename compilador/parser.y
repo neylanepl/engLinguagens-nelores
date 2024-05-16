@@ -20,7 +20,7 @@ extern char * yytext;
 %token <iValue> NUMBER
 %token <sValue> TYPE
 %token WHILE FOR IF ELSE CONST FINAL ENUM  MAIN VOID EXCEPTION
-%token THROWS TRY CATCH FINALLY FUNCTION SWITCH BREAK CASE CONTINUE
+%token THROWS TRY CATCH FINALLY FUNCTION SWITCH BREAK CASE CONTINUE DEFAULT
 %token RETURN PRINT PRINTLN SCANF STRUCT MALLOC OPENFILE READLINE
 %token WRITEFILE CLOSEFILE FREE SIZEOF CONCAT LENGHT SPLIT INCLUDES
 %token REPLACE PUSH POP INDEXOF REVERSE SLICE AND OR SINGLELINECOMMENT
@@ -29,14 +29,14 @@ extern char * yytext;
 
 %start prog
 
-%type decl_vars decl_variavel expressao expre_arit termo fator ops main args subprogs subprog decl_funcao decl_procedimento bloco comando condicional retorno
+%type decl_vars decl_variavel expressao expre_arit termo fator ops main args subprogs subprog decl_funcao decl_procedimento bloco comando condicional retorno iteracao selecao casos caso decl_arrays elementos_array base decl_array decl_recursiva
 
 %%
-prog : decl_vars main subprogs {} 
-       ;
+prog : decl_recursiva main subprogs {}
+      ;
 
-main : VOID MAIN '(' args ')' '{' '}' {}
-     ;
+main : VOID MAIN '(' args ')' '{' bloco '}' {}
+      ;
 
 args : 
       | TYPE ID args  {}
@@ -48,56 +48,89 @@ subprogs :
       ;
 
 subprog : decl_funcao           {}                                              
-     | decl_procedimento        {}                                           
-     ;
+      | decl_procedimento        {}                                           
+      ;
 
 decl_funcao : TYPE ID '(' args ')' '{' bloco '}'       {}        
-       ;
+      ;
 
 decl_procedimento : VOID ID '(' args ')' '{' bloco '}'  {}                   
-             ;
+      ;
+
 bloco : 
       | decl_variavel bloco  {}
       | comando bloco       {}                               
       ;
 
 comando : condicional {}
-	| retorno {}
-        ;     
+      | retorno {}
+      | iteracao {} 
+      | selecao {}
+      ;
+
+iteracao : WHILE '(' expressao ')' '{' bloco '}' {}
+      ;
+
+selecao : SWITCH '(' ID ')' '{' casos '}' {}
+      ;
+
+casos : caso casos {}
+	| caso {}
+	;
+
+caso : CASE NUMBER ':' bloco PV {}
+	| DEFAULT ':' bloco PV {}
+	;
 
 retorno : RETURN PV  {}
-       | RETURN expressao  PV  {}
-       ;
+      | RETURN expressao  PV  {}
+      ;
 
 condicional : IF '(' expressao ')' '{' bloco '}'   {}
-            | IF '(' expressao ')' '{' bloco '}' ELSE '{' bloco '}'  {}
-	    | IF '(' expressao ')' '{' bloco '}' ELSE IF '(' expressao ')' '{' bloco '}' ELSE '{' bloco '}'  {}
-            ;
+      | IF '(' expressao ')' '{' bloco '}' ELSE '{' bloco '}'  {}
+      | IF '(' expressao ')' '{' bloco '}' ELSE IF '(' expressao ')' '{' bloco '}' ELSE '{' bloco '}'  {}
+      ;
 
 decl_vars : decl_variavel  {}
-          | decl_variavel decl_vars {}
-          ;
+      | decl_array {}
+      ;
 
-decl_variavel: TYPE ID '=' expressao PV{}
-	      | TYPE ID MOREISEQUAL expressao PV{}
-	      | ID MOREISEQUAL expressao PV{}
-	      | ID LESSISEQUAL expressao PV{}
-     	      | TYPE ID LESSISEQUAL expressao PV{}
-	      | ID '=' expressao PV {}
-	      | CONST TYPE ID  '=' expressao PV {}
-              | FINAL TYPE ID  '=' expressao PV{}
-	      | TYPE ID PV {}
-              ;
+decl_recursiva : decl_vars {}
+      | decl_vars decl_recursiva {}
+      ;
 
-expressao :  expre_arit {}
-	     ;
-	  	    
-expre_arit: expre_arit '+' termo {}
-	    | expre_arit '-' termo {}
-	    | ops termo {}
-    	    | termo ops {}
-	    | termo {}
-	    ;
+decl_array : TYPE '[' expressao ']' ID '=' '[' elementos_array ']' PV {}
+      | ID '=' '['  elementos_array  ']' PV {}
+      | CONST TYPE '[' expressao ']' ID '=' '[' elementos_array ']' PV {}
+      | FINAL TYPE '[' expressao ']' ID '=' '[' elementos_array ']' PV {}
+      | TYPE '[' expressao ']' ID PV {} 
+      ;
+
+elementos_array : {}
+      | base {}
+      | base ',' elementos_array {}
+      ;
+
+decl_variavel : TYPE ID '=' expressao PV{}
+      | TYPE ID MOREISEQUAL expressao PV{}
+      | ID MOREISEQUAL expressao PV{}
+      | ID LESSISEQUAL expressao PV{}
+      | TYPE ID LESSISEQUAL expressao PV{}
+      | ID '=' expressao PV {}
+      | CONST TYPE ID  '=' expressao PV {}
+      | FINAL TYPE ID  '=' expressao PV{}
+      | TYPE ID PV {}
+      ;
+
+expressao : expre_arit {}
+      ;
+
+expre_arit : expre_arit '+' termo {}
+      | expre_arit '-' termo {}
+      | ops termo {}
+      | termo ops {}
+      | termo {}
+      ;
 	    
 ops: INCREMENT {}
      | DECREMENT {}
@@ -105,13 +138,19 @@ ops: INCREMENT {}
 
 termo: termo '*' fator {}
 	| termo '/' fator {}
+	| termo '%' fator {}
 	| fator {}
 	;
 
-fator: ID {}
+fator : fator '^' base {}
+      | base {}
+      ;
+
+base : ID {}
       | NUMBER {}
       | '(' expressao ')' {}
       ;
+
 %%
 
 int main (void) {
