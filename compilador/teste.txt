@@ -41,6 +41,11 @@ case 1: return a;
 break;
 
 }
+bool a = true;
+bool b = false;
+b= true;
+c= false;
+
 print("3"+5);
 println("afa"+"idufgiodf");
 println("skdfjsd"+"fopijsod%##@!f");

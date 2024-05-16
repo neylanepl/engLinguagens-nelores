@@ -202,6 +202,8 @@ base : ID {}
       | NUMBER {}
       | NUMBERFLOAT {}
       | WORD {}
+      | TRUE {}
+      | FALSE {}
       | '(' expressao ')' {}
       ;
 
