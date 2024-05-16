@@ -69,7 +69,13 @@ comando : condicional {}
       ;
 
 iteracao : WHILE '(' expressao ')' '{' bloco '}' {}
+	| FOR '(' expressao_for expressao PV expressao_for ')' '{' bloco '}'
       ;
+
+expressao_for : decl_variavel
+	| ID INCREMENT
+	| ID DECREMENT
+	;
 
 selecao : SWITCH '(' ID ')' '{' casos '}' {}
       ;
@@ -78,8 +84,8 @@ casos : caso casos {}
 	| caso {}
 	;
 
-caso : CASE NUMBER ':' bloco PV {}
-	| DEFAULT ':' bloco PV {}
+caso : CASE NUMBER ':' bloco BREAK PV{}
+	| DEFAULT ':' bloco BREAK PV{}
 	;
 
 retorno : RETURN PV  {}
@@ -122,8 +128,21 @@ decl_variavel : TYPE ID '=' expressao PV{}
       | TYPE ID PV {}
       ;
 
-expressao : expre_arit {}
+expressao : 
+	   expre_logica {}
+|expre_arit {}
       ;
+
+expre_logica : termo ANDCIRCUIT termo
+                    | termo ORCIRCUIT termo
+                    | '!' fator
+                    | termo LESSTHENEQ termo
+                    | termo MORETHENEQ termo
+                    | termo '<' termo
+                    | termo '>' termo
+                    | termo ISEQUAL termo
+                    | termo ISDIFFERENT termo
+                    ;
 
 expre_arit : expre_arit '+' termo {}
       | expre_arit '-' termo {}
