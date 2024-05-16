@@ -34,6 +34,7 @@
 "case"              {return(CASE);}
 "break"             {return(BREAK);}
 "continue"          {return(CONTINUE);}
+"default"          {return(DEFAULT);}
 "if"                {return(IF);}
 "else"              {return(ELSE);}
 "return"            {return(RETURN);}
