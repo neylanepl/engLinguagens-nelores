@@ -1,5 +1,6 @@
 int a = 2*3+(5*6);
 int[4] array = [1,2,3,4, a];
+
 const int[1] array = [1];
 final int[1] array = [1];
 a = 2*(3-5)*6;
@@ -16,11 +17,30 @@ int c = --c;
 const int a = 10;
 final int a = 10;
 float a=2*(3-5)*6;
-void main(int a, int b){}
+void main(int a, int b){
+while(!a){
+a = a++;
+}
+
+for (int a;  a + 5; a++){
+return a;
+}
+
+switch(ana){
+case 1: return a;
+break;
+case 2: return b;
+break;
+case 3: return c;
+break;
+default: return d;
+break;
+}
+}
+
 int function1 (int b){ b = 5; }
 int function2 (int b, float c){ b = 5; if(2*2){a = 4;}}
 int function3 (int b, float c){ b = 5; if(2*2){a = 4;} else if(3*3){a = 4;} else {a= 2;}}
 int function4 (int b, float c){ b = 5; if(2*2){a = 4;} else {a= 2;}}
 int function5 (int b){return;}
 int function6 (int b){return b + 5;}
-
