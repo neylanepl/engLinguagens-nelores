@@ -32,7 +32,7 @@ extern char * yytext;
 %type decl_vars decl_variavel expressao expre_arit termo fator 
 %type ops main args subprogs subprog decl_funcao decl_procedimento bloco comando 
 %type condicional retorno iteracao selecao casos caso elementos_array base 
-%type decl_array decl_recursiva tamanho_array  expressao_tamanho_array
+%type decl_array decl_recursiva tamanho_array  expressao_tamanho_array elemento_matriz
 
 %%
 prog : decl_recursiva main subprogs {}
@@ -125,11 +125,15 @@ tamanho_array: '[' expressao_tamanho_array ']'  {}
 expressao_tamanho_array: | ID MOREISEQUAL expre_arit {}
                          | ID LESSISEQUAL expre_arit {}
                          | expre_arit {}
-                         ;
+                          ;
+
+elemento_matriz: '[' elementos_array ']' {}
+                  | '[' elementos_array ']' ',' elemento_matriz {}
 
 elementos_array : {}
       | base {}
       | base ',' elementos_array {}
+      | elemento_matriz
       ;
 
 decl_variavel : TYPE ID '=' expressao PV{}
