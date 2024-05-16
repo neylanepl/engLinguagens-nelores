@@ -34,7 +34,7 @@ extern char * yytext;
 %type decl_vars decl_variavel expressao expre_arit termo fator 
 %type ops main args subprogs subprog decl_funcao decl_procedimento bloco comando 
 %type condicional retorno iteracao selecao casos caso elementos_array base 
-%type decl_array decl_recursiva tamanho_array  expressao_tamanho_array elemento_matriz
+%type decl_array decl_recursiva tamanho_array definicao_struct lista_campos atribuicao_struct expressao_tamanho_array elemento_matriz definicao_enum lista_enum
 %type entrada saida
 
 %%
@@ -68,16 +68,38 @@ bloco :
       | decl_array bloco  {}
       | comando bloco       {} 
       | ID ops PV bloco {}
-	| ops ID PV bloco {}                              
+	| ops ID PV bloco {}                            
       ;
 
 comando : condicional {}
       | retorno {}
       | iteracao {} 
       | selecao {}
+      | chamada_funcao {} 
       | entrada {}
       | saida {}
+      | definicao_enum {}
+      | atribuicao_struct {}
+      | definicao_struct {}
       ;
+
+definicao_enum : ENUM ID '{' lista_enum '}' PV {}
+               ;
+
+lista_enum : ID
+          | ID ',' lista_enum
+          ;
+
+definicao_struct : STRUCT ID '{' lista_campos '}' {}
+		   | STRUCT TYPE ID PV {}
+                 ;
+
+atribuicao_struct : ID '.' ID '=' termo PV {}
+                 ;
+
+lista_campos : decl_vars
+             | decl_vars lista_campos
+             ;
 
 iteracao : WHILE '(' expressao ')' '{' bloco '}' {}
 	| FOR '(' expressao_for expressao PV expressao_for ')' '{' bloco '}'
@@ -103,10 +125,26 @@ retorno : RETURN PV  {}
       | RETURN expressao  PV  {}
       ;
 
-condicional : IF '(' expressao ')' '{' bloco '}'   {}
-      | IF '(' expressao ')' '{' bloco '}' ELSE '{' bloco '}'  {}
-      | IF '(' expressao ')' '{' bloco '}' ELSE IF '(' expressao ')' '{' bloco '}' ELSE '{' bloco '}'  {}
-      ;
+condicional : if_solteiro condicional_aux {}
+            ;
+
+condicional_aux : 
+                | elseif condicional_aux {}
+                | else {}
+                ;
+
+else : ELSE '{' bloco '}'  {}
+     ;
+
+elseif : ELSE IF '(' expressao ')' '{' bloco '}' {}
+       ;
+
+if_solteiro : IF '(' expressao ')' '{' bloco '}' {}
+            ;
+
+chamada_funcao : ID '(' parametros ')' PV {}
+               | ID '(' ')' PV {}
+               ;
 
 entrada : PRINTLN '(' expressao ')' PV {} 
         | PRINT '(' expressao ')' PV {} 
@@ -162,9 +200,13 @@ decl_variavel : TYPE ID '=' expressao PV{}
       | TYPE ID PV {}
       ;
 
+parametros : expressao {}
+           | expressao ',' parametros {}
+           ;
+
 expressao : expre_logica {}
-            | expre_arit {}
-            ;
+          | expre_arit {}
+          ;
 
 expre_logica : termo ANDCIRCUIT termo
                     | termo ORCIRCUIT termo
