@@ -68,13 +68,14 @@ bloco :
       | decl_array bloco  {}
       | comando bloco       {} 
       | ID ops PV bloco {}
-	| ops ID PV bloco {}                              
+	| ops ID PV bloco {}                            
       ;
 
 comando : condicional {}
       | retorno {}
       | iteracao {} 
       | selecao {}
+      | chamada_funcao {} 
       | entrada {}
       | saida {}
       | definicao_enum {}
@@ -124,10 +125,26 @@ retorno : RETURN PV  {}
       | RETURN expressao  PV  {}
       ;
 
-condicional : IF '(' expressao ')' '{' bloco '}'   {}
-      | IF '(' expressao ')' '{' bloco '}' ELSE '{' bloco '}'  {}
-      | IF '(' expressao ')' '{' bloco '}' ELSE IF '(' expressao ')' '{' bloco '}' ELSE '{' bloco '}'  {}
-      ;
+condicional : if_solteiro condicional_aux {}
+            ;
+
+condicional_aux : 
+                | elseif condicional_aux {}
+                | else {}
+                ;
+
+else : ELSE '{' bloco '}'  {}
+     ;
+
+elseif : ELSE IF '(' expressao ')' '{' bloco '}' {}
+       ;
+
+if_solteiro : IF '(' expressao ')' '{' bloco '}' {}
+            ;
+
+chamada_funcao : ID '(' parametros ')' PV {}
+               | ID '(' ')' PV {}
+               ;
 
 entrada : PRINTLN '(' expressao ')' PV {} 
         | PRINT '(' expressao ')' PV {} 
@@ -183,9 +200,13 @@ decl_variavel : TYPE ID '=' expressao PV{}
       | TYPE ID PV {}
       ;
 
+parametros : expressao {}
+           | expressao ',' parametros {}
+           ;
+
 expressao : expre_logica {}
-            | expre_arit {}
-            ;
+          | expre_arit {}
+          ;
 
 expre_logica : termo ANDCIRCUIT termo
                     | termo ORCIRCUIT termo

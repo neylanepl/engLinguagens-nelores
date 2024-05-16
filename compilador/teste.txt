@@ -27,6 +27,10 @@ final int a = 10;
 float a=2*(3-5)*6;
 void main(int a, int b){
     float a = 3.5;
+    function2(2);
+    function2(2, 2);
+    function2("2a", 2);
+    function3();
 
 while(!a){
 a = a++;
@@ -90,7 +94,7 @@ int function7 (int a){ int[2] array = [1,2];
 
 }
 int function2 (int b, float c){ b = 5; if(2*2){a = 4;}}
-int function3 (int b, float c){ b = 5; if(2*2){a = 4;} else if(3*3){a = 4;} else {a= 2;}}
+int function3 (int b, float c){ b = 5; if(2*2){a = 4;} else if(3*3){a = 4;} else if(3*2){a = 5;} else {a= 2;}}
 int function4 (int b, float c){ b = 5; if(2*2){a = 4;} else {a= 2;}}
-int function5 (int b){return;}
+int function5 (int b){function3(3); return;}
 int function6 (int b){return b + 5;}
