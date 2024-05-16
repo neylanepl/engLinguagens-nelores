@@ -1,6 +1,11 @@
 int a = 2*3+(5*6);
 int[4] array = [1,2,3,4, a];
-string[2] array = ["teste", "cama"];
+string[2][5][b++] array = ["teste", "cama"];
+string[2][5][++b] array = ["teste", "cama"];
+string[2][5][--b] array = ["teste", "cama"];
+string[2][5][b--] array = ["teste", "cama"];
+string[2][5][b-=1] array = ["teste", "cama"];
+string[a][b][b+=1] array = ["teste", "cama"];
 const int[1] array = [1];
 final int[1] array = [1];
 array = ["teste", "cama"];

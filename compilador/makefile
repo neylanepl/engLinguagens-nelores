@@ -11,6 +11,9 @@ byacc:
 yacc:
 	yacc parser.y -d -v
 
+conflicts:
+	yacc parser.y -d -v -Wcounterexamples
+
 gcc_mac: lex byacc
 	gcc lex.yy.c y.tab.c -o a.out
 

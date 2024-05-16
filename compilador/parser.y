@@ -29,7 +29,10 @@ extern char * yytext;
 
 %start prog
 
-%type decl_vars decl_variavel expressao expre_arit termo fator ops main args subprogs subprog decl_funcao decl_procedimento bloco comando condicional retorno iteracao selecao casos caso elementos_array base decl_array decl_recursiva
+%type decl_vars decl_variavel expressao expre_arit termo fator 
+%type ops main args subprogs subprog decl_funcao decl_procedimento bloco comando 
+%type condicional retorno iteracao selecao casos caso elementos_array base 
+%type decl_array decl_recursiva tamanho_array  expressao_tamanho_array
 
 %%
 prog : decl_recursiva main subprogs {}
@@ -105,15 +108,24 @@ decl_vars : decl_variavel  {}
       ;
 
 decl_recursiva : decl_vars {}
-      | decl_vars decl_recursiva {}
+               | decl_vars decl_recursiva {}
+               ;
+
+decl_array : TYPE tamanho_array ID '=' '[' elementos_array ']' PV {}
+      | ID '=' '['  elementos_array  ']' PV {}
+      | CONST TYPE tamanho_array ID '=' '[' elementos_array ']' PV {}
+      | FINAL TYPE tamanho_array ID '=' '[' elementos_array ']' PV {}
+      | TYPE tamanho_array ID PV {} 
       ;
 
-decl_array : TYPE '[' expressao ']' ID '=' '[' elementos_array ']' PV {}
-      | ID '=' '['  elementos_array  ']' PV {}
-      | CONST TYPE '[' expressao ']' ID '=' '[' elementos_array ']' PV {}
-      | FINAL TYPE '[' expressao ']' ID '=' '[' elementos_array ']' PV {}
-      | TYPE '[' expressao ']' ID PV {} 
-      ;
+tamanho_array: '[' expressao_tamanho_array ']'  {}
+             | '[' expressao_tamanho_array ']' tamanho_array {}
+
+
+expressao_tamanho_array: | ID MOREISEQUAL expre_arit {}
+                         | ID LESSISEQUAL expre_arit {}
+                         | expre_arit {}
+                         ;
 
 elementos_array : {}
       | base {}
@@ -131,10 +143,9 @@ decl_variavel : TYPE ID '=' expressao PV{}
       | TYPE ID PV {}
       ;
 
-expressao : 
-	   expre_logica {}
-|expre_arit {}
-      ;
+expressao : expre_logica {}
+            | expre_arit {}
+            ;
 
 expre_logica : termo ANDCIRCUIT termo
                     | termo ORCIRCUIT termo
