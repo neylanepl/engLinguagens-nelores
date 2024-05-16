@@ -29,7 +29,7 @@ extern char * yytext;
 
 %start prog
 
-%type decl_vars decl_variavel expressao expre_arit termo fator ops main args subprogs subprog decl_funcao decl_procedimento bloco comando condicional retorno iteracao selecao casos caso decl_arrays elementos_array base decl_array decl_recursiva
+%type decl_vars decl_variavel expressao expre_arit termo fator ops main args subprogs subprog decl_funcao decl_procedimento bloco comando condicional retorno iteracao selecao casos caso elementos_array base decl_array decl_recursiva
 
 %%
 prog : decl_recursiva main subprogs {}
@@ -59,7 +59,10 @@ decl_procedimento : VOID ID '(' args ')' '{' bloco '}'  {}
 
 bloco : 
       | decl_variavel bloco  {}
-      | comando bloco       {}                               
+      | decl_array bloco  {}
+      | comando bloco       {} 
+      | ID ops PV bloco {}
+	| ops ID PV bloco {}                              
       ;
 
 comando : condicional {}
@@ -72,9 +75,9 @@ iteracao : WHILE '(' expressao ')' '{' bloco '}' {}
 	| FOR '(' expressao_for expressao PV expressao_for ')' '{' bloco '}'
       ;
 
-expressao_for : decl_variavel
-	| ID INCREMENT
-	| ID DECREMENT
+expressao_for : decl_variavel {}
+	| ID ops {}
+	| ops ID {}
 	;
 
 selecao : SWITCH '(' ID ')' '{' casos '}' {}
@@ -166,6 +169,7 @@ fator : fator '^' base {}
       ;
 
 base : ID {}
+      | '"' ID '"' {}
       | NUMBER {}
       | '(' expressao ')' {}
       ;

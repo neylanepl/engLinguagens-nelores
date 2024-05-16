@@ -1,8 +1,9 @@
 int a = 2*3+(5*6);
 int[4] array = [1,2,3,4, a];
-
+string[2] array = ["teste", "cama"];
 const int[1] array = [1];
 final int[1] array = [1];
+array = ["teste", "cama"];
 a = 2*(3-5)*6;
 b += 5;
 b-=5;
@@ -14,10 +15,13 @@ b = ++c;
 int b = a;
 int c = c--;
 int c = --c;
+
 const int a = 10;
 final int a = 10;
 float a=2*(3-5)*6;
 void main(int a, int b){
+    
+
 while(!a){
 a = a++;
 }
@@ -29,15 +33,19 @@ return a;
 switch(ana){
 case 1: return a;
 break;
-case 2: return b;
-break;
-case 3: return c;
-break;
-default: return d;
-break;
-}
+
 }
 
+}
+int function7 (int a){ int[2] array = [1,2];
+   for (int i = 0; i < 5; i++) {  }
+   for (int i = 0; i < 5; ++i) {  }
+   for (int i = 0; i < 5; --i) {  }
+    for (int i = 0; i < 5; i--) {  }
+    b++;
+    ++b;--i; i--;
+
+}
 int function1 (int b){ b = 5; }
 int function2 (int b, float c){ b = 5; if(2*2){a = 4;}}
 int function3 (int b, float c){ b = 5; if(2*2){a = 4;} else if(3*3){a = 4;} else {a= 2;}}

@@ -95,6 +95,7 @@
 "+"                 {return(yytext[0]);}
 "-"                 {return(yytext[0]);}
 "%"                 {return(yytext[0]);}
+[\"]                 {return(yytext[0]);}
 [0-9]+              {yylval.iValue = atoi(yytext); 
                        return NUMBER;}
 [0-9]+"."[0-9]+      {
