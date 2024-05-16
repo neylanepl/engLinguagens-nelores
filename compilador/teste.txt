@@ -26,7 +26,7 @@ const int a = 10;
 final int a = 10;
 float a=2*(3-5)*6;
 void main(int a, int b){
-    
+    float a = 3.5;
 
 while(!a){
 a = a++;
@@ -35,12 +35,21 @@ a = a++;
 for (int a;  a + 5; a++){
 return a;
 }
-
+bool a =1;
 switch(ana){
 case 1: return a;
 break;
 
 }
+print("3"+5);
+println("afa"+"idufgiodf");
+println("skdfjsd"+"fopijsod%##@!f");
+string b = "42sdfsdD.-[]34{}{}";
+float a = 1.4;
+int ad =scanf();
+ad =scanf();
+const int ola =scanf();
+final int testee =scanf();
 
 }
 int function7 (int a){ int[2] array = [1,2];
@@ -52,7 +61,6 @@ int function7 (int a){ int[2] array = [1,2];
     ++b;--i; i--;
 
 }
-int function1 (int b){ b = 5; }
 int function2 (int b, float c){ b = 5; if(2*2){a = 4;}}
 int function3 (int b, float c){ b = 5; if(2*2){a = 4;} else if(3*3){a = 4;} else {a= 2;}}
 int function4 (int b, float c){ b = 5; if(2*2){a = 4;} else {a= 2;}}

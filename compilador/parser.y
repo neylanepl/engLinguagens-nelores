@@ -17,6 +17,8 @@ extern char * yytext;
 	};
 
 %token <sValue> ID
+%token <sValue> WORD
+%token <sValue> NUMBERFLOAT
 %token <iValue> NUMBER
 %token <sValue> TYPE
 %token WHILE FOR IF ELSE CONST FINAL ENUM  MAIN VOID EXCEPTION
@@ -24,7 +26,7 @@ extern char * yytext;
 %token RETURN PRINT PRINTLN SCANF STRUCT MALLOC OPENFILE READLINE
 %token WRITEFILE CLOSEFILE FREE SIZEOF CONCAT LENGHT SPLIT INCLUDES
 %token REPLACE PUSH POP INDEXOF REVERSE SLICE AND OR SINGLELINECOMMENT
-%token LESSTHENEQ MORETHENEQ ISEQUAL ISDIFFERENT ANDCIRCUIT ORCIRCUIT NUMBERFLOAT PV
+%token LESSTHENEQ MORETHENEQ ISEQUAL ISDIFFERENT ANDCIRCUIT ORCIRCUIT  PV
 %token TRUE FALSE DECREMENT INCREMENT MOREISEQUAL LESSISEQUAL EQUAL
 
 %start prog
@@ -33,6 +35,7 @@ extern char * yytext;
 %type ops main args subprogs subprog decl_funcao decl_procedimento bloco comando 
 %type condicional retorno iteracao selecao casos caso elementos_array base 
 %type decl_array decl_recursiva tamanho_array  expressao_tamanho_array elemento_matriz
+%type entrada saida
 
 %%
 prog : decl_recursiva main subprogs {}
@@ -105,13 +108,14 @@ condicional : IF '(' expressao ')' '{' bloco '}'   {}
       | IF '(' expressao ')' '{' bloco '}' ELSE IF '(' expressao ')' '{' bloco '}' ELSE '{' bloco '}'  {}
       ;
 
-entrada : PRINTLN '(' expressao '+' expressao ')' PV {}
-      | PRINTLN '(' expressao ')' PV {}
-      | PRINT '(' expressao '+' expressao ')' PV {}
-      | PRINT '(' expressao ')' PV {}
-      ;
+entrada : PRINTLN '(' expressao ')' PV {} 
+        | PRINT '(' expressao ')' PV {} 
+        ;
 
 saida : TYPE ID '=' SCANF '(' ')' PV {}
+      | FINAL TYPE ID '=' SCANF '(' ')' PV {}
+      | CONST TYPE ID '=' SCANF '(' ')' PV {}
+      | ID '=' SCANF '(' ')' PV {}
       ;
 
 decl_vars : decl_variavel  {}
@@ -195,8 +199,9 @@ fator : fator '^' base {}
       ;
 
 base : ID {}
-      | '"' ID '"' {}
       | NUMBER {}
+      | NUMBERFLOAT {}
+      | WORD {}
       | '(' expressao ')' {}
       ;
 
