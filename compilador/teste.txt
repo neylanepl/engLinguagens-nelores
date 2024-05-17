@@ -42,12 +42,21 @@ void main(&a, int *b, &c){
     function2("2a", 2);
     function3();
 
-while(!a){
+while(false){
+a = a++;
+}
+while(true){
 a = a++;
 }
 
-for (int a;  a + 5; a++){
+for (int a;  true; a++){
 return a;
+}
+if(true){
+
+}
+if(false){
+    
 }
 bool a =1;
 
