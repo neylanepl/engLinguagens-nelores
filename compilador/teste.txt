@@ -13,6 +13,16 @@ array = ["teste", "cama"];
 a = 2*(3-5)*6;
 b += 5;
 b-=5;
+a = b;
+int *a;
+float *a;
+string *a;
+
+temp = *p1;
+*p1 = *p2;
+*p2 = temp;
+*p2 = &b;
+
 int b+= 6+7;
  c-=8*90;
  int b = b++;
@@ -25,7 +35,7 @@ int c = --c;
 const int a = 10;
 final int a = 10;
 float a=2*(3-5)*6;
-void main(int a, int b){
+void main(&a, int *b, &c){
     float a = 3.5;
     function2(2);
     function2(2, 2);
@@ -48,7 +58,7 @@ struct Ponto {
     int[1] a;
 }
 
- struct int pessoa;
+ struct Pessoa pessoa;
  pessoa.idade = 25;
  pessoa.r = 25;
  pessoa.a = 25;

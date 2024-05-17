@@ -36,6 +36,7 @@ extern char * yytext;
 %type condicional retorno iteracao selecao casos caso elementos_array base 
 %type decl_array decl_recursiva tamanho_array definicao_struct lista_campos atribuicao_struct expressao_tamanho_array elemento_matriz definicao_enum lista_enum
 %type entrada saida
+%type tipo tipo_endereco tipo_ponteiro
 
 %%
 prog : decl_recursiva main subprogs {}
@@ -44,9 +45,22 @@ prog : decl_recursiva main subprogs {}
 main : VOID MAIN '(' args ')' '{' bloco '}' {}
       ;
 
+tipo: TYPE {}
+      | tipo tipo_ponteiro {}
+      | tipo_endereco {}
+      ;
+
+tipo_ponteiro: '*' ID 
+		;
+
+tipo_endereco: '&' ID 
+		;
+
 args : 
-      | TYPE ID args  {}
-      | TYPE ID ',' args  {}
+      | tipo ID args  {}
+      | tipo args  {}
+      | tipo ',' args  {}
+      | tipo ID ',' args  {}
       ;
 
 subprogs :                                                              
@@ -68,7 +82,7 @@ bloco :
       | decl_array bloco  {}
       | comando bloco       {} 
       | ID ops PV bloco {}
-	| ops ID PV bloco {}                            
+      | ops ID PV bloco {}                            
       ;
 
 comando : condicional {}
@@ -91,7 +105,7 @@ lista_enum : ID
           ;
 
 definicao_struct : STRUCT ID '{' lista_campos '}' {}
-		   | STRUCT TYPE ID PV {}
+		   | STRUCT ID ID PV {}
                  ;
 
 atribuicao_struct : ID '.' ID '=' termo PV {}
@@ -195,8 +209,13 @@ decl_variavel : TYPE ID '=' expressao PV{}
       | ID LESSISEQUAL expressao PV{}
       | TYPE ID LESSISEQUAL expressao PV{}
       | ID '=' expressao PV {}
+      | ID '=' tipo_ponteiro PV {}
+      | tipo_ponteiro '=' ID PV {}
+      | tipo_ponteiro '=' tipo_ponteiro PV {}
+      | tipo_ponteiro '=' tipo_endereco PV {}
       | CONST TYPE ID  '=' expressao PV {}
       | FINAL TYPE ID  '=' expressao PV{}
+      | tipo PV {}
       | TYPE ID PV {}
       ;
 
