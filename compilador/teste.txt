@@ -36,12 +36,13 @@ const int a = 10;
 final int a = 10;
 float a=2*(3-5)*6;
 void main(&a, int *b, &c){
+ 
     float a = 3.5;
     function2(2);
     function2(2, 2);
     function2("2a", 2);
     function3();
-
+//dsfds
 while(false){
 a = a++;
 }
@@ -110,6 +111,7 @@ int function7 (int a){ int[2] array = [1,2];
     for (int i = 0; i < 5; i--) {  }
     b++;
     ++b;--i; i--;
+    
 
 }
 int function2 (int b, float c){ b = 5; if(2*2){a = 4;}}

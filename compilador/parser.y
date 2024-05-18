@@ -25,9 +25,9 @@ extern char * yytext;
 %token THROWS TRY CATCH FINALLY FUNCTION SWITCH BREAK CASE CONTINUE DEFAULT
 %token RETURN PRINT PRINTLN SCANF STRUCT MALLOC OPENFILE READLINE
 %token WRITEFILE CLOSEFILE FREE SIZEOF CONCAT LENGHT SPLIT INCLUDES
-%token REPLACE PUSH POP INDEXOF REVERSE SLICE AND OR SINGLELINECOMMENT
+%token REPLACE PUSH POP INDEXOF REVERSE SLICE AND OR SINGLELINECOMMENT 
 %token LESSTHENEQ MORETHENEQ ISEQUAL ISDIFFERENT ANDCIRCUIT ORCIRCUIT  PV
-%token TRUE FALSE DECREMENT INCREMENT MOREISEQUAL LESSISEQUAL EQUAL
+%token TRUE FALSE DECREMENT INCREMENT MOREISEQUAL LESSISEQUAL EQUAL  COMMENT
 
 %start prog
 
@@ -35,7 +35,7 @@ extern char * yytext;
 %type ops main args subprogs subprog decl_funcao decl_procedimento bloco comando 
 %type condicional retorno iteracao selecao casos caso elementos_array base 
 %type decl_array decl_recursiva tamanho_array definicao_struct lista_campos atribuicao_struct expressao_tamanho_array elemento_matriz definicao_enum lista_enum
-%type entrada saida
+%type entrada saida  
 %type tipo tipo_endereco tipo_ponteiro
 
 %%
@@ -50,10 +50,10 @@ tipo: TYPE {}
       | tipo_endereco {}
       ;
 
-tipo_ponteiro: '*' ID 
+tipo_ponteiro: '*' ID  {}
 		;
 
-tipo_endereco: '&' ID 
+tipo_endereco: '&' ID  {}
 		;
 
 args : 
@@ -82,7 +82,8 @@ bloco :
       | decl_array bloco  {}
       | comando bloco       {} 
       | ID ops PV bloco {}
-      | ops ID PV bloco {}                            
+      | ops ID PV bloco {}   
+      | commentario bloco {}                    
       ;
 
 comando : condicional {}
@@ -100,8 +101,8 @@ comando : condicional {}
 definicao_enum : ENUM ID '{' lista_enum '}' PV {}
                ;
 
-lista_enum : ID
-          | ID ',' lista_enum
+lista_enum : ID {}
+          | ID ',' lista_enum {}
           ;
 
 definicao_struct : STRUCT ID '{' lista_campos '}' {}
@@ -111,12 +112,12 @@ definicao_struct : STRUCT ID '{' lista_campos '}' {}
 atribuicao_struct : ID '.' ID '=' termo PV {}
                  ;
 
-lista_campos : decl_vars
-             | decl_vars lista_campos
+lista_campos : decl_vars {}
+             | decl_vars lista_campos {}
              ;
 
 iteracao : WHILE '(' expressao ')' '{' bloco '}' {}
-	| FOR '(' expressao_for expressao PV expressao_for ')' '{' bloco '}'
+	| FOR '(' expressao_for expressao PV expressao_for ')' '{' bloco '}' {}
       ;
 
 expressao_for : decl_variavel {}
@@ -227,15 +228,15 @@ expressao : expre_logica {}
           | expre_arit {}
           ;
 
-expre_logica : termo ANDCIRCUIT termo
-                    | termo ORCIRCUIT termo
-                    | '!' fator
-                    | termo LESSTHENEQ termo
-                    | termo MORETHENEQ termo
-                    | termo '<' termo
-                    | termo '>' termo
-                    | termo ISEQUAL termo
-                    | termo ISDIFFERENT termo
+expre_logica : termo ANDCIRCUIT termo {} 
+                    | termo ORCIRCUIT termo {}
+                    | '!' fator {}
+                    | termo LESSTHENEQ termo {}
+                    | termo MORETHENEQ termo {}
+                    | termo '<' termo {}
+                    | termo '>' termo {}
+                    | termo ISEQUAL termo {}
+                    | termo ISDIFFERENT termo {}
                     ;
 
 expre_arit : expre_arit '+' termo {}
@@ -268,6 +269,8 @@ base : ID {}
       | '(' expressao ')' {}
       ;
 
+commentario: COMMENT {}
+            ;
 %%
 
 int main (void) {

@@ -95,16 +95,17 @@
 "+"                 {return(yytext[0]);}
 "-"                 {return(yytext[0]);}
 "%"                 {return(yytext[0]);}
-[\"]                 {return(yytext[0]);}
+[\"]                {return(yytext[0]);}
 [0-9]+              {yylval.iValue = atoi(yytext); 
                        return NUMBER;}
-[0-9]+"."[0-9]+      {yylval.sValue = strdup(yytext);
-                          return NUMBERFLOAT;
-                      }
-[a-zA-Z][a-zA-Z0-9]*  {yylval.sValue = strdup(yytext);
+[0-9]+"."[0-9]+     {yylval.sValue = strdup(yytext);
+                          return NUMBERFLOAT;}
+[a-zA-Z][a-zA-Z0-9]* {yylval.sValue = strdup(yytext);
                        return ID;}
-"\""[^'"]*"\""        {yylval.sValue = strdup(yytext);
-                                          return WORD;}             
+"\""[^'"]*"\""       {yylval.sValue = strdup(yytext);
+                                          return WORD;}  
+\/\/[^\n]*           {yylval.sValue = strdup(yytext);
+                                          return COMMENT;}             
 .                     {yyerror("invalid character");}
 
 %%
