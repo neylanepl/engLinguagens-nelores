@@ -76,13 +76,37 @@ struct Ponto {
  pessoa.kk = 25;
 
 
- switch(ana){
+ switch(clara){
  case 1: return a;
  break;
 
 case 2: return b;
 break;
 case 3: return c;
+break;
+default: return d;
+break;
+ }
+
+ switch(clara){
+ case 1.2: return a;
+ break;
+
+case 2.2: return b;
+break;
+case 3.3: return c;
+break;
+default: return d;
+break;
+ }
+
+ switch(ana){
+ case "aninha": return a;
+ break;
+
+case "artur": return b;
+break;
+case "gio": return c;
 break;
 default: return d;
 break;

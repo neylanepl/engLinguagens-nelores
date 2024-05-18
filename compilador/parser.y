@@ -132,7 +132,7 @@ casos : caso casos {}
 	| caso {}
 	;
 
-caso : CASE NUMBER ':' bloco BREAK PV{}
+caso : CASE base ':' bloco BREAK PV{}
 	| DEFAULT ':' bloco BREAK PV{}
 	;
 
