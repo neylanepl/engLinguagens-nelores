@@ -61,6 +61,8 @@ args :
       | tipo args  {}
       | tipo ',' args  {}
       | tipo ID ',' args  {}
+      | TYPE '[' ']' ID {}
+      | TYPE '[' ']' ID ',' args {}
       ;
 
 subprogs :                                                              
@@ -90,7 +92,7 @@ comando : condicional {}
       | retorno {}
       | iteracao {} 
       | selecao {}
-      | chamada_funcao {} 
+      | chamada_funcao PV{} 
       | entrada {}
       | saida {}
       | definicao_enum {}
@@ -157,8 +159,8 @@ elseif : ELSE IF '(' expressao ')' '{' bloco '}' {}
 if_solteiro : IF '(' expressao ')' '{' bloco '}' {}
             ;
 
-chamada_funcao : ID '(' parametros ')' PV {}
-               | ID '(' ')' PV {}
+chamada_funcao : ID '(' parametros ')' {}
+               | ID '(' ')' {}
                ;
 
 entrada : PRINTLN '(' expressao ')' PV {} 
@@ -222,6 +224,7 @@ decl_variavel : TYPE ID '=' expressao PV{}
 
 parametros : expressao {}
            | expressao ',' parametros {}
+           | ID elemento_matriz {}
            ;
 
 expressao : expre_logica {}
@@ -267,6 +270,7 @@ base : ID {}
       | TRUE {}
       | FALSE {}
       | '(' expressao ')' {}
+      | chamada_funcao {}
       ;
 
 commentario: COMMENT {}
