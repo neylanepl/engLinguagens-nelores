@@ -35,11 +35,11 @@ extern char * yytext;
 %type ops main args subprogs subprog decl_funcao decl_procedimento bloco comando 
 %type condicional retorno iteracao selecao casos caso elementos_array base 
 %type decl_array decl_recursiva tamanho_array definicao_struct lista_campos atribuicao_struct expressao_tamanho_array elemento_matriz definicao_enum lista_enum
-%type entrada saida  
+%type entrada saida comentario_selecao comentario
 %type tipo tipo_endereco tipo_ponteiro
 
 %%
-prog : decl_recursiva main subprogs {}
+prog : decl_recursiva comentario_selecao main subprogs {}
       ;
 
 main : VOID MAIN '(' args ')' '{' bloco '}' {}
@@ -83,7 +83,7 @@ bloco :
       | comando bloco       {} 
       | ID ops PV bloco {}
       | ops ID PV bloco {}   
-      | commentario bloco {}                    
+      | comentario bloco {}                    
       ;
 
 comando : condicional {}
@@ -125,8 +125,12 @@ expressao_for : decl_variavel {}
 	| ops ID {}
 	;
 
-selecao : SWITCH '(' ID ')' '{' casos '}' {}
+selecao : SWITCH '(' ID ')' '{' comentario_selecao casos  comentario_selecao '}' {}
       ;
+
+comentario_selecao: {}
+                  | comentario  comentario_selecao{}
+                  ;
 
 casos : caso casos {}
 	| caso {}
@@ -269,7 +273,7 @@ base : ID {}
       | '(' expressao ')' {}
       ;
 
-commentario: COMMENT {}
+comentario: COMMENT {}
             ;
 %%
 

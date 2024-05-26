@@ -34,14 +34,32 @@ int c = --c;
 
 const int a = 10;
 final int a = 10;
-float a=2*(3-5)*6;
+float a=2*(3-5)*6; 
+int a = 10; // teste
 void main(&a, int *b, &c){
- 
+switch (num) {
+        //afsd
+        //afsd 
+        //afsd
+        case 1:
+            //teste comentario case
+            printf("One\n");
+            break;
+        case 2:
+            printf("Two\n");
+            break;
+        default:
+            printf("Other\n");
+            break;
+        //afsd
+        
+    }
     float a = 3.5;
     function2(2);
     function2(2, 2);
     function2("2a", 2);
     function3();
+//dsfds
 //dsfds
 while(false){
 a = a++;
