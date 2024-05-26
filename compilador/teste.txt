@@ -1,9 +1,12 @@
+//sdgf
+
 int a = 2*3+(5*6);
 int[4] array = [1,2,3,4, a];
 string[2][5][b++] array = [["teste"], ["cama"]];
 string[2][5][++b] array = [["teste",4,6],["cama"]];
 array = [["teste",13,3,3], ["cama"]];
 string[2][5][b--] array = ["teste", "cama"];
+//srwer
 string[2][5][b-=1] array = ["teste", "cama"];
 string[a][b][b+=1] array = ["teste", "cama"];
 const int[1] array = [1,6,4,4];
@@ -14,6 +17,8 @@ a = 2*(3-5)*6;
 b += 5;
 b-=5;
 a = b;
+//sdgf
+//sçglçlgfdk
 int *a;
 float *a;
 string *a;
@@ -31,17 +36,36 @@ b = ++c;
 int b = a;
 int c = c--;
 int c = --c;
-
+//srwer
 const int a = 10;
 final int a = 10;
-float a=2*(3-5)*6;
+float a=2*(3-5)*6; 
+int a = 10;
 void main(&a, int *b, &c){
- 
+switch (num) {
+        //afsd
+        //afsd 
+        //afsd
+        case 1:
+            //teste comentario case
+            printf("One\n");
+            break; //afsd 
+        //afsd
+        case 2:
+            printf("Two\n");
+            break;
+        default:
+            printf("Other\n");
+            break;
+        //afsd
+        
+    }
     float a = 3.5;
     function2(2);
     function2(2, 2);
     function2("2a", 2);
     function3();
+//dsfds
 //dsfds
 while(false){
 a = a++;

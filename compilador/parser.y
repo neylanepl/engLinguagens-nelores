@@ -34,15 +34,20 @@ extern char * yytext;
 %type decl_vars decl_variavel expressao expre_arit termo fator 
 %type ops main args subprogs subprog decl_funcao decl_procedimento bloco comando 
 %type condicional retorno iteracao selecao casos caso elementos_array base 
-%type decl_array decl_recursiva tamanho_array definicao_struct lista_campos atribuicao_struct expressao_tamanho_array elemento_matriz definicao_enum lista_enum
-%type entrada saida  
-%type tipo tipo_endereco tipo_ponteiro
+%type decl_array tamanho_array definicao_struct lista_campos atribuicao_struct expressao_tamanho_array elemento_matriz definicao_enum lista_enum
+%type entrada saida comentario_selecao comentario
+%type tipo tipo_endereco tipo_ponteiro stmts 
 
 %%
-prog : decl_recursiva main subprogs {}
+prog : stmts main subprogs {}
       ;
 
 main : VOID MAIN '(' args ')' '{' bloco '}' {}
+      ;
+
+stmts: {}
+      | decl_vars stmts {}
+      | comentario  stmts{}
       ;
 
 tipo: TYPE {}
@@ -83,7 +88,7 @@ bloco :
       | comando bloco       {} 
       | ID ops PV bloco {}
       | ops ID PV bloco {}   
-      | commentario bloco {}                    
+      | comentario bloco {}                    
       ;
 
 comando : condicional {}
@@ -125,8 +130,12 @@ expressao_for : decl_variavel {}
 	| ops ID {}
 	;
 
-selecao : SWITCH '(' ID ')' '{' casos '}' {}
+selecao : SWITCH '(' ID ')' '{' comentario_selecao casos  comentario_selecao '}' {}
       ;
+
+comentario_selecao: {}
+                  | comentario  comentario_selecao{}
+                  ;
 
 casos : caso casos {}
 	| caso {}
@@ -174,10 +183,6 @@ saida : TYPE ID '=' SCANF '(' ')' PV {}
 decl_vars : decl_variavel  {}
       | decl_array {}
       ;
-
-decl_recursiva : decl_vars {}
-               | decl_vars decl_recursiva {}
-               ;
 
 decl_array : TYPE tamanho_array ID '=' '[' elementos_array ']' PV {}
       | ID '=' '['  elementos_array  ']' PV {}
@@ -269,7 +274,7 @@ base : ID {}
       | '(' expressao ')' {}
       ;
 
-commentario: COMMENT {}
+comentario: COMMENT {}
             ;
 %%
 
