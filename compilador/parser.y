@@ -33,7 +33,7 @@ extern char * yytext;
 
 %type decl_vars decl_variavel expressao expre_arit termo fator 
 %type ops main args subprogs subprog decl_funcao decl_procedimento bloco comando 
-%type condicional retorno iteracao selecao casos caso elementos_array base 
+%type condicional retorno iteracao selecao casos caso elementos_array base caseBase casoDefault listaCasos
 %type decl_array tamanho_array definicao_struct lista_campos atribuicao_struct expressao_tamanho_array elemento_matriz definicao_enum lista_enum
 %type entrada saida comentario_selecao comentario
 %type tipo tipo_endereco tipo_ponteiro stmts 
@@ -47,7 +47,7 @@ main : VOID MAIN '(' args ')' '{' bloco '}' {}
 
 stmts: {}
       | decl_vars stmts {}
-      | comentario  stmts{}
+      | comentario  stmts {}
       ;
 
 tipo: TYPE {}
@@ -66,6 +66,8 @@ args :
       | tipo args  {}
       | tipo ',' args  {}
       | tipo ID ',' args  {}
+      | TYPE '[' ']' ID {}
+      | TYPE '[' ']' ID ',' args {}
       ;
 
 subprogs :                                                              
@@ -95,7 +97,7 @@ comando : condicional {}
       | retorno {}
       | iteracao {} 
       | selecao {}
-      | chamada_funcao {} 
+      | chamada_funcao PV{} 
       | entrada {}
       | saida {}
       | definicao_enum {}
@@ -130,24 +132,31 @@ expressao_for : decl_variavel {}
 	| ops ID {}
 	;
 
-selecao : SWITCH '(' ID ')' '{' comentario_selecao casos  comentario_selecao '}' {}
+selecao : SWITCH '(' ID ')' '{' comentario_selecao  casos '}' {}
       ;
 
 comentario_selecao: {}
-                  | comentario  comentario_selecao{}
+                  | comentario comentario_selecao{}
                   ;
 
-casos : caso casos {}
-	| caso {}
+casos : listaCasos casoDefault {}
+      | listaCasos {} 
+      | casoDefault {}
+      ;
+
+listaCasos : caso listaCasos {}
+           | caso  {}
+           ;
+
+caso : CASE caseBase ':' bloco BREAK PV comentario_selecao  {}
 	;
 
-caso : CASE base ':' bloco BREAK PV{}
-	| DEFAULT ':' bloco BREAK PV{}
+casoDefault : DEFAULT ':' bloco BREAK PV comentario_selecao {}
 	;
 
 retorno : RETURN PV  {}
-      | RETURN expressao  PV  {}
-      ;
+        | RETURN expressao  PV  {}
+        ;
 
 condicional : if_solteiro condicional_aux {}
             ;
@@ -166,8 +175,8 @@ elseif : ELSE IF '(' expressao ')' '{' bloco '}' {}
 if_solteiro : IF '(' expressao ')' '{' bloco '}' {}
             ;
 
-chamada_funcao : ID '(' parametros ')' PV {}
-               | ID '(' ')' PV {}
+chamada_funcao : ID '(' parametros ')' {}
+               | ID '(' ')' {}
                ;
 
 entrada : PRINTLN '(' expressao ')' PV {} 
@@ -227,6 +236,7 @@ decl_variavel : TYPE ID '=' expressao PV{}
 
 parametros : expressao {}
            | expressao ',' parametros {}
+           | ID elemento_matriz {}
            ;
 
 expressao : expre_logica {}
@@ -272,6 +282,15 @@ base : ID {}
       | TRUE {}
       | FALSE {}
       | '(' expressao ')' {}
+      | chamada_funcao {}
+      ;
+
+caseBase: ID {}
+      |NUMBER {}
+      | NUMBERFLOAT {}
+      | WORD {}
+      | TRUE {}
+      | FALSE {}
       ;
 
 comentario: COMMENT {}

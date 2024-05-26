@@ -42,23 +42,23 @@ final int a = 10;
 float a=2*(3-5)*6; 
 int a = 10;
 void main(&a, int *b, &c){
+     size = fun(myArray[0]);
 switch (num) {
-        //afsd
-        //afsd 
-        //afsd
-        case 1:
-            //teste comentario case
-            printf("One\n");
-            break; //afsd 
-        //afsd
-        case 2:
-            printf("Two\n");
-            break;
-        default:
+     //65 2
+    case 1:
+	    //6756 2
+        printf("One\n");
+	    //5656 3
+        break; 
+    //comment23232 2
+    case 2:
+        printf("Two\n");
+        break;
+     //655675675
+    default:
             printf("Other\n");
-            break;
-        //afsd
-        
+            break; 
+    //655675675333333
     }
     float a = 3.5;
     function2(2);
@@ -74,7 +74,7 @@ while(true){
 a = a++;
 }
 
-for (int a;  true; a++){
+for (int a;  true; a++){//fsd
 return a;
 }
 if(true){
@@ -86,6 +86,29 @@ if(false){
 bool a =1;
 
 enum diasDaSemana { DOMINGO, SEGUNDA, TERCA, QUARTA, QUINTA, SEXTA, SABADO } ;
+
+switch (day) {
+    case MONDAY:
+       return m;
+        break;
+    case TUESDAY:
+        return t;
+        break;
+    default:
+        return d;
+        break;
+}
+
+ switch(diaDaSemana){
+ case DOMINGO: return a;
+ break;
+
+case SEGUNDA: return b;
+break;
+case TERCA: return c;
+break;
+ }
+
 
 struct Ponto {
     int a;
@@ -136,6 +159,16 @@ default: return d;
 break;
  }
  
+ switch(a){
+ case true: return a;
+ break;
+
+case false: return b;
+break;
+default: return d;
+break;
+ }
+
 bool a = true;
 bool b = false;
 b= true;
