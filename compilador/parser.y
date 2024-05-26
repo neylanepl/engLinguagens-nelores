@@ -47,7 +47,7 @@ main : VOID MAIN '(' args ')' '{' bloco '}' {}
 
 stmts: {}
       | decl_vars stmts {}
-      | comentario  stmts{}
+      | comentario  stmts {}
       ;
 
 tipo: TYPE {}
@@ -132,31 +132,31 @@ expressao_for : decl_variavel {}
 	| ops ID {}
 	;
 
-selecao : SWITCH '(' ID ')' '{' comentario_selecao casos  comentario_selecao '}' {}
+selecao : SWITCH '(' ID ')' '{' comentario_selecao  casos '}' {}
       ;
 
 comentario_selecao: {}
-                  | comentario  comentario_selecao{}
+                  | comentario comentario_selecao{}
                   ;
 
-casos : listaCasos casoDefault
-      | listaCasos
-      | casoDefault
+casos : listaCasos casoDefault {}
+      | listaCasos {} 
+      | casoDefault {}
       ;
 
-listaCasos : caso listaCasos
-           | caso 
-            ;
+listaCasos : caso listaCasos {}
+           | caso  {}
+           ;
 
-caso : CASE caseBase ':' bloco BREAK PV
+caso : CASE caseBase ':' bloco BREAK PV comentario_selecao  {}
 	;
 
-casoDefault : DEFAULT ':' bloco BREAK PV
+casoDefault : DEFAULT ':' bloco BREAK PV comentario_selecao {}
 	;
 
 retorno : RETURN PV  {}
-      | RETURN expressao  PV  {}
-      ;
+        | RETURN expressao  PV  {}
+        ;
 
 condicional : if_solteiro condicional_aux {}
             ;

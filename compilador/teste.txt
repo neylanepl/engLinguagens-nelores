@@ -42,19 +42,23 @@ final int a = 10;
 float a=2*(3-5)*6; 
 int a = 10;
 void main(&a, int *b, &c){
+     size = fun(myArray[0]);
 switch (num) {
-	//comment 1
-        case 1:
-	//comment 2
-            printf("One\n");
-	//comment 3
-            break; 
-        case 2:
-            printf("Two\n");
-            break;
-        default:
+     //65 2
+    case 1:
+	    //6756 2
+        printf("One\n");
+	    //5656 3
+        break; 
+    //comment23232 2
+    case 2:
+        printf("Two\n");
+        break;
+     //655675675
+    default:
             printf("Other\n");
-            break;        
+            break; 
+    //655675675333333
     }
     float a = 3.5;
     function2(2);
@@ -70,7 +74,7 @@ while(true){
 a = a++;
 }
 
-for (int a;  true; a++){
+for (int a;  true; a++){//fsd
 return a;
 }
 if(true){
