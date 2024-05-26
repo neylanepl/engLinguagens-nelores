@@ -63,6 +63,29 @@ bool a =1;
 
 enum diasDaSemana { DOMINGO, SEGUNDA, TERCA, QUARTA, QUINTA, SEXTA, SABADO } ;
 
+switch (day) {
+    case MONDAY:
+       return m;
+        break;
+    case TUESDAY:
+        return t;
+        break;
+    default:
+        return d;
+        break;
+}
+
+ switch(diaDaSemana){
+ case DOMINGO: return a;
+ break;
+
+case SEGUNDA: return b;
+break;
+case TERCA: return c;
+break;
+ }
+
+
 struct Ponto {
     int a;
     int[1] a;
@@ -112,6 +135,16 @@ default: return d;
 break;
  }
  
+ switch(a){
+ case true: return a;
+ break;
+
+case false: return b;
+break;
+default: return d;
+break;
+ }
+
 bool a = true;
 bool b = false;
 b= true;

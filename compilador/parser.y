@@ -33,7 +33,7 @@ extern char * yytext;
 
 %type decl_vars decl_variavel expressao expre_arit termo fator 
 %type ops main args subprogs subprog decl_funcao decl_procedimento bloco comando 
-%type condicional retorno iteracao selecao casos caso elementos_array base 
+%type condicional retorno iteracao selecao casos caso elementos_array base caseBase casoDefault listaCasos
 %type decl_array decl_recursiva tamanho_array definicao_struct lista_campos atribuicao_struct expressao_tamanho_array elemento_matriz definicao_enum lista_enum
 %type entrada saida  
 %type tipo tipo_endereco tipo_ponteiro
@@ -130,12 +130,19 @@ expressao_for : decl_variavel {}
 selecao : SWITCH '(' ID ')' '{' casos '}' {}
       ;
 
-casos : caso casos {}
-	| caso {}
+casos : listaCasos casoDefault
+      | listaCasos
+      | casoDefault
+      ;
+
+listaCasos : caso listaCasos
+           | caso 
+            ;
+
+caso : CASE caseBase ':' bloco BREAK PV
 	;
 
-caso : CASE base ':' bloco BREAK PV{}
-	| DEFAULT ':' bloco BREAK PV{}
+casoDefault : DEFAULT ':' bloco BREAK PV
 	;
 
 retorno : RETURN PV  {}
@@ -271,6 +278,14 @@ base : ID {}
       | FALSE {}
       | '(' expressao ')' {}
       | chamada_funcao {}
+      ;
+
+caseBase: ID {}
+      |NUMBER {}
+      | NUMBERFLOAT {}
+      | WORD {}
+      | TRUE {}
+      | FALSE {}
       ;
 
 commentario: COMMENT {}
