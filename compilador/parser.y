@@ -239,9 +239,6 @@ decl_var_atr_tipada:  TYPE ID '=' expressao PV{}
                   | TYPE ID MOREISEQUAL expressao PV{}
                   | TYPE ID LESSISEQUAL expressao PV{}
                   | TYPE ID '=' chamada_funcao {}
-                  | TYPE ID '=' ID acesso_array PV {}
-                  | TYPE ID '=' tipo_endereco acesso_array PV {}
-                  | TYPE ID '=' tipo_endereco PV {}
                   ;
 
 decl_var_atr: ID '=' expressao PV {}
@@ -249,9 +246,6 @@ decl_var_atr: ID '=' expressao PV {}
             | ID MOREISEQUAL expressao PV {}
             | ID LESSISEQUAL expressao PV {}
             | ID '=' chamada_funcao {}
-            | ID '=' ID acesso_array PV {}
-            | ID '=' tipo_endereco acesso_array PV {}
-            | ID '=' tipo_endereco PV {}
             ;
 
 decl_var: TYPE ID PV {}
@@ -273,9 +267,6 @@ parametros_rec : parametro {}
 
 parametro :
            | expressao {}
-           | ID acesso_array {}
-           | tipo_endereco acesso_array {}
-           | tipo_endereco {}
            ;
 
 expressao : expre_logica_negacao {}
@@ -314,6 +305,9 @@ termo: termo '*' fator {}
 	;
 
 fator : fator '^' base {}
+      | ID acesso_array {}
+      | tipo_endereco acesso_array {}
+      | tipo_endereco {}
       | base {}
       ;
 
