@@ -2,13 +2,13 @@
 
 int a = 2*3+(5*6);
 int[4] array = [1,2,3,4, a];
-string[2][5][b++] array = [["teste"], ["cama"]];
-string[2][5][++b] array = [["teste",4,6],["cama"]];
+string[2][5][b] array = [["teste"], ["cama"]];
+string[2][5][b] array = [["teste",4,6],["cama"]];
 array = [["teste",13,3,3], ["cama"]];
-string[2][5][b--] array = ["teste", "cama"];
+string[2][5][b] array = ["teste", "cama"];
 //srwer
-string[2][5][b-=1] array = ["teste", "cama"];
-string[a][b][b+=1] array = ["teste", "cama"];
+string[2][5][b] array = ["teste", "cama"];
+string[a][b][b1] array = ["teste", "cama"];
 const int[1] array = [1,6,4,4];
 final int[1] array = [1];
 int[5][5] casa;
@@ -42,7 +42,7 @@ final int a = 10;
 float a=2*(3-5)*6; 
 int a = 10;
 void main(&a, int *b, &c){
-     size = fun(myArray[0]);
+size = fun(myArray[0]);
 switch (num) {
      //65 2
     case 1:
@@ -121,6 +121,7 @@ struct Ponto {
  pessoa.a = 25;
  pessoa.e = 25;
  pessoa.kk = 25;
+ pessoa.idade;
 
 
  switch(clara){
@@ -188,6 +189,8 @@ final int testee =scanf();
 int function7 (int a){ int[2] array = [1,2];
    for (int i = 0; i < 5; i++) {  }
    for (int i = 0; i < 5; ++i) {  }
+      for (int i = 0; i < 5; i + 10) {  }
+
    for (int i = 0; i < 5; --i) {  }
     for (int i = 0; i < 5; i--) {  }
     b++;
@@ -196,7 +199,7 @@ int function7 (int a){ int[2] array = [1,2];
 
 }
 int function2 (int b, float c){ b = 5; if(2*2){a = 4;}}
-int function3 (int b, float c){ b = 5; if(2*2){a = 4;} else if(3*3){a = 4;} else if(3*2){a = 5;} else {a= 2;}}
+int function3 (int b, float c){ b = 5; if(2*2){a = 4;} else if(3*3){a = 4;} else if(3*2){a = 5;}   else if(3*2){a = 5;}  else if(3*2){a = 5;} else {a= 2;}}
 int function4 (int b, float c){ b = 5; if(2*2){a = 4;} else {a= 2;}}
 int function5 (int b){function3(3); return;}
 int function6 (int b){return b + 5;}
