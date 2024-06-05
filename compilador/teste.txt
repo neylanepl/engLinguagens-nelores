@@ -67,12 +67,6 @@ switch (num) {
     function3();
 //dsfds
 //dsfds
-while(false){
-a = a++;
-}
-while(true){
-a = a++;
-}
 
 for (int a;  true; a++){//fsd
 return a;
@@ -198,8 +192,8 @@ int function7 (int a){ int[2] array = [1,2];
     
 
 }
-int function2 (int b, float c){ b = 5; if(2*2){a = 4;}}
-int function3 (int b, float c){ b = 5; if(2*2){a = 4;} else if(3*3){a = 4;} else if(3*2){a = 5;}   else if(3*2){a = 5;}  else if(3*2){a = 5;} else {a= 2;}}
-int function4 (int b, float c){ b = 5; if(2*2){a = 4;} else {a= 2;}}
+int function2 (int b, float c){ b = 5; if(2>2){a = 4;}}
+int function3 (int b, float c){ b = 5; if(2>2){a = 4;} else if(3>3){a = 4;} else if(3>2){a = 5;}   else if(3>2){a = 5;}  else if(3>2){a = 5;} else {a= 2;}}
+int function4 (int b, float c){ b = 5; if(2>2){a = 4;} else {a= 2;}}
 int function5 (int b){function3(3); return;}
 int function6 (int b){return b + 5;}

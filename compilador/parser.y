@@ -121,9 +121,14 @@ lista_campos : decl_vars {}
              | decl_vars lista_campos {}
              ;
 
-iteracao : WHILE '(' expressao ')' '{' bloco '}' {}
-	     | FOR '(' expressao_for_inicial expressao PV expressao_for_final ')' '{' bloco '}' {}
+iteracao : WHILE '(' expre_logica_iterador ')' '{' bloco '}' {}
+	     | FOR '(' expressao_for_inicial expre_logica_iterador PV expressao_for_final ')' '{' bloco '}' {}
            ;
+
+expre_logica_iterador: expre_logica_negacao {}
+                     | TRUE {}
+                     | FALSE {}
+                     ;
 
 expressao_for_inicial : decl_var_atr_tipada {}
                       | decl_var_atr {}
@@ -170,10 +175,10 @@ condicional_aux :
 else : ELSE '{' bloco '}'  {}
      ;
 
-elseif : ELSE IF '(' expressao ')' '{' bloco '}' {}
+elseif : ELSE IF '(' expre_logica_iterador ')' '{' bloco '}' {}
        ;
 
-if_simples : IF '(' expressao ')' '{' bloco '}' {}
+if_simples : IF '(' expre_logica_iterador ')' '{' bloco '}' {}
             ;
 
 chamada_funcao : ID '(' parametros_rec ')' PV {}
@@ -273,19 +278,22 @@ parametro :
            | tipo_endereco {}
            ;
 
-expressao : expre_logica {}
+expressao : expre_logica_negacao {}
           | expre_arit {}
           ;
 
-expre_logica : termo ANDCIRCUIT termo {} 
-             | termo ORCIRCUIT termo {}
-             | '!' fator {}
-             | termo LESSTHENEQ termo {}
-             | termo MORETHENEQ termo {}
-             | termo '<' termo {}
-             | termo '>' termo {}
-             | termo ISEQUAL termo {}
-             | termo ISDIFFERENT termo {}
+expre_logica_negacao: expre_logica {}
+                    | '!' expre_logica_negacao {}
+                    ;
+
+expre_logica : expre_arit ANDCIRCUIT expre_arit {} 
+             | expre_arit ORCIRCUIT expre_arit {}
+             | expre_arit LESSTHENEQ expre_arit {}
+             | expre_arit MORETHENEQ expre_arit {}
+             | expre_arit '<' expre_arit {}
+             | expre_arit '>' expre_arit {}
+             | expre_arit ISEQUAL expre_arit {}
+             | expre_arit ISDIFFERENT expre_arit {}
              ;
 
 expre_arit : expre_arit '+' termo {}
