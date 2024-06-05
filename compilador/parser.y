@@ -36,7 +36,7 @@ extern char * yytext;
 %type condicional retorno iteracao selecao casos caso elementos_array base caseBase casoDefault listaCasos
 %type decl_array tamanho_array definicao_struct lista_campos atribuicao_struct expressao_tamanho_array elemento_matriz definicao_enum lista_enum
 %type entrada saida comentario_selecao comentario decl_var_atr_tipada decl_var_atr decl_var_ponteiro decl_var_const decl_var
-%type  tipo_endereco tipo_ponteiro stmts base_elemento_array expressao_for_inicial
+%type  tipo_endereco tipo_ponteiro stmts base_elemento_array expressao_for_inicial parametros_rec parametro acesso_array
 
 %%
 prog : stmts main subprogs {}
@@ -176,7 +176,7 @@ elseif : ELSE IF '(' expressao ')' '{' bloco '}' {}
 if_simples : IF '(' expressao ')' '{' bloco '}' {}
             ;
 
-chamada_funcao : ID '(' parametros ')' PV {}
+chamada_funcao : ID '(' parametros_rec ')' PV {}
                ;
 
 entrada : PRINTLN '(' expressao ')' PV {} 
@@ -219,6 +219,10 @@ elementos_array : {}
                   | elemento_matriz {}
                   ;
 
+acesso_array: '[' expre_arit ']'  {}
+            | '[' expre_arit ']' acesso_array {}
+            ;
+
 decl_variavel : decl_var_atr_tipada {}
               | decl_var_atr {}
               | decl_var_ponteiro {}
@@ -229,6 +233,10 @@ decl_variavel : decl_var_atr_tipada {}
 decl_var_atr_tipada:  TYPE ID '=' expressao PV{}
                   | TYPE ID MOREISEQUAL expressao PV{}
                   | TYPE ID LESSISEQUAL expressao PV{}
+                  | TYPE ID '=' chamada_funcao {}
+                  | TYPE ID '=' ID acesso_array PV {}
+                  | TYPE ID '=' tipo_endereco acesso_array PV {}
+                  | TYPE ID '=' tipo_endereco PV {}
                   ;
 
 decl_var_atr: ID '=' expressao PV {}
@@ -236,25 +244,33 @@ decl_var_atr: ID '=' expressao PV {}
             | ID MOREISEQUAL expressao PV {}
             | ID LESSISEQUAL expressao PV {}
             | ID '=' chamada_funcao {}
+            | ID '=' ID acesso_array PV {}
+            | ID '=' tipo_endereco acesso_array PV {}
+            | ID '=' tipo_endereco PV {}
             ;
 
 decl_var: TYPE ID PV {}
           ;
       
-decl_var_const : CONST TYPE ID  '=' expressao PV {}
-                 | FINAL TYPE ID  '=' expressao PV{}
-                 ;
+decl_var_const: CONST TYPE ID  '=' expressao PV {}
+              | FINAL TYPE ID  '=' expressao PV {}
+              ;
 
 decl_var_ponteiro : tipo_ponteiro '=' ID PV {}
                   | tipo_ponteiro '=' tipo_ponteiro PV {}
                   | tipo_ponteiro '=' tipo_endereco PV {}
                   | TYPE tipo_ponteiro PV {}
                   ;
+      
+parametros_rec : parametro {}
+               | parametro ',' parametros_rec {}
+               ;
 
-parametros :
+parametro :
            | expressao {}
-           | expressao ',' parametros {}
-           | ID elemento_matriz {}
+           | ID acesso_array {}
+           | tipo_endereco acesso_array {}
+           | tipo_endereco {}
            ;
 
 expressao : expre_logica {}
