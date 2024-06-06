@@ -1,0 +1,12 @@
+void main() {
+    float x = 3.5; // exemplo de número racional
+    float y = 2.1; // exemplo de número racional
+    int c = 4;     // exemplo de nuúmero inteiro
+    Calculando(x,y,c);
+}
+void Calculando(float x, float y, int c){
+    float resultado =  x ^ 2 - y + c;
+
+    // Imprimindo o resultado
+    println("O resultado da expressao " + resultado);
+}

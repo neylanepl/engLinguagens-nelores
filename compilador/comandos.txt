@@ -1,0 +1,51 @@
+void main(){
+
+struct Notas {
+    int nota1;
+    int nota2;
+}
+
+ struct Pessoa pessoa;
+ pessoa.idade = 25;
+ pessoa.mae = "Ana";
+ pessoa.pai = "Joao";
+
+enum diasDaSemana { DOMINGO, SEGUNDA, TERCA, QUARTA, QUINTA, SEXTA, SABADO } ;
+
+switch (diasDaSemana) {
+    case DOMINGO:
+       return 1;
+        break;
+    case SEGUNDA:
+        return 2;
+        break;
+    default:
+        return 0;
+        break;
+}
+
+if (nota >= 90) {
+        printf("A nota do aluno é A.\n");
+    } else if (nota >= 80) {
+        printf("A nota do aluno é B.\n");
+    } else if (nota >= 70) {
+        printf("A nota do aluno é C.\n");
+    } else if (nota >= 60) {
+        printf("A nota do aluno é D.\n");
+    } else {
+        printf("A nota do aluno é F.\n");
+}
+
+for (i = 1; i <= 5; i++) {
+        printf("%d ", i);
+    }
+
+ while (i <= 5) {
+        printf("%d ", i);
+        i++;
+    }
+
+}
+
+
+

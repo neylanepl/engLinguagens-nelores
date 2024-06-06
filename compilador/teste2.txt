@@ -1,0 +1,49 @@
+void main() {
+    analiseDeIntervalos();
+}
+
+void lerNumero(int *num) {
+    printf("Digite um número (negativo para terminar): ");
+    scanf("%d", num);
+}
+
+int analiseDeIntervalos() {
+    int num;
+    int count025 = 0;
+    int count2650 = 0;
+    int count5175 = 0;
+    int count76100 = 0;
+
+    lerNumero(&num);
+
+    while (num >= 0) {
+        if (num >= 0) {
+            if (num <= 25) {
+                count025++;
+            } else if (num >= 26) {
+                if (num <= 50) {
+                    count2650++;
+                } else if (num >= 51) {
+                    if (num <= 75) {
+                        count5175++;
+                    } else if (num >= 76) {
+                        if (num <= 100) {
+                            count76100++;
+                        }
+                    }
+                }
+            }
+        }
+
+        lerNumero(&num);
+    }
+
+    // Exibindo os resultados
+    printf("Quantidade de números nos intervalos:\n");
+    printf("[0, 25]: %d\n", count025);
+    printf("[26, 50]: %d\n", count2650);
+    printf("[51, 75]: %d\n", count5175);
+    printf("[76, 100]: %d\n", count76100);
+
+    return 0;
+}

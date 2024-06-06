@@ -1,0 +1,79 @@
+void main() {
+    int linhas1;
+    int linhas2;
+    int colunas1;
+    int colunas2;
+    int [100][100] matriz1;
+    int [100][100] matriz2; 
+    int [100][100] soma; 
+    int [100][100] produto;
+
+    printf("Digite o número de linhas da primeira matriz: ");
+    scanf("%d", &linhas1);
+    printf("Digite o número de colunas da primeira matriz: ");
+    scanf("%d", &colunas1);
+    printf("Digite os elementos da primeira matriz:\n");
+    lerMatriz(matriz1, linhas1, colunas1);
+
+    printf("Digite o número de linhas da segunda matriz: ");
+    scanf("%d", &linhas2);
+    printf("Digite o número de colunas da segunda matriz: ");
+    scanf("%d", &colunas2);
+    printf("Digite os elementos da segunda matriz:\n");
+    lerMatriz(matriz2, linhas2, colunas2);
+
+    if (linhas1 == linhas2 ) {
+        if(colunas1 == colunas2){
+        somarMatrizes(matriz1, matriz2, soma, linhas1, colunas1);
+        printf("Soma das matrizes:\n");
+        imprimirMatriz(soma, linhas1, colunas1);
+        }
+    } else {
+        printf("A soma das matrizes não é possível (dimensões incompatíveis).\n");
+    }
+
+    if (colunas1 == linhas2) {
+        multiplicarMatrizes(matriz1, matriz2, produto, linhas1, colunas1, colunas2);
+        printf("Produto das matrizes:\n");
+        imprimirMatriz(produto, linhas1, colunas2);
+    } else {
+        printf("O produto das matrizes não é possível (dimensões incompatíveis).\n");
+    }
+}
+
+void lerMatriz(int [][100] matriz, int linhas, int colunas) {
+    for (int i = 0; i < linhas; i++) {
+        for (int j = 0; j < colunas; j++) {
+            printf("Elemento [%d][%d]: ", i, j);
+            //scanf("%d", &matriz[i][j]);
+        }
+    }
+}
+
+void imprimirMatriz(int [][100] matriz, int linhas, int colunas) {
+    for (int i = 0; i < linhas; i++) {
+        for (int j = 0; j < colunas; j++) {
+            printf("%d ", matriz[i][j]);
+        }
+        printf("\n");
+    }
+}
+
+void somarMatrizes(int [][100] matriz1, int [][100] matriz2, int [][100]resultado, int linhas, int colunas) {
+    for (int i = 0; i < linhas; i++) {
+        for (int j = 0; j < colunas; j++) {
+           //resultado[i][j] = matriz1[i][j] + matriz2[i][j];
+        }
+    }
+}
+
+void multiplicarMatrizes(int [][100] matriz1, int [][100] matriz2, int [][100] resultado, int linhas1, int colunas1, int colunas2) {
+    for (int i = 0; i < linhas1; i++) {
+        for (int j = 0; j < colunas2; j++) {
+            //resultado[i][j] = 0;
+            for (int k = 0; k < colunas1; k++) {
+                //resultado[i][j] += matriz1[i][k] * matriz2[k][j];
+            }
+        }
+    }
+}
