@@ -28,15 +28,22 @@ extern char * yytext;
 %token REPLACE PUSH POP INDEXOF REVERSE SLICE AND OR SINGLELINECOMMENT 
 %token LESSTHENEQ MORETHENEQ ISEQUAL ISDIFFERENT ANDCIRCUIT ORCIRCUIT  PV
 %token TRUE FALSE DECREMENT INCREMENT MOREISEQUAL LESSISEQUAL EQUAL  COMMENT
+%left ANDCIRCUIT ORCIRCUIT
+%left LESSTHENEQ MORETHENEQ '<' '>' ISEQUAL ISDIFFERENT
+%left '+' '-'
+%left '*' '/' '%'
+%right '^'
+%right '!'
+%nonassoc UMINUS
 
 %start prog
 
-%type decl_vars decl_variavel expressao expre_arit termo fator 
+%type decl_vars decl_variavel expressao expre_arit termo fator expre_logica
 %type ops main args subprogs subprog decl_funcao decl_procedimento bloco comando 
 %type condicional retorno iteracao selecao casos caso elementos_array base caseBase casoDefault listaCasos
 %type decl_array tamanho_array definicao_struct lista_campos atribuicao_struct expressao_tamanho_array elemento_matriz definicao_enum lista_enum
-%type entrada saida comentario_selecao comentario
-%type tipo tipo_endereco tipo_ponteiro stmts 
+%type entrada saida comentario_selecao comentario decl_var_atr_tipada decl_var_atr decl_var_ponteiro decl_var_const decl_var
+%type  tipo_endereco tipo_ponteiro stmts base_elemento_array expressao_for_inicial parametros_rec parametro acesso_array
 
 %%
 prog : stmts main subprogs {}
@@ -50,24 +57,22 @@ stmts: {}
       | comentario  stmts {}
       ;
 
-tipo: TYPE {}
-      | tipo tipo_ponteiro {}
-      | tipo_endereco {}
-      ;
-
 tipo_ponteiro: '*' ID  {}
-		;
+		  ;
 
 tipo_endereco: '&' ID  {}
-		;
+		  ;
 
-args : 
-      | tipo ID args  {}
-      | tipo args  {}
-      | tipo ',' args  {}
-      | tipo ID ',' args  {}
-      | TYPE '[' ']' ID {}
-      | TYPE '[' ']' ID ',' args {}
+args : {}
+      | TYPE ID   {}
+      | ID ID   {}
+      | TYPE tipo_ponteiro   {}
+      | tipo_endereco   {}
+      | TYPE ID ',' args  {}
+      | tipo_endereco ',' args  {}
+      | TYPE tipo_ponteiro ',' args  {}
+      | TYPE tamanho_array ID {}
+      | TYPE tamanho_array ID ',' args {}
       ;
 
 subprogs :                                                              
@@ -79,10 +84,11 @@ subprog : decl_funcao           {}
       ;
 
 decl_funcao : TYPE ID '(' args ')' '{' bloco '}'       {}        
-      ;
+              | ID ID '(' args ')' '{' bloco '}'       {}      
+            ;
 
 decl_procedimento : VOID ID '(' args ')' '{' bloco '}'  {}                   
-      ;
+                  ;
 
 bloco : 
       | decl_variavel bloco  {}
@@ -97,7 +103,7 @@ comando : condicional {}
       | retorno {}
       | iteracao {} 
       | selecao {}
-      | chamada_funcao PV{} 
+      | chamada_funcao{} 
       | entrada {}
       | saida {}
       | definicao_enum {}
@@ -113,24 +119,31 @@ lista_enum : ID {}
           ;
 
 definicao_struct : STRUCT ID '{' lista_campos '}' {}
-		   | STRUCT ID ID PV {}
+		     |  ID '.' ID PV {}
+                 | STRUCT ID ID PV {}
                  ;
 
-atribuicao_struct : ID '.' ID '=' termo PV {}
+atribuicao_struct : ID '.' ID '=' termo PV {} 
                  ;
 
 lista_campos : decl_vars {}
              | decl_vars lista_campos {}
              ;
 
-iteracao : WHILE '(' expressao ')' '{' bloco '}' {}
-	| FOR '(' expressao_for expressao PV expressao_for ')' '{' bloco '}' {}
-      ;
+iteracao : WHILE '(' expre_logica_iterador ')' '{' bloco '}' {}
+	     | FOR '(' expressao_for_inicial expre_logica_iterador PV expressao_for_final ')' '{' bloco '}' {}
+           ;
 
-expressao_for : decl_variavel {}
-	| ID ops {}
-	| ops ID {}
-	;
+expre_logica_iterador: expre_logica {}
+                     ;
+
+expressao_for_inicial : decl_var_atr_tipada {}
+                      | decl_var_atr {}
+                      | decl_var {}
+                      ;
+
+expressao_for_final : expre_arit {}
+                    ;
 
 selecao : SWITCH '(' ID ')' '{' comentario_selecao  casos '}' {}
       ;
@@ -152,13 +165,13 @@ caso : CASE caseBase ':' bloco BREAK PV comentario_selecao  {}
 	;
 
 casoDefault : DEFAULT ':' bloco BREAK PV comentario_selecao {}
-	;
+	       ;
 
 retorno : RETURN PV  {}
         | RETURN expressao  PV  {}
         ;
 
-condicional : if_solteiro condicional_aux {}
+condicional : if_simples condicional_aux {}
             ;
 
 condicional_aux : 
@@ -169,97 +182,129 @@ condicional_aux :
 else : ELSE '{' bloco '}'  {}
      ;
 
-elseif : ELSE IF '(' expressao ')' '{' bloco '}' {}
+elseif : ELSE IF '(' expre_logica_iterador ')' '{' bloco '}' {}
        ;
 
-if_solteiro : IF '(' expressao ')' '{' bloco '}' {}
+if_simples : IF '(' expre_logica_iterador ')' '{' bloco '}' {}
             ;
 
-chamada_funcao : ID '(' parametros ')' {}
-               | ID '(' ')' {}
+chamada_funcao : ID '(' parametros_rec ')' PV {}
                ;
 
 entrada : PRINTLN '(' expressao ')' PV {} 
         | PRINT '(' expressao ')' PV {} 
+        | PRINT '(' expressao ',' ID tamanho_array ')' PV {} 
         ;
 
 saida : TYPE ID '=' SCANF '(' ')' PV {}
       | FINAL TYPE ID '=' SCANF '(' ')' PV {}
       | CONST TYPE ID '=' SCANF '(' ')' PV {}
       | ID '=' SCANF '(' ')' PV {}
+      | SCANF '(' WORD ',' ID ')' PV {}
+      | SCANF '(' WORD ',' ID acesso_array ')' PV {}
+      | SCANF '(' WORD ',' tipo_endereco ')' PV {}
+      | SCANF '(' WORD ',' tipo_endereco acesso_array ')' PV {}
       ;
 
 decl_vars : decl_variavel  {}
-      | decl_array {}
-      ;
+            | decl_array {}
+            ;
 
 decl_array : TYPE tamanho_array ID '=' '[' elementos_array ']' PV {}
-      | ID '=' '['  elementos_array  ']' PV {}
-      | CONST TYPE tamanho_array ID '=' '[' elementos_array ']' PV {}
-      | FINAL TYPE tamanho_array ID '=' '[' elementos_array ']' PV {}
-      | TYPE tamanho_array ID PV {} 
-      ;
-
+            | ID '=' '['  elementos_array  ']' PV {}
+            | CONST TYPE tamanho_array ID '=' '[' elementos_array ']' PV {}
+            | FINAL TYPE tamanho_array ID '=' '[' elementos_array ']' PV {}
+            | TYPE tamanho_array ID PV {} 
+            ;
+            
 tamanho_array: '[' expressao_tamanho_array ']'  {}
              | '[' expressao_tamanho_array ']' tamanho_array {}
+             ;
 
 
-expressao_tamanho_array: | ID MOREISEQUAL expre_arit {}
-                         | ID LESSISEQUAL expre_arit {}
-                         | expre_arit {}
-                          ;
+expressao_tamanho_array: | ID {}
+                         | NUMBER {}
+                         ;
 
 elemento_matriz: '[' elementos_array ']' {}
                   | '[' elementos_array ']' ',' elemento_matriz {}
+                  ;
 
 elementos_array : {}
-      | base {}
-      | base ',' elementos_array {}
-      | elemento_matriz
-      ;
+                  | base_elemento_array {}
+                  | base_elemento_array ',' elementos_array {}
+                  | elemento_matriz {}
+                  ;
 
-decl_variavel : TYPE ID '=' expressao PV{}
-      | TYPE ID MOREISEQUAL expressao PV{}
-      | ID MOREISEQUAL expressao PV{}
-      | ID LESSISEQUAL expressao PV{}
-      | TYPE ID LESSISEQUAL expressao PV{}
-      | ID '=' expressao PV {}
-      | ID '=' tipo_ponteiro PV {}
-      | tipo_ponteiro '=' ID PV {}
-      | tipo_ponteiro '=' tipo_ponteiro PV {}
-      | tipo_ponteiro '=' tipo_endereco PV {}
-      | CONST TYPE ID  '=' expressao PV {}
-      | FINAL TYPE ID  '=' expressao PV{}
-      | tipo PV {}
-      | TYPE ID PV {}
-      ;
+acesso_array: '[' expre_arit ']'  {}
+            | '[' expre_arit ']' acesso_array {}
+            ;
 
-parametros : expressao {}
-           | expressao ',' parametros {}
-           | ID elemento_matriz {}
+decl_variavel : decl_var_atr_tipada {}
+              | decl_var_atr {}
+              | decl_var_ponteiro {}
+              | decl_var_const {}
+              | decl_var {}
+              ;
+
+decl_var_atr_tipada:  TYPE ID '=' expressao PV{}
+                  | TYPE ID MOREISEQUAL expressao PV{}
+                  | TYPE ID LESSISEQUAL expressao PV{}
+                  | TYPE ID '=' chamada_funcao {}
+                  ;
+
+decl_var_atr: ID '=' expressao PV {}
+            | ID '=' tipo_ponteiro PV {}
+            | ID MOREISEQUAL expressao PV {}
+            | ID LESSISEQUAL expressao PV {}
+            | ID '=' chamada_funcao {}
+            ;
+
+decl_var: TYPE ID PV {}
+          ;
+      
+decl_var_const: CONST TYPE ID  '=' expressao PV {}
+              | FINAL TYPE ID  '=' expressao PV {}
+              ;
+
+decl_var_ponteiro : tipo_ponteiro '=' ID PV {}
+                  | tipo_ponteiro '=' tipo_ponteiro PV {}
+                  | tipo_ponteiro '=' tipo_endereco PV {}
+                  | TYPE tipo_ponteiro PV {}
+                  ;
+      
+parametros_rec : parametro {}
+               | parametro ',' parametros_rec {}
+               ;
+
+parametro :
+           | expressao {}
+           | ID '.' ID
            ;
 
 expressao : expre_logica {}
-          | expre_arit {}
           ;
 
-expre_logica : termo ANDCIRCUIT termo {} 
-                    | termo ORCIRCUIT termo {}
-                    | '!' fator {}
-                    | termo LESSTHENEQ termo {}
-                    | termo MORETHENEQ termo {}
-                    | termo '<' termo {}
-                    | termo '>' termo {}
-                    | termo ISEQUAL termo {}
-                    | termo ISDIFFERENT termo {}
-                    ;
+expre_logica : expre_logica ANDCIRCUIT expre_logica {} 
+             | expre_logica ORCIRCUIT expre_logica {}
+             | expre_logica LESSTHENEQ expre_logica {}
+             | expre_logica MORETHENEQ expre_logica {}
+             | expre_logica '<' expre_logica {}
+             | expre_logica '>' expre_logica {}
+             | expre_logica ISEQUAL expre_logica {}
+             | expre_logica ISDIFFERENT expre_logica {}
+             | '!'  expre_logica {}
+             | expre_arit {}
+             ;
 
+
+                
 expre_arit : expre_arit '+' termo {}
-      | expre_arit '-' termo {}
-      | ops termo {}
-      | termo ops {}
-      | termo {}
-      ;
+            | expre_arit '-' termo {}
+            | ops termo {}
+            | termo ops {}
+            | termo {}
+            ;
 	    
 ops: INCREMENT {}
      | DECREMENT {}
@@ -272,6 +317,9 @@ termo: termo '*' fator {}
 	;
 
 fator : fator '^' base {}
+      | ID acesso_array {}
+      | tipo_endereco acesso_array {}
+      | tipo_endereco {}
       | base {}
       ;
 
@@ -282,16 +330,23 @@ base : ID {}
       | TRUE {}
       | FALSE {}
       | '(' expressao ')' {}
-      | chamada_funcao {}
       ;
 
+base_elemento_array: ID {}
+                  | NUMBER {}
+                  | NUMBERFLOAT {}
+                  | WORD {}
+                  | TRUE {}
+                  | FALSE {}
+                  ;
+
 caseBase: ID {}
-      |NUMBER {}
-      | NUMBERFLOAT {}
-      | WORD {}
-      | TRUE {}
-      | FALSE {}
-      ;
+        | NUMBER {}
+        | NUMBERFLOAT {}
+        | WORD {}
+        | TRUE {}
+        | FALSE {}
+        ;
 
 comentario: COMMENT {}
             ;

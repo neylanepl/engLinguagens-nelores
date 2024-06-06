@@ -100,7 +100,7 @@
                        return NUMBER;}
 [0-9]+"."[0-9]+     {yylval.sValue = strdup(yytext);
                           return NUMBERFLOAT;}
-[a-zA-Z][a-zA-Z0-9]* {yylval.sValue = strdup(yytext);
+[a-zA-Z][a-zA-Z0-9_]* {yylval.sValue = strdup(yytext);
                        return ID;}
 "\""[^'"]*"\""       {yylval.sValue = strdup(yytext);
                                           return WORD;}  
