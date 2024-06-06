@@ -32,7 +32,8 @@ extern char * yytext;
 %left LESSTHENEQ MORETHENEQ '<' '>' ISEQUAL ISDIFFERENT
 %left '+' '-'
 %left '*' '/' '%'
-%left '^'
+%right '^'
+%right '!'
 %nonassoc UMINUS
 
 %start prog
@@ -199,6 +200,7 @@ saida : TYPE ID '=' SCANF '(' ')' PV {}
       | FINAL TYPE ID '=' SCANF '(' ')' PV {}
       | CONST TYPE ID '=' SCANF '(' ')' PV {}
       | ID '=' SCANF '(' ')' PV {}
+      | SCANF '(' WORD ',' ID ')' PV {}
       | SCANF '(' WORD ',' ID acesso_array ')' PV {}
       | SCANF '(' WORD ',' tipo_endereco ')' PV {}
       | SCANF '(' WORD ',' tipo_endereco acesso_array ')' PV {}
@@ -291,6 +293,7 @@ expre_logica : expre_logica ANDCIRCUIT expre_logica {}
              | expre_logica '>' expre_logica {}
              | expre_logica ISEQUAL expre_logica {}
              | expre_logica ISDIFFERENT expre_logica {}
+             | '!'  expre_logica {}
              | expre_arit {}
              ;
 
