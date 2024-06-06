@@ -28,10 +28,16 @@ extern char * yytext;
 %token REPLACE PUSH POP INDEXOF REVERSE SLICE AND OR SINGLELINECOMMENT 
 %token LESSTHENEQ MORETHENEQ ISEQUAL ISDIFFERENT ANDCIRCUIT ORCIRCUIT  PV
 %token TRUE FALSE DECREMENT INCREMENT MOREISEQUAL LESSISEQUAL EQUAL  COMMENT
+%left ANDCIRCUIT ORCIRCUIT
+%left LESSTHENEQ MORETHENEQ '<' '>' ISEQUAL ISDIFFERENT
+%left '+' '-'
+%left '*' '/' '%'
+%left '^'
+%nonassoc UMINUS
 
 %start prog
 
-%type decl_vars decl_variavel expressao expre_arit termo fator 
+%type decl_vars decl_variavel expressao expre_arit termo fator expre_logica
 %type ops main args subprogs subprog decl_funcao decl_procedimento bloco comando 
 %type condicional retorno iteracao selecao casos caso elementos_array base caseBase casoDefault listaCasos
 %type decl_array tamanho_array definicao_struct lista_campos atribuicao_struct expressao_tamanho_array elemento_matriz definicao_enum lista_enum
@@ -125,9 +131,7 @@ iteracao : WHILE '(' expre_logica_iterador ')' '{' bloco '}' {}
 	     | FOR '(' expressao_for_inicial expre_logica_iterador PV expressao_for_final ')' '{' bloco '}' {}
            ;
 
-expre_logica_iterador: expre_logica_negacao {}
-                     | TRUE {}
-                     | FALSE {}
+expre_logica_iterador: expre_logica {}
                      ;
 
 expressao_for_inicial : decl_var_atr_tipada {}
@@ -269,24 +273,22 @@ parametro :
            | expressao {}
            ;
 
-expressao : expre_logica_negacao {}
-          | expre_arit {}
+expressao : expre_logica {}
           ;
 
-expre_logica_negacao: expre_logica {}
-                    | '!' expre_logica_negacao {}
-                    ;
-
-expre_logica : expre_arit ANDCIRCUIT expre_arit {} 
-             | expre_arit ORCIRCUIT expre_arit {}
-             | expre_arit LESSTHENEQ expre_arit {}
-             | expre_arit MORETHENEQ expre_arit {}
-             | expre_arit '<' expre_arit {}
-             | expre_arit '>' expre_arit {}
-             | expre_arit ISEQUAL expre_arit {}
-             | expre_arit ISDIFFERENT expre_arit {}
+expre_logica : expre_logica ANDCIRCUIT expre_logica {} 
+             | expre_logica ORCIRCUIT expre_logica {}
+             | expre_logica LESSTHENEQ expre_logica {}
+             | expre_logica MORETHENEQ expre_logica {}
+             | expre_logica '<' expre_logica {}
+             | expre_logica '>' expre_logica {}
+             | expre_logica ISEQUAL expre_logica {}
+             | expre_logica ISDIFFERENT expre_logica {}
+             | expre_arit {}
              ;
 
+
+                
 expre_arit : expre_arit '+' termo {}
             | expre_arit '-' termo {}
             | ops termo {}
