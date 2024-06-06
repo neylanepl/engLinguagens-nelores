@@ -1,1 +1,55 @@
 # engLinguagens-nelores
+Nelores é uma linguagem desenvolvida pensando em valorizar a legibilidade, o desenvolvimento web e o tratamento eficiente de erros, combinando aspectos das linguagens Java, JavaScript, C e Python para atender às necessidades específicas do desenvolvimento web moderno.
+
+## Como executar
+Abaixo está as instruções para executar o analisador léxico e o analisador sintático:
+
+1. Tenha o [Flex](https://github.com/westes/flex), o YACC e o [GCC](https://gcc.gnu.org/) instalados em seu sistema.
+
+2. Faça o download dos arquivos `lexer.l` e `parser.y`, que contém as regras para o analisador léxico e analisador sintático, respectivamente.
+
+3. No terminal, navegue até o diretório onde os arquivos `lexer.l` e `parser.y` estão localizados.
+
+4. Execute os seguintes comandos:
+
+Abaixo estão os comandos que devem ser executados:
+
+```
+#Gera o arquivo “lex.yy.c” a partir das regras definidas no arquivo “lexer.l”
+flex lexer.l
+yacc parser.y -d -v
+#Compila o arquivo `lex.yy.c` e gera o executável “a.out”.
+gcc lex.yy.c y.tab.c -o a.out
+#Executa o analisador léxico, fornecendo como entrada o arquivo de teste “arquivoTeste.txt” que disponibilizamos para a análise.
+./a.out < arquivoTeste.txt
+```
+
+Após a execução, caso tenha erros o analisador sintático irá imprimir no terminal.
+Caso o analisador sintático não encontre erros, o programa é encerrado.
+
+## Executando utilizando o makefile
+
+Para facilitar a execução deixaremos aqui uma opção alternativa para utilizar o makefile.
+Executando apenas com:
+
+````
+make <alvoDeExecucao>
+````
+
+pode escolher dentre os seguintes alvos:
+
+para o SO mac:
+- mac1
+- mac2
+- mac3
+- macQuickSort
+- macComandos
+
+para o SO linux:
+- linux1
+- linux2
+- linux3
+- linuxQuickSort
+- linuxComandos
+
+
