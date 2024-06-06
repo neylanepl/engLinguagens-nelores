@@ -64,13 +64,14 @@ tipo_endereco: '&' ID  {}
 
 args : {}
       | TYPE ID   {}
+      | ID ID   {}
       | TYPE tipo_ponteiro   {}
       | tipo_endereco   {}
       | TYPE ID ',' args  {}
       | tipo_endereco ',' args  {}
       | TYPE tipo_ponteiro ',' args  {}
-      | TYPE '[' ']' ID {}
-      | TYPE '[' ']' ID ',' args {}
+      | TYPE tamanho_array ID {}
+      | TYPE tamanho_array ID ',' args {}
       ;
 
 subprogs :                                                              
@@ -82,6 +83,7 @@ subprog : decl_funcao           {}
       ;
 
 decl_funcao : TYPE ID '(' args ')' '{' bloco '}'       {}        
+              | ID ID '(' args ')' '{' bloco '}'       {}      
             ;
 
 decl_procedimento : VOID ID '(' args ')' '{' bloco '}'  {}                   
@@ -190,12 +192,16 @@ chamada_funcao : ID '(' parametros_rec ')' PV {}
 
 entrada : PRINTLN '(' expressao ')' PV {} 
         | PRINT '(' expressao ')' PV {} 
+        | PRINT '(' expressao ',' ID tamanho_array ')' PV {} 
         ;
 
 saida : TYPE ID '=' SCANF '(' ')' PV {}
       | FINAL TYPE ID '=' SCANF '(' ')' PV {}
       | CONST TYPE ID '=' SCANF '(' ')' PV {}
       | ID '=' SCANF '(' ')' PV {}
+      | SCANF '(' WORD ',' ID acesso_array ')' PV {}
+      | SCANF '(' WORD ',' tipo_endereco ')' PV {}
+      | SCANF '(' WORD ',' tipo_endereco acesso_array ')' PV {}
       ;
 
 decl_vars : decl_variavel  {}
@@ -271,6 +277,7 @@ parametros_rec : parametro {}
 
 parametro :
            | expressao {}
+           | ID '.' ID
            ;
 
 expressao : expre_logica {}
