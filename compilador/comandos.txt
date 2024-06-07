@@ -1,16 +1,20 @@
-void main(){
-
 struct Notas {
     int nota1;
     int nota2;
 }
+enum diasDaSemana { DOMINGO, SEGUNDA, TERCA, QUARTA, QUINTA, SEXTA, SABADO } ;
 
- struct Pessoa pessoa;
+struct Notas pessoa;
+
+void main(int a, int [][] a){
+
+struct Pessoa pessoa;
  pessoa.idade = 25;
  pessoa.mae = "Ana";
  pessoa.pai = "Joao";
 
-enum diasDaSemana { DOMINGO, SEGUNDA, TERCA, QUARTA, QUINTA, SEXTA, SABADO } ;
+string[a][b][b1] array = ["teste", "cama"];
+funcao(a,b);
 
 switch (diasDaSemana) {
     case DOMINGO:

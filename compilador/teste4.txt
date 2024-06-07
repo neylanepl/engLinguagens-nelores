@@ -1,0 +1,26 @@
+void main(){
+
+    int[] arr;
+
+
+struct rational_t {
+    int numerador;
+    int denominador;
+} 
+
+}
+
+rational_t simplificar(rational_t r) {
+    int divisor = mdc(r.numerador, r.denominador);
+    return r;
+}
+
+rational_t criar_racional(int a, int b) {
+    if(b != 0){
+    struct rational_t r;
+    r.numerador = a;
+    r.denominador = b;
+    simplificar(&r);
+    return r;	
+    }   
+}

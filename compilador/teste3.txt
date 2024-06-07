@@ -7,7 +7,7 @@ void main() {
     int [100][100] matriz2; 
     int [100][100] soma; 
     int [100][100] produto;
-
+    
     printf("Digite o número de linhas da primeira matriz: ");
     scanf("%d", &linhas1);
     printf("Digite o número de colunas da primeira matriz: ");
@@ -45,7 +45,7 @@ void lerMatriz(int [][100] matriz, int linhas, int colunas) {
     for (int i = 0; i < linhas; i++) {
         for (int j = 0; j < colunas; j++) {
             printf("Elemento [%d][%d]: ", i, j);
-            //scanf("%d", &matriz[i][j]);
+            scanf("%d", &matriz[i][j]);
         }
     }
 }
@@ -62,7 +62,7 @@ void imprimirMatriz(int [][100] matriz, int linhas, int colunas) {
 void somarMatrizes(int [][100] matriz1, int [][100] matriz2, int [][100]resultado, int linhas, int colunas) {
     for (int i = 0; i < linhas; i++) {
         for (int j = 0; j < colunas; j++) {
-           //resultado[i][j] = matriz1[i][j] + matriz2[i][j];
+          resultado[i][j] = matriz1[i][j] + matriz2[i][j];
         }
     }
 }
@@ -70,9 +70,9 @@ void somarMatrizes(int [][100] matriz1, int [][100] matriz2, int [][100]resultad
 void multiplicarMatrizes(int [][100] matriz1, int [][100] matriz2, int [][100] resultado, int linhas1, int colunas1, int colunas2) {
     for (int i = 0; i < linhas1; i++) {
         for (int j = 0; j < colunas2; j++) {
-            //resultado[i][j] = 0;
+            resultado[i][j] = 0;
             for (int k = 0; k < colunas1; k++) {
-                //resultado[i][j] += matriz1[i][k] * matriz2[k][j];
+                resultado[i][j] += matriz1[i][k] * matriz2[k][j];
             }
         }
     }
