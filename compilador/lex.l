@@ -49,17 +49,6 @@
 "writeFile"         {return(WRITEFILE);}
 "closeFile"         {return(CLOSEFILE);}
 "free"              {return(FREE);}
-"sizeof"            {return(SIZEOF);}
-"concat"            {return(CONCAT);}
-"lenght"            {return(LENGHT);}
-"split"             {return(SPLIT);}
-"includes"          {return(INCLUDES);}
-"replace"           {return(REPLACE);}
-"push"              {return(PUSH);}
-"pop"               {return(POP);}
-"indexOf"           {return(INDEXOF);}
-"reverse"           {return(REVERSE);}
-"slice"             {return(SLICE);}
 "&&"                {return(AND);}
 "||"                {return(OR);}
 "!"                 {return(yytext[0]);}
