@@ -4,6 +4,10 @@ mac2: lex byacc gcc_mac run_mac2
 
 mac3: lex byacc gcc_mac run_mac3
 
+mac4: lex byacc gcc_mac run_mac4
+
+mac5: lex byacc gcc_mac run_mac5
+
 macQuickSort: lex byacc gcc_mac run_macQuickSort
 
 macComandos: lex byacc gcc_mac run_macComandos
@@ -14,6 +18,10 @@ linux1: lex yacc gcc_linux run_linux
 linux2: lex yacc gcc_linux run_linux2
 
 linux3: lex yacc gcc_linux run_linux3
+
+linux4: lex yacc gcc_linux run_linux4
+
+linux5: lex yacc gcc_linux run_linux5
 
 linuxQuickSort: lex yacc gcc_linux run_linuxQuickSort
 
@@ -46,6 +54,12 @@ run_mac2: gcc_mac
 run_mac3: gcc_mac 
 	./a.out < teste3.txt
 
+run_mac4: gcc_mac 
+	./a.out < teste4.txt
+
+run_mac5: gcc_mac 
+	./a.out < teste5.txt
+
 run_macQuickSort: gcc_mac 
 	./a.out < quicksort.txt
 
@@ -60,6 +74,12 @@ run_linux2: gcc_linux
 
 run_linux3: gcc_linux
 	./a.out < teste3.txt
+
+run_linux4: gcc_linux
+	./a.out < teste4.txt
+
+run_linux5: gcc_linux
+	./a.out < teste5.txt
 
 run_linuxQuickSort: gcc_linux
 	./a.out < quicksort.txt
