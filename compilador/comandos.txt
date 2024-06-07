@@ -16,6 +16,9 @@ struct Pessoa pessoa;
 string[a][b][b1] array = ["teste", "cama"];
 funcao(a,b);
 
+ int *a = (int *) malloc (4 * 4) ;
+ temp = (int *) malloc (sizeof(Node));
+ 
 switch (diasDaSemana) {
     case DOMINGO:
        return 1;
@@ -51,5 +54,7 @@ for (i = 1; i <= 5; i++) {
 
 }
 
+int novoNo(int chave) {
 
-
+free(ptr);
+}

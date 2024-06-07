@@ -41,11 +41,11 @@ extern char * yytext;
 %start prog
 
 %type decl_vars decl_variavel expre_logica expre_arit termo fator 
-%type ops main args subprogs subprog decl_funcao decl_procedimento bloco comando args_com_vazio
+%type ops main args subprogs subprog decl_funcao decl_procedimento bloco comando args_com_vazio alocacao_memoria liberacao_memoria
 %type condicional retorno iteracao selecao casos caso elementos_array base caseBase casoDefault listaCasos
 %type decl_array tamanho_array definicao_struct lista_campos atribuicao_struct expressao_tamanho_array elemento_matriz definicao_enum lista_enum decl_array_atr_tipada decl_array_atr
 %type entrada saida comentario_selecao comentario decl_var_atr_tipada decl_var_atr decl_var_ponteiro decl_var_const decl_var
-%type  tipo_endereco tipo_ponteiro stmts base_elemento_array expressao_for_inicial parametros_rec parametro acesso_array parametro_com_vazio
+%type  tipo_endereco tipo_ponteiro stmts base_elemento_array expressao_for_inicial parametros_rec parametro acesso_array parametro_com_vazio 
 
 %%
 prog : stmts main subprogs {}
@@ -103,14 +103,15 @@ bloco :
       | comando bloco       {} 
       | ID ops PV bloco {}
       | ops ID PV bloco {}   
-      | comentario bloco {}            
+      | comentario bloco {}
+      | liberacao_memoria {}            
       ;
 
 comando : condicional {}
       | retorno {}
       | iteracao {} 
       | selecao {}
-      | chamada_funcao{} 
+      | chamada_funcao PV {} 
       | entrada {}
       | saida {}
       | atribuicao_struct {}
@@ -193,7 +194,17 @@ elseif : ELSE IF '(' expre_logica_iterador ')' '{' bloco '}' {}
 if_simples : IF '(' expre_logica_iterador ')' '{' bloco '}' {}
             ;
 
-chamada_funcao : ID '(' parametro_com_vazio ')' PV {}
+chamada_funcao : ID '(' parametro_com_vazio ')' {}
+               ;
+
+alocacao_memoria : '(' TYPE '*' ')' MALLOC '(' alocacao_memoria_parametros ')'  {}
+               ;
+
+alocacao_memoria_parametros : expre_arit  {}
+                              |chamada_funcao {} 
+                              ;
+
+liberacao_memoria : FREE '(' ID ')' PV {}
                ;
 
 entrada : PRINTLN '(' expre_logica ')' PV {} 
@@ -228,14 +239,14 @@ decl_array : TYPE tamanho_array ID '=' '[' elementos_array ']' PV {}
 decl_array_atr_tipada:  TYPE ID tamanho_array '=' expre_logica PV{}
                   | TYPE ID tamanho_array MOREISEQUAL expre_logica PV{}
                   | TYPE ID  tamanho_array LESSISEQUAL expre_logica PV{}
-                  | TYPE ID  tamanho_array '=' chamada_funcao {}
+                  | TYPE ID  tamanho_array '=' chamada_funcao PV {}
                   ;
 
 decl_array_atr: ID tamanho_array '=' expre_logica PV {}
             | ID tamanho_array '=' tipo_ponteiro PV {}
             | ID tamanho_array MOREISEQUAL expre_logica PV {}
             | ID tamanho_array LESSISEQUAL expre_logica PV {}
-            | ID tamanho_array '=' chamada_funcao {}
+            | ID tamanho_array '=' chamada_funcao PV {}
             ;
             
 tamanho_array: '[' expressao_tamanho_array ']'  {}
@@ -270,14 +281,14 @@ decl_variavel : decl_var_atr_tipada {}
 decl_var_atr_tipada:  TYPE ID '=' expre_logica PV{}
                   | TYPE ID MOREISEQUAL expre_logica PV{}
                   | TYPE ID LESSISEQUAL expre_logica PV{}
-                  | TYPE ID '=' chamada_funcao {}
+                  | TYPE ID '=' chamada_funcao PV {}
                   ;
 
 decl_var_atr: ID '=' expre_logica PV {}
             | ID '=' tipo_ponteiro PV {}
             | ID MOREISEQUAL expre_logica PV {}
             | ID LESSISEQUAL expre_logica PV {}
-            | ID '=' chamada_funcao {}
+            | ID '=' chamada_funcao PV {}
             ;
 
 decl_var: TYPE ID PV {}
@@ -290,6 +301,8 @@ decl_var_const: CONST TYPE ID  '=' expre_logica PV {}
 decl_var_ponteiro : tipo_ponteiro '=' ID PV {}
                   | tipo_ponteiro '=' tipo_ponteiro PV {}
                   | tipo_ponteiro '=' tipo_endereco PV {}
+                  | TYPE tipo_ponteiro '=' alocacao_memoria PV{}
+                  | ID '=' alocacao_memoria  PV {}
                   | TYPE tipo_ponteiro PV {}
                   ;
       
