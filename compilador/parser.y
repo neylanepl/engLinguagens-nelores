@@ -45,7 +45,7 @@ extern char * yytext;
 %type condicional retorno iteracao selecao casos caso elementos_array base caseBase casoDefault listaCasos
 %type decl_array tamanho_array definicao_struct lista_campos atribuicao_struct expressao_tamanho_array elemento_matriz definicao_enum lista_enum decl_array_atr_tipada decl_array_atr
 %type entrada saida comentario_selecao comentario decl_var_atr_tipada decl_var_atr decl_var_ponteiro decl_var_const decl_var
-%type  tipo_endereco tipo_ponteiro stmts base_elemento_array expressao_for_inicial parametros_rec parametro acesso_array parametro_com_vazio 
+%type  tipo_endereco tipo_ponteiro stmts base_elemento_array expressao_for_inicial parametros_rec parametro acesso_array parametro_com_vazio tipo tipo_array
 
 %%
 prog : stmts main subprogs {}
@@ -61,21 +61,30 @@ stmts: {}
       | definicao_struct stmts {}
       ;
 
-tipo_ponteiro: '*' ID  {}
+tipo_ponteiro: TYPE '*' {}
 		  ;
 
-tipo_endereco: '&' ID  {}
+ponteiro: '*' ID {}
+          ;
+
+tipo_endereco: TYPE '&' {}
 		  ;
 
-args : TYPE ID   {}
-      | ID ID   {}
-      | TYPE tipo_ponteiro   {}
-      | tipo_endereco   {}
-      | TYPE ID ',' args  {}
-      | tipo_endereco ',' args  {}
-      | TYPE tipo_ponteiro ',' args  {}
-      | TYPE tamanho_array ID {}
-      | TYPE tamanho_array ID ',' args {}
+endereco: '&' ID {}
+          ;
+
+tipo_array: TYPE tamanho_array {}
+            ;
+
+tipo: TYPE {}
+      | tipo_endereco {}
+      | tipo_ponteiro {}
+      | tipo_array {}
+      | ID {}
+      ;
+ 
+args : tipo ID   {}
+      | tipo ID ',' args  {}
       ;
 
 args_com_vazio : {}
@@ -90,8 +99,7 @@ subprog : decl_funcao           {}
       | decl_procedimento        {}                                           
       ;
 
-decl_funcao : TYPE ID '(' args_com_vazio ')' '{' bloco '}'       {}        
-              | ID ID '(' args_com_vazio ')' '{' bloco '}'       {}      
+decl_funcao : tipo ID '(' args_com_vazio ')' '{' bloco '}'       {}           
             ;
 
 decl_procedimento : VOID ID '(' args_com_vazio ')' '{' bloco '}'  {}                   
@@ -126,7 +134,7 @@ lista_enum : ID {}
           ;
 
 definicao_struct : STRUCT ID '{' lista_campos '}' {}
-                 | STRUCT ID ID PV {}
+                 | STRUCT tipo ID PV {}
                  ;
 
 atribuicao_struct : ID '.' ID '=' termo PV {} 
@@ -197,7 +205,7 @@ if_simples : IF '(' expre_logica_iterador ')' '{' bloco '}' {}
 chamada_funcao : ID '(' parametro_com_vazio ')' {}
                ;
 
-alocacao_memoria : '(' TYPE '*' ')' MALLOC '(' alocacao_memoria_parametros ')'  {}
+alocacao_memoria : '(' tipo_ponteiro ')' MALLOC '(' alocacao_memoria_parametros ')'  {}
                ;
 
 alocacao_memoria_parametros : expre_arit  {}
@@ -218,8 +226,8 @@ saida : TYPE ID '=' SCANF '(' ')' PV {}
       | ID '=' SCANF '(' ')' PV {}
       | SCANF '(' WORD ',' ID ')' PV {}
       | SCANF '(' WORD ',' ID acesso_array ')' PV {}
-      | SCANF '(' WORD ',' tipo_endereco ')' PV {}
-      | SCANF '(' WORD ',' tipo_endereco acesso_array ')' PV {}
+      | SCANF '(' WORD ',' endereco ')' PV {}
+      | SCANF '(' WORD ',' endereco acesso_array ')' PV {}
       ;
 
 decl_vars : decl_variavel  {}
@@ -243,7 +251,7 @@ decl_array_atr_tipada:  TYPE ID tamanho_array '=' expre_logica PV{}
                   ;
 
 decl_array_atr: ID tamanho_array '=' expre_logica PV {}
-            | ID tamanho_array '=' tipo_ponteiro PV {}
+            | ID tamanho_array '=' ponteiro PV {}
             | ID tamanho_array MOREISEQUAL expre_logica PV {}
             | ID tamanho_array LESSISEQUAL expre_logica PV {}
             | ID tamanho_array '=' chamada_funcao PV {}
@@ -285,7 +293,7 @@ decl_var_atr_tipada:  TYPE ID '=' expre_logica PV{}
                   ;
 
 decl_var_atr: ID '=' expre_logica PV {}
-            | ID '=' tipo_ponteiro PV {}
+            | ID '=' ponteiro PV {}
             | ID MOREISEQUAL expre_logica PV {}
             | ID LESSISEQUAL expre_logica PV {}
             | ID '=' chamada_funcao PV {}
@@ -298,12 +306,12 @@ decl_var_const: CONST TYPE ID  '=' expre_logica PV {}
               | FINAL TYPE ID  '=' expre_logica PV {}
               ;
 
-decl_var_ponteiro : tipo_ponteiro '=' ID PV {}
-                  | tipo_ponteiro '=' tipo_ponteiro PV {}
-                  | tipo_ponteiro '=' tipo_endereco PV {}
-                  | TYPE tipo_ponteiro '=' alocacao_memoria PV{}
+decl_var_ponteiro : ponteiro '=' ID PV {}
+                  | ponteiro '=' ponteiro PV {}
+                  | ponteiro '=' endereco PV {}
+                  | tipo_ponteiro ID '=' alocacao_memoria PV{}
                   | ID '=' alocacao_memoria  PV {}
-                  | TYPE tipo_ponteiro PV {}
+                  | tipo_ponteiro ID PV {}
                   ;
       
 parametros_rec : parametro {}
@@ -351,8 +359,8 @@ termo: termo '*' fator {}
 
 fator : fator '^' base {}
       | ID acesso_array {}
-      | tipo_endereco acesso_array {}
-      | tipo_endereco {}
+      | endereco acesso_array {}
+      | endereco {}
       | base {}
       ;
 

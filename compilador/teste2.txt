@@ -3,7 +3,7 @@ void main() {
 }
 
 void lerNumero(int *num) {
-    printf("Digite um número (negativo para terminar): ");
+    print("Digite um número (negativo para terminar): ");
     scanf("%d", num);
 }
 
@@ -36,11 +36,11 @@ int analiseDeIntervalos() {
     }
 
     // Exibindo os resultados
-    printf("Quantidade de números nos intervalos:\n");
-    printf("[0, 25]: %d\n", count025);
-    printf("[26, 50]: %d\n", count2650);
-    printf("[51, 75]: %d\n", count5175);
-    printf("[76, 100]: %d\n", count76100);
+    print("Quantidade de números nos intervalos:\n");
+    print("[0, 25]:" + count025);
+    print("[26, 50]:" + count2650);
+    print("[51, 75]:" + count5175);
+    print("[76, 100]:" + count76100);
 
     return 0;
 }
