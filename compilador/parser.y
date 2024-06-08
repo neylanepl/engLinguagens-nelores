@@ -42,10 +42,10 @@ extern char * yytext;
 
 %type decl_vars decl_variavel expre_logica expre_arit termo fator 
 %type ops main args subprogs subprog decl_funcao decl_procedimento bloco comando args_com_vazio alocacao_memoria liberacao_memoria
-%type condicional retorno iteracao selecao casos caso elementos_array base caseBase casoDefault listaCasos
+%type condicional retorno iteracao selecao casos caso elementos_array base casoDefault listaCasos
 %type decl_array tamanho_array definicao_struct lista_campos atribuicao_struct expressao_tamanho_array elemento_matriz definicao_enum lista_enum decl_array_atr_tipada decl_array_atr
-%type entrada saida comentario_selecao comentario decl_var_atr_tipada decl_var_atr decl_var_ponteiro decl_var_const decl_var
-%type  tipo_endereco tipo_ponteiro stmts base_elemento_array expressao_for_inicial parametros_rec parametro acesso_array parametro_com_vazio tipo tipo_array
+%type entrada saida comentario_selecao comentario decl_var_atr_tipada decl_var_atr decl_var_ponteiro decl_var_const decl_var saida_atribuicao
+%type  tipo_endereco tipo_ponteiro stmts base_case_array expressao_for_inicial parametros_rec parametro acesso_array parametro_com_vazio tipo tipo_array
 
 %%
 prog : stmts main subprogs {}
@@ -175,7 +175,7 @@ listaCasos : caso listaCasos {}
            | caso  {}
            ;
 
-caso : CASE caseBase ':' bloco BREAK PV comentario_selecao  {}
+caso : CASE base_case_array ':' bloco BREAK PV comentario_selecao  {}
 	;
 
 casoDefault : DEFAULT ':' bloco BREAK PV comentario_selecao {}
@@ -217,37 +217,38 @@ liberacao_memoria : FREE '(' ID ')' PV {}
 
 entrada : PRINTLN '(' expre_logica ')' PV {} 
         | PRINT '(' expre_logica ')' PV {} 
-        | PRINT '(' expre_logica ',' ID tamanho_array ')' PV {} 
         ;
 
-saida : TYPE ID '=' SCANF '(' ')' PV {}
-      | FINAL TYPE ID '=' SCANF '(' ')' PV {}
-      | CONST TYPE ID '=' SCANF '(' ')' PV {}
-      | ID '=' SCANF '(' ')' PV {}
-      | SCANF '(' WORD ',' ID ')' PV {}
+saida : SCANF '(' WORD ',' ID ')' PV {}
       | SCANF '(' WORD ',' ID acesso_array ')' PV {}
       | SCANF '(' WORD ',' endereco ')' PV {}
       | SCANF '(' WORD ',' endereco acesso_array ')' PV {}
+      | saida_atribuicao {}
+      ;
+
+saida_atribuicao: TYPE ID '=' saida {}
+      | FINAL TYPE ID '=' saida {}
+      | CONST TYPE ID '=' saida {}
+      | ID '=' saida {}
       ;
 
 decl_vars : decl_variavel  {}
             | decl_array {}
             ;
 
-decl_array : TYPE tamanho_array ID '=' '[' elementos_array ']' PV {}
-            | TYPE tamanho_array ID '='  expre_logica  PV {}
+decl_array : tipo_array ID '=' '[' elementos_array ']' PV {}
+            | tipo_array ID '='  expre_logica  PV {}
             | ID '=' '['  elementos_array  ']' PV {}
-            | CONST TYPE tamanho_array ID '=' '[' elementos_array ']' PV {}
-            | FINAL TYPE tamanho_array ID '=' '[' elementos_array ']' PV {}
-            | TYPE tamanho_array ID PV {} 
+            | CONST tipo_array ID '=' '[' elementos_array ']' PV {}
+            | FINAL tipo_array ID '=' '[' elementos_array ']' PV {}
+            | tipo_array ID PV {} 
             | decl_array_atr_tipada
             | decl_array_atr
             ;
 
-decl_array_atr_tipada:  TYPE ID tamanho_array '=' expre_logica PV{}
-                  | TYPE ID tamanho_array MOREISEQUAL expre_logica PV{}
-                  | TYPE ID  tamanho_array LESSISEQUAL expre_logica PV{}
-                  | TYPE ID  tamanho_array '=' chamada_funcao PV {}
+decl_array_atr_tipada: tipo_array ID MOREISEQUAL expre_logica PV{}
+                  | tipo_array ID  LESSISEQUAL expre_logica PV{}
+                  | tipo_array ID '=' chamada_funcao PV {}
                   ;
 
 decl_array_atr: ID tamanho_array '=' expre_logica PV {}
@@ -261,7 +262,6 @@ tamanho_array: '[' expressao_tamanho_array ']'  {}
              | '[' expressao_tamanho_array ']' tamanho_array {}
              ;
 
-
 expressao_tamanho_array: | ID {}
                          | NUMBER {}
                          ;
@@ -270,8 +270,8 @@ elemento_matriz:  '[' elementos_array ']' {}
                   | '[' elementos_array ']' ',' elemento_matriz {}
                   ;
 
-elementos_array :  base_elemento_array {}
-                  | base_elemento_array ',' elementos_array {}
+elementos_array :  base_case_array {}
+                  | base_case_array ',' elementos_array {}
                   | elemento_matriz {}
                   ;
 
@@ -319,7 +319,7 @@ parametros_rec : parametro {}
                ;
 
 parametro : expre_logica {}
-           | ID '.' ID {}
+           | tipo '.' ID {}
            ;
 
 parametro_com_vazio: {}
@@ -337,6 +337,7 @@ expre_logica : expre_logica ANDCIRCUIT expre_logica {}
              | expre_logica ISEQUAL expre_logica {}
              | expre_logica ISDIFFERENT expre_logica {}
              | '!'  expre_logica {}
+             | expre_logica_par {}
              | expre_arit {}
              ;
                
@@ -364,30 +365,24 @@ fator : fator '^' base {}
       | base {}
       ;
 
+expre_logica_par: '(' expre_logica ')' {}
+      ;
+
 base : ID {}
       | NUMBER {}
       | NUMBERFLOAT {}
       | WORD {}
       | TRUE {}
       | FALSE {}
-      | '(' expre_logica ')' {}
       ;
 
-base_elemento_array: ID {}
+base_case_array: ID {}
                   | NUMBER {}
                   | NUMBERFLOAT {}
                   | WORD {}
                   | TRUE {}
                   | FALSE {}
                   ;
-
-caseBase: ID {}
-        | NUMBER {}
-        | NUMBERFLOAT {}
-        | WORD {}
-        | TRUE {}
-        | FALSE {}
-        ;
 
 comentario: COMMENT {}
             ;
