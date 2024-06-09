@@ -78,6 +78,7 @@ main : VOID MAIN '(' args_com_vazio ')' '{' bloco '}' {
       char *s = cat("int main(", $4->code, "){\n", $7->code,"}");
       freeRecord($4);
       freeRecord($7);
+      $$ = createRecord(s, "");
       free(s);
       }
       ;
@@ -253,11 +254,7 @@ saida_atribuicao: TYPE ID '=' saida {}
       | ID '=' saida {}
       ;
 
-decl_vars : decl_variavel  {
-      char *s = cat($1->code,"","","","");
-      freeRecord($1);
-      free(s);
-}
+decl_vars : decl_variavel  {$$ = $1;}
             | decl_array {}
             ;
 
@@ -311,6 +308,7 @@ decl_variavel : decl_var_atr_tipada {}
               | decl_var {  
                   char *s = cat($1->code,"","","","");
                   freeRecord($1);
+                  $$ = createRecord(s, "");
                   free(s);}
               ;
 
@@ -328,9 +326,10 @@ decl_var_atr: ID '=' expre_logica PV {}
             ;
 
 decl_var: TYPE ID PV {
-char *s = cat("$1","$2",";","","");
+char *s = cat($1," ",$2,";","");
       free($1);
       free($2);
+      $$ = createRecord(s, "");
       free(s);
       }
       ;
