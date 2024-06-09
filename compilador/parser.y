@@ -108,7 +108,7 @@ args : tipo ID   {}
       | tipo ID ',' args  {}
       ;
 
-args_com_vazio : {}
+args_com_vazio : {$$ = createRecord("","");}
                | args
       ;
 
@@ -253,7 +253,11 @@ saida_atribuicao: TYPE ID '=' saida {}
       | ID '=' saida {}
       ;
 
-decl_vars : decl_variavel  {}
+decl_vars : decl_variavel  {
+      char *s = cat($1->code,"","","","");
+      freeRecord($1);
+      free(s);
+}
             | decl_array {}
             ;
 
@@ -304,7 +308,10 @@ decl_variavel : decl_var_atr_tipada {}
               | decl_var_atr {}
               | decl_var_ponteiro {}
               | decl_var_const {}
-              | decl_var {}
+              | decl_var {  
+                  char *s = cat($1->code,"","","","");
+                  freeRecord($1);
+                  free(s);}
               ;
 
 decl_var_atr_tipada:  TYPE ID '=' expre_logica PV{}
