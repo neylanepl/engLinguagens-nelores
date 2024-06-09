@@ -2,11 +2,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "./lib/record.h"
 
 int yylex(void);
 int yyerror(char *s);
 extern int yylineno;
 extern char * yytext;
+extern FILE * yyin, * yyout;
+
+char * cat(char *, char *, char *, char *, char *);
 
 %}
 
@@ -14,6 +18,7 @@ extern char * yytext;
 	int    iValue; 	/* integer value */
 	char   cValue; 	/* char value */
 	char * sValue;  /* string value */
+      struct record * rec;
 	};
 
 %token <sValue> ID
@@ -38,27 +43,43 @@ extern char * yytext;
 %right '!'
 %nonassoc UMINUS
 
+
+%type <rec> decl_vars decl_variavel expre_logica expre_arit termo fator 
+%type <rec> ops main args subprogs subprog decl_funcao decl_procedimento bloco comando args_com_vazio alocacao_memoria liberacao_memoria
+%type <rec> condicional retorno iteracao selecao casos caso elementos_array base casoDefault listaCasos
+%type <rec> decl_array tamanho_array definicao_struct lista_campos atribuicao_struct expressao_tamanho_array elemento_matriz definicao_enum lista_enum decl_array_atr_tipada decl_array_atr
+%type <rec> entrada saida comentario_selecao comentario decl_var_atr_tipada decl_var_atr decl_var_ponteiro decl_var_const decl_var saida_atribuicao
+%type <rec> tipo_endereco tipo_ponteiro stmts base_case_array expressao_for_inicial parametros_rec parametro acesso_array parametro_com_vazio tipo tipo_array
+
 %start prog
 
-%type decl_vars decl_variavel expre_logica expre_arit termo fator 
-%type ops main args subprogs subprog decl_funcao decl_procedimento bloco comando args_com_vazio alocacao_memoria liberacao_memoria
-%type condicional retorno iteracao selecao casos caso elementos_array base casoDefault listaCasos
-%type decl_array tamanho_array definicao_struct lista_campos atribuicao_struct expressao_tamanho_array elemento_matriz definicao_enum lista_enum decl_array_atr_tipada decl_array_atr
-%type entrada saida comentario_selecao comentario decl_var_atr_tipada decl_var_atr decl_var_ponteiro decl_var_const decl_var saida_atribuicao
-%type  tipo_endereco tipo_ponteiro stmts base_case_array expressao_for_inicial parametros_rec parametro acesso_array parametro_com_vazio tipo tipo_array
-
 %%
-prog : stmts main subprogs {}
+prog : stmts main subprogs {fprintf(yyout, "%s\n%s\n%s", $1->code, $2->code, $3->code);
+                           freeRecord($1);
+                           freeRecord($2);
+                           freeRecord($3);
+                           }
       ;
 
-main : VOID MAIN '(' args_com_vazio ')' '{' bloco '}' {}
-      ;
-
-stmts: {}
-      | decl_vars stmts {}
+stmts: {$$ = createRecord("","");}
+      | decl_vars stmts {
+            char * s = cat($1->code, "\n", $2->code, "", "");
+            freeRecord($1);
+            freeRecord($2);
+            $$ = createRecord(s, "");
+            free(s);
+      }
       | comentario  stmts {}
       | definicao_enum stmts {}
       | definicao_struct stmts {}
+      ;
+
+main : VOID MAIN '(' args_com_vazio ')' '{' bloco '}' {
+      char *s = cat("int main(", $4->code, "){\n", $7->code,"}");
+      freeRecord($4);
+      freeRecord($7);
+      free(s);
+      }
       ;
 
 tipo_ponteiro: TYPE '*' {}
@@ -91,7 +112,7 @@ args_com_vazio : {}
                | args
       ;
 
-subprogs :                                                              
+subprogs : {$$ = createRecord("","");}                                                       
       | subprog subprogs       {}                                              
       ;
 
@@ -105,7 +126,7 @@ decl_funcao : tipo ID '(' args_com_vazio ')' '{' bloco '}'       {}
 decl_procedimento : VOID ID '(' args_com_vazio ')' '{' bloco '}'  {}                   
                   ;
 
-bloco : 
+bloco : {$$ = createRecord("","");}
       | decl_variavel bloco  {}
       | decl_array bloco  {}
       | comando bloco       {} 
@@ -262,7 +283,7 @@ tamanho_array: '[' expressao_tamanho_array ']'  {}
              | '[' expressao_tamanho_array ']' tamanho_array {}
              ;
 
-expressao_tamanho_array: | ID {}
+expressao_tamanho_array:  ID {}
                          | NUMBER {}
                          ;
 
@@ -299,8 +320,13 @@ decl_var_atr: ID '=' expre_logica PV {}
             | ID '=' chamada_funcao PV {}
             ;
 
-decl_var: TYPE ID PV {}
-          ;
+decl_var: TYPE ID PV {
+char *s = cat("$1","$2",";","","");
+      free($1);
+      free($2);
+      free(s);
+      }
+      ;
       
 decl_var_const: CONST TYPE ID  '=' expre_logica PV {}
               | FINAL TYPE ID  '=' expre_logica PV {}
@@ -388,11 +414,43 @@ comentario: COMMENT {}
             ;
 %%
 
-int main (void) {
-	return yyparse ( );
+int main (int argc, char ** argv) {
+	 int codigo;
+
+    if (argc != 3) {
+      printf("Usage: $./compiler input.txt output.txt\nClosing application...\n");
+      exit(0);
+    }
+    
+    yyin = fopen(argv[1], "r");
+    yyout = fopen(argv[2], "w");
+
+    codigo = yyparse();
+
+    fclose(yyin);
+    fclose(yyout);
+
+    return codigo;
 }
 
 int yyerror (char *msg) {
 	fprintf (stderr, "%d: %s at '%s'\n", yylineno, msg, yytext);
 	return 0;
+}
+
+char * cat(char * s1, char * s2, char * s3, char * s4, char * s5){
+  int tam;
+  char * output;
+
+  tam = strlen(s1) + strlen(s2) + strlen(s3) + strlen(s4) + strlen(s5)+ 1;
+  output = (char *) malloc(sizeof(char) * tam);
+  
+  if (!output){
+    printf("Allocation problem. Closing application...\n");
+    exit(0);
+  }
+  
+  sprintf(output, "%s%s%s%s%s", s1, s2, s3, s4, s5);
+  
+  return output;
 }
