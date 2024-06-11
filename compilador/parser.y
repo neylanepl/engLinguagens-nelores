@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "./lib/record.h"
+#include "./lib/semantics.h"
+#include "./lib/hashTable.h"
 
 int yylex(void);
 int yyerror(char *s);
@@ -11,6 +13,11 @@ extern char * yytext;
 extern FILE * yyin, * yyout;
 
 char * cat(char *, char *, char *, char *, char *);
+SymbolTable *variablesTable;
+SymbolTable *functionsTable;
+SymbolTable *typedTable;
+int countFuncCallParams;
+
 
 %}
 
@@ -327,6 +334,10 @@ decl_var_atr: ID '=' expre_logica PV {}
 
 decl_var: TYPE ID PV {
 char *s = cat($1," ",$2,";","");
+if (lookup(variablesTable, $2)) {
+        yyerror(cat("error: redeclaration  of variable ", $2, "", "", ""));
+    }
+    insert(variablesTable, $2, $2, $1);
       free($1);
       free($2);
       $$ = createRecord(s, "");
@@ -422,19 +433,45 @@ comentario: COMMENT {}
 
 int main (int argc, char ** argv) {
 	 int codigo;
+       int mostrarTabelaDeSimbolos = 0;
 
-    if (argc != 3) {
+
+    if (argc < 3) {
       printf("Usage: $./compiler input.txt output.txt\nClosing application...\n");
       exit(0);
     }
     
+    if(argc == 4) {
+		if (strcmp(argv[3], "-t") == 0) {
+            mostrarTabelaDeSimbolos = 1;
+        } 
+	}
+
     yyin = fopen(argv[1], "r");
     yyout = fopen(argv[2], "w");
+
+      variablesTable = createSymbolTable(TABLE_SIZE);
+	functionsTable = createSymbolTable(TABLE_SIZE);
+	typedTable = createSymbolTable(TABLE_SIZE);
+	countFuncCallParams = 0;
+    
+	
 
     codigo = yyparse();
 
     fclose(yyin);
     fclose(yyout);
+
+if(mostrarTabelaDeSimbolos)	 {
+		printf("\n*******************************\n");
+		printf("Mostrando tabela de variaveis: \n");
+		printf("*******************************\n");
+		printTable(variablesTable);
+		printf("*******************************\n");
+		printf("Mostrando tabela de funcoes: \n");
+		printf("*******************************\n");
+		printTable(functionsTable);
+	}
 
     return codigo;
 }
@@ -442,21 +479,4 @@ int main (int argc, char ** argv) {
 int yyerror (char *msg) {
 	fprintf (stderr, "%d: %s at '%s'\n", yylineno, msg, yytext);
 	return 0;
-}
-
-char * cat(char * s1, char * s2, char * s3, char * s4, char * s5){
-  int tam;
-  char * output;
-
-  tam = strlen(s1) + strlen(s2) + strlen(s3) + strlen(s4) + strlen(s5)+ 1;
-  output = (char *) malloc(sizeof(char) * tam);
-  
-  if (!output){
-    printf("Allocation problem. Closing application...\n");
-    exit(0);
-  }
-  
-  sprintf(output, "%s%s%s%s%s", s1, s2, s3, s4, s5);
-  
-  return output;
 }

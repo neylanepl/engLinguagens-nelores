@@ -1,7 +1,7 @@
 all: compilador
 
 compilador: lex.yy.c y.tab.c 
-	gcc lex.yy.c y.tab.c ./lib/record.c -o compiler
+	gcc lex.yy.c y.tab.c ./lib/record.c ./lib/semantics.c ./lib/hashTable.c -o compiler
 
 lex.yy.c: lex.l
 	lex lex.l
@@ -13,7 +13,7 @@ clean:
 	rm -rf lex.yy.c y.tab.* compiler output.txt y.output teste.c
 
 compile:
-	./compiler declvar.txt teste.c
+	./compiler declvar.txt teste.c -t
 
 generatec:
 	gcc -o test teste.c

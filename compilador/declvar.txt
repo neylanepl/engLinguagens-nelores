@@ -1,2 +1,2 @@
-int a;
+bool b;
 void main(){}
