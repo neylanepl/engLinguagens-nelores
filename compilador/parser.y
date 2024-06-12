@@ -331,7 +331,7 @@ decl_var_atr_tipada:  TYPE ID '=' expre_logica PV{
 
                               if (strcmp($1, $4->code) == 0 || intfloat || floatint) {
                                     record *rcdIdDeclTipada = createRecord($2, "");
-                                    //init1(&$$, &rcdIdDeclTipada, &$1, &$4);
+                                    init1(&$$, &rcdIdDeclTipada, &$1, &$4);
                                     freeRecord(rcdIdDeclTipada);
                                     printf("Record tipad freed\n");
                               } else {
@@ -352,14 +352,13 @@ decl_var_atr: ID '=' expre_logica PV {}
             ;
 
 decl_var: TYPE ID PV {
-     if (lookup(variablesTable, $2)) {
-        yyerror(cat("error: redeclaration  of variable ", $2, "", "", ""));
+           if (lookup(variablesTable, $2)) {
+        yyerror(cat("error: redeclaration of variable ", $2, "", "", ""));
     }
     insert(variablesTable, $2, $2, $1);
-      free($1);
-      free($2);
-      $$ = createRecord(s, "");
-      free(s);
+    record *rcdIdDeclVar = createRecord($2, ""); 
+    dec1(&$$, &rcdIdDeclVar, &$1);
+    printf("Record declaração variavel freed\n");
 };
       
 decl_var_const: CONST TYPE ID  '=' expre_logica PV {}
