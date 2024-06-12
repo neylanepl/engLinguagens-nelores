@@ -87,8 +87,7 @@ main : VOID MAIN '(' args_com_vazio ')' '{' bloco '}' {
       freeRecord($7);
       $$ = createRecord(s, "");
       free(s);
-      }
-      ;
+};
 
 tipo_ponteiro: TYPE '*' {}
 		  ;
@@ -135,7 +134,13 @@ decl_procedimento : VOID ID '(' args_com_vazio ')' '{' bloco '}'  {}
                   ;
 
 bloco : {$$ = createRecord("","");}
-      | decl_variavel bloco  {}
+      | decl_variavel bloco  { 
+            char *s = cat($1->code,$2->code,"","","");
+            freeRecord($1);
+            freeRecord($2);
+            $$ = createRecord(s, "");
+            free(s);
+      }
       | decl_array bloco  {}
       | comando bloco       {} 
       | ID ops PV bloco {}
@@ -308,18 +313,32 @@ acesso_array: '[' expre_arit ']'  {}
             | '[' expre_arit ']' acesso_array {}
             ;
 
-decl_variavel : decl_var_atr_tipada {}
-              | decl_var_atr {}
-              | decl_var_ponteiro {}
-              | decl_var_const {}
-              | decl_var {  
-                  char *s = cat($1->code,"","","","");
-                  freeRecord($1);
-                  $$ = createRecord(s, "");
-                  free(s);}
+decl_variavel : decl_var_atr_tipada {$$ = $1;}
+              | decl_var_atr {$$ = $1;}
+              | decl_var_ponteiro {$$ = $1;}
+              | decl_var_const {$$ = $1;}
+              | decl_var {$$ = $1;}
               ;
 
-decl_var_atr_tipada:  TYPE ID '=' expre_logica PV{}
+decl_var_atr_tipada:  TYPE ID '=' expre_logica PV{
+                        if (lookup(variablesTable, $2)) {
+                              yyerror(cat("error: redeclaration of variable ", $2, "", "", ""));
+                        } else {
+                              insert(variablesTable, $2, $2, $1);
+
+                              int intfloat = !strcmp($1, "int") && !strcmp($4->code, "float");
+                              int floatint = !strcmp($1, "float") && !strcmp($4->code, "int");
+
+                              if (strcmp($1, $4->code) == 0 || intfloat || floatint) {
+                                    record *rcdIdDeclTipada = createRecord($2, "");
+                                    //init1(&$$, &rcdIdDeclTipada, &$1, &$4);
+                                    freeRecord(rcdIdDeclTipada);
+                                    printf("Record tipad freed\n");
+                              } else {
+                                    yyerror(cat("Initialization of ", $1, " from type ", $4->code, " is incompatible!"));
+                              }
+                        }  
+                  }
                   | TYPE ID MOREISEQUAL expre_logica PV{}
                   | TYPE ID LESSISEQUAL expre_logica PV{}
                   | TYPE ID '=' chamada_funcao PV {}
@@ -333,8 +352,7 @@ decl_var_atr: ID '=' expre_logica PV {}
             ;
 
 decl_var: TYPE ID PV {
-char *s = cat($1," ",$2,";","");
-if (lookup(variablesTable, $2)) {
+     if (lookup(variablesTable, $2)) {
         yyerror(cat("error: redeclaration  of variable ", $2, "", "", ""));
     }
     insert(variablesTable, $2, $2, $1);
@@ -342,8 +360,7 @@ if (lookup(variablesTable, $2)) {
       free($2);
       $$ = createRecord(s, "");
       free(s);
-      }
-      ;
+};
       
 decl_var_const: CONST TYPE ID  '=' expre_logica PV {}
               | FINAL TYPE ID  '=' expre_logica PV {}
@@ -381,14 +398,14 @@ expre_logica : expre_logica ANDCIRCUIT expre_logica {}
              | expre_logica ISDIFFERENT expre_logica {}
              | '!'  expre_logica {}
              | expre_logica_par {}
-             | expre_arit {}
+             | expre_arit {$$ = $1;}
              ;
                
 expre_arit : expre_arit '+' termo {}
             | expre_arit '-' termo {}
             | ops termo {}
             | termo ops {}
-            | termo {}
+            | termo {$$ = $1;}
             ;
 	    
 ops: INCREMENT {}
@@ -398,14 +415,14 @@ ops: INCREMENT {}
 termo: termo '*' fator {}
 	| termo '/' fator {}
 	| termo '%' fator {}
-	| fator {}
+	| fator {$$ = $1;}
 	;
 
 fator : fator '^' base {}
       | ID acesso_array {}
       | endereco acesso_array {}
       | endereco {}
-      | base {}
+      | base {$$ = $1;}
       ;
 
 expre_logica_par: '(' expre_logica ')' {}
@@ -415,8 +432,8 @@ base : ID {}
       | NUMBER {}
       | NUMBERFLOAT {}
       | WORD {}
-      | TRUE {}
-      | FALSE {}
+      | TRUE {baseTrue(&$$);}
+      | FALSE {baseFalse(&$$);}
       ;
 
 base_case_array: ID {}
@@ -432,37 +449,35 @@ comentario: COMMENT {}
 %%
 
 int main (int argc, char ** argv) {
-	 int codigo;
-       int mostrarTabelaDeSimbolos = 0;
+	int codigo;
+      int mostrarTabelaDeSimbolos = 0;
 
 
-    if (argc < 3) {
-      printf("Usage: $./compiler input.txt output.txt\nClosing application...\n");
-      exit(0);
-    }
-    
-    if(argc == 4) {
-		if (strcmp(argv[3], "-t") == 0) {
-            mostrarTabelaDeSimbolos = 1;
-        } 
-	}
+      if (argc < 3) {
+            printf("Usage: $./compiler input.txt output.txt\nClosing application...\n");
+            exit(0);
+      }
+      
+      if(argc == 4) {
+            if (strcmp(argv[3], "-t") == 0) {
+                  mostrarTabelaDeSimbolos = 1;
+            } 
+      }
 
-    yyin = fopen(argv[1], "r");
-    yyout = fopen(argv[2], "w");
+      yyin = fopen(argv[1], "r");
+      yyout = fopen(argv[2], "w");
 
       variablesTable = createSymbolTable(TABLE_SIZE);
 	functionsTable = createSymbolTable(TABLE_SIZE);
 	typedTable = createSymbolTable(TABLE_SIZE);
 	countFuncCallParams = 0;
     
-	
+      codigo = yyparse();
 
-    codigo = yyparse();
+      fclose(yyin);
+      fclose(yyout);
 
-    fclose(yyin);
-    fclose(yyout);
-
-if(mostrarTabelaDeSimbolos)	 {
+      if(mostrarTabelaDeSimbolos)	 {
 		printf("\n*******************************\n");
 		printf("Mostrando tabela de variaveis: \n");
 		printf("*******************************\n");
@@ -473,7 +488,7 @@ if(mostrarTabelaDeSimbolos)	 {
 		printTable(functionsTable);
 	}
 
-    return codigo;
+      return codigo;
 }
 
 int yyerror (char *msg) {

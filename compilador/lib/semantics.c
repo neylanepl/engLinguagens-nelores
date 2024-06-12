@@ -19,3 +19,30 @@ void dec1(record **ss, record **s2, char **s4) {
 	freeRecord(*s2);
 	free(str);
 }
+
+void init1(record **ss, record **id, char **type, record **expr) {
+    char *str;
+
+    if (0 == strcmp(*type, "string")) {
+        str = cat("char *", " ", (*id)->code, " = ", (*expr)->code);
+    } else if (0 == strcmp(*type, "boolean")) {
+        str = cat("int", " ", (*id)->code, " = ", (*expr)->code);
+    } else {
+        str = cat(*type, " ", (*id)->code, " = ", (*expr)->code);
+    }
+
+    *ss = createRecord(str, *type);
+
+    freeRecord(*id);
+    freeRecord(*expr);
+    free(*type);
+    free(str);
+}
+
+void baseTrue(record **ss) {
+    *ss = createRecord("bool", "true");
+}
+
+void baseFalse(record **ss) {
+    *ss = createRecord("bool", "false");
+}
