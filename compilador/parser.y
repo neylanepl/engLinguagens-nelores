@@ -17,6 +17,7 @@ SymbolTable *variablesTable;
 SymbolTable *functionsTable;
 SymbolTable *typedTable;
 int countFuncCallParams;
+void insertFunctionParam(char *, char *);
 
 
 %}
@@ -40,7 +41,7 @@ int countFuncCallParams;
 %token WRITEFILE CLOSEFILE FREE SIZEOF CONCAT LENGHT SPLIT INCLUDES
 %token REPLACE PUSH POP INDEXOF REVERSE SLICE AND OR SINGLELINECOMMENT 
 %token LESSTHENEQ MORETHENEQ ISEQUAL ISDIFFERENT ANDCIRCUIT ORCIRCUIT  PV
-%token TRUE FALSE DECREMENT INCREMENT MOREISEQUAL LESSISEQUAL EQUAL  COMMENT
+%token PROCEDURE TRUE FALSE DECREMENT INCREMENT MOREISEQUAL LESSISEQUAL EQUAL  COMMENT
 %left OR 
 %left AND 
 %left ANDCIRCUIT ORCIRCUIT
@@ -52,7 +53,7 @@ int countFuncCallParams;
 %nonassoc UMINUS
 
 
-%type <rec> decl_vars decl_variavel expre_logica expre_arit termo fator 
+%type <rec> decl_vars decl_variavel expre_logica expre_arit termo fator chamada_funcao
 %type <rec> ops main args subprogs subprog decl_funcao decl_procedimento bloco comando args_com_vazio alocacao_memoria liberacao_memoria
 %type <rec> condicional retorno iteracao selecao casos caso elementos_array base casoDefault listaCasos
 %type <rec> decl_array tamanho_array definicao_struct lista_campos atribuicao_struct expressao_tamanho_array elemento_matriz definicao_enum lista_enum decl_array_atr_tipada decl_array_atr
@@ -62,7 +63,7 @@ int countFuncCallParams;
 %start prog
 
 %%
-prog : stmts main subprogs {fprintf(yyout, "%s\n%s\n%s", $1->code, $2->code, $3->code);
+prog : stmts subprogs main {fprintf(yyout, "%s\n%s\n%s", $1->code, $2->code, $3->code);
                            freeRecord($1);
                            freeRecord($2);
                            freeRecord($3);
@@ -105,33 +106,54 @@ endereco: '&' ID {}
 tipo_array: TYPE tamanho_array {}
             ;
 
-tipo: TYPE {}
-      | tipo_endereco {}
-      | tipo_ponteiro {}
-      | tipo_array {}
-      | ID {}
+tipo: TYPE {$$ = createRecord($1,"");}
+      | tipo_endereco {$$ = $1;}
+      | tipo_ponteiro {$$ = $1;}
+      | tipo_array {$$ = $1;}
+      | ID {
+            if(lookup(typedTable, $1) == NULL){
+                  yyerror(cat("unknow type ",$1,"","",""));
+	      } 
+		$$ = createRecord($1,""); 
+      }
       ;
  
-args : tipo ID   {}
+args : tipo ID   {
+            insert(variablesTable, $2, $2, $1->code);
+	      insertFunctionParam($2, $1->code);
+      }
       | tipo ID ',' args  {}
       ;
 
 args_com_vazio : {$$ = createRecord("","");}
-               | args
+               | args {$$ = $1;}
       ;
 
 subprogs : {$$ = createRecord("","");}                                                       
-      | subprog subprogs       {}                                              
+      | subprog subprogs       {
+            char *declSubProgr = cat($1->code,$2->code,"","","");
+            freeRecord($1);
+            freeRecord($2);
+            $$ = createRecord(declSubProgr, "");
+            free(declSubProgr);
+      }                                              
       ;
 
-subprog : decl_funcao           {}                                              
-      | decl_procedimento        {}                                           
+subprog : decl_funcao           {$$ = $1;}                                              
+      | decl_procedimento        {$$ = $1;}                                           
       ;
 
-decl_funcao : tipo ID '(' args_com_vazio ')' '{' bloco '}'       {}           
+decl_funcao : FUNCTION tipo ID '(' args_com_vazio ')' '{' bloco '}'       {
+                        if (lookup(variablesTable, $3)) {
+                              yyerror(cat("error: redeclaration of function ", $3, "", "", ""));
+                        } else {
+                              insert(functionsTable, cat($3,"","","",""),"return",$2->code);
+                              declaracaoFuncao(&$$, &$3, &$5, &$2->code, &$8);
+                        }  
+}           
             ;
 
-decl_procedimento : VOID ID '(' args_com_vazio ')' '{' bloco '}'  {}                   
+decl_procedimento : PROCEDURE ID '(' args_com_vazio ')' '{' bloco '}'  {}                   
                   ;
 
 bloco : {$$ = createRecord("","");}
@@ -156,15 +178,20 @@ bloco : {$$ = createRecord("","");}
       | liberacao_memoria {}            
       ;
 
-comando : condicional {}
-      | retorno {}
-      | iteracao {} 
-      | selecao {}
-      | chamada_funcao PV {} 
+comando : condicional {$$ = $1;}
+      | retorno {$$ = $1;}
+      | iteracao {$$ = $1;} 
+      | selecao {$$ = $1;}
+      | chamada_funcao PV {
+            char *s = cat($1->code,";","","","");
+            freeRecord($1);
+            $$ = createRecord(s, "");
+            free(s);
+      } 
       | entrada {$$ = $1;}
-      | saida {}
-      | atribuicao_struct {}
-      | definicao_struct {}
+      | saida {$$ = $1;}
+      | atribuicao_struct {$$ = $1;}
+      | definicao_struct {$$ = $1;}
       ;
 
 definicao_enum : ENUM ID '{' lista_enum '}' PV {}
@@ -243,7 +270,18 @@ elseif : ELSE IF '(' expre_logica_iterador ')' '{' bloco '}' {}
 if_simples : IF '(' expre_logica_iterador ')' '{' bloco '}' {}
             ;
 
-chamada_funcao : ID '(' parametro_com_vazio ')' {}
+chamada_funcao : ID '(' parametro_com_vazio ')' {
+            SymbolInfos *foundFuncReturn = lookup(functionsTable, $1);
+            if(foundFuncReturn){
+                  char funcType[100];
+                  strcpy(funcType, foundFuncReturn->type);
+                  record *rcdParam = createRecord($3->code, "");
+                  chamadaParamFuncao(&$$, &$1, &rcdParam, funcType);
+                  countFuncCallParams = 0;
+            } else {
+                  yyerror(cat("undefined function ",$1,"","",""));
+            }
+      }
                ;
 
 alocacao_memoria : '(' tipo_ponteiro ')' MALLOC '(' alocacao_memoria_parametros ')'  {}
@@ -257,7 +295,7 @@ liberacao_memoria : FREE '(' ID ')' PV {}
                ;
 
 entrada : PRINTLN '(' expre_logica ')' PV {
-            printStringLiteral(&$$, &$3->code); 
+            printStringLiteral(&$$, &$3->opt1); 
         } 
         | PRINT '(' expre_logica ')' PV {} 
         ;
@@ -341,8 +379,6 @@ decl_var_atr_tipada:  TYPE ID '=' expre_logica PV{
                               if (strcmp($1, $4->code) == 0 || intfloat || floatint) {
                                     record *rcdIdDeclTipada = createRecord($2, "");
                                     init1(&$$, &rcdIdDeclTipada, &$1, &$4);
-                                    
-                                    printf("Record tipad freed\n");
                               } else {
                                     yyerror(cat("Initialization of ", $1, " from type ", $4->code, " is incompatible!"));
                               }
@@ -361,7 +397,7 @@ decl_var_atr: ID '=' expre_logica PV {}
             ;
 
 decl_var: TYPE ID PV {
-           if (lookup(variablesTable, $2)) {
+    if (lookup(variablesTable, $2)) {
         yyerror(cat("error: redeclaration of variable ", $2, "", "", ""));
     }
     insert(variablesTable, $2, $2, $1);
@@ -382,16 +418,16 @@ decl_var_ponteiro : ponteiro '=' ID PV {}
                   | tipo_ponteiro ID PV {}
                   ;
       
-parametros_rec : parametro {}
+parametros_rec : parametro {$$ = $1;}
                | parametro ',' parametros_rec {}
                ;
 
-parametro : expre_logica {}
+parametro : expre_logica {$$ = $1;}
            | tipo '.' ID {}
            ;
 
-parametro_com_vazio: {}
-                    | parametros_rec
+parametro_com_vazio: {$$ = createRecord("","");}
+                    | parametros_rec {$$ = $1;}
             ;
 
 expre_logica : expre_logica ANDCIRCUIT expre_logica {} 
@@ -502,4 +538,17 @@ int main (int argc, char ** argv) {
 int yyerror (char *msg) {
 	fprintf (stderr, "%d: %s at '%s'\n", yylineno, msg, yytext);
 	return 0;
+}
+
+
+void insertFunctionParam( char *paramName, char *paramType){
+	int paramId = 0; 
+	char strNum[30];
+
+	do {
+		sprintf(strNum, "%d", paramId);
+		paramId++;
+	} while(lookup(functionsTable, cat(strNum,"","","","")));
+
+	insert(functionsTable, cat(strNum,"","","",""), paramName, paramType);
 }

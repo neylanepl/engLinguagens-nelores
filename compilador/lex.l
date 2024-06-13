@@ -28,6 +28,7 @@
 "catch"             {return(CATCH);}
 "finally"           {return(FINALLY);}
 "function"          {return(FUNCTION);}
+"procedure"         {return(PROCEDURE);}
 "while"             {return(WHILE);}
 "for"               {return(FOR);}
 "switch"            {return(SWITCH);}

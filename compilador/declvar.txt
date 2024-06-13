@@ -1,8 +1,14 @@
+int rijwerwnekr;
+function float Calculando(int aiowutiw){
+    int skfs=10;
+}
+
 void main(){
-    bool fa=false;
+    bool fa=true;
     int a = 1;
     int c = 312;
     float aula3 = 10.6;
     string aula = "ttest";
-    println("O resultado da expressao ");
+    Calculando(10);
 }
+
