@@ -143,7 +143,13 @@ bloco : {$$ = createRecord("","");}
             free(s);
       }
       | decl_array bloco  {}
-      | comando bloco       {} 
+      | comando bloco {
+            char *declComando = cat($1->code,$2->code,"","","");
+            freeRecord($1);
+            freeRecord($2);
+            $$ = createRecord(declComando, "");
+            free(declComando);
+      } 
       | ID ops PV bloco {}
       | ops ID PV bloco {}   
       | comentario bloco {}
@@ -155,7 +161,7 @@ comando : condicional {}
       | iteracao {} 
       | selecao {}
       | chamada_funcao PV {} 
-      | entrada {}
+      | entrada {$$ = $1;}
       | saida {}
       | atribuicao_struct {}
       | definicao_struct {}
@@ -250,7 +256,9 @@ alocacao_memoria_parametros : expre_arit  {}
 liberacao_memoria : FREE '(' ID ')' PV {}
                ;
 
-entrada : PRINTLN '(' expre_logica ')' PV {} 
+entrada : PRINTLN '(' expre_logica ')' PV {
+            printStringLiteral(&$$, &$3->code); 
+        } 
         | PRINT '(' expre_logica ')' PV {} 
         ;
 

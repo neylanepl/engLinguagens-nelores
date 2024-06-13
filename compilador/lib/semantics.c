@@ -50,6 +50,13 @@ void baseFalse(record **ss) {
     *ss = createRecord("bool", "0");
 }
 
+void printStringLiteral(record **ss, char **s3) {
+	char *str = cat("println(", *s3, ")", "", "");
+	*ss = createRecord(str, "");
+	free(*s3);
+	free(str);
+};
+
 //STRING LITERAL
 void baseStringLiteral(record **ss, char **s1) {
     *ss = createRecord("string", *s1);
@@ -68,3 +75,4 @@ void baseRealNumber(record **ss, float *s1) {
 	sprintf(strNum, "%f", *s1);
 	*ss = createRecord("float", strNum);
 }
+
