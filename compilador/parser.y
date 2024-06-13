@@ -24,13 +24,14 @@ int countFuncCallParams;
 %union {
 	int    iValue; 	/* integer value */
 	char   cValue; 	/* char value */
+      float	fValue;     /* float value */	 
 	char * sValue;  /* string value */
       struct record * rec;
 	};
 
 %token <sValue> ID
 %token <sValue> WORD
-%token <sValue> NUMBERFLOAT
+%token <fValue> NUMBERFLOAT
 %token <iValue> NUMBER
 %token <sValue> TYPE
 %token WHILE FOR IF ELSE CONST FINAL ENUM  MAIN VOID EXCEPTION
@@ -332,7 +333,7 @@ decl_var_atr_tipada:  TYPE ID '=' expre_logica PV{
                               if (strcmp($1, $4->code) == 0 || intfloat || floatint) {
                                     record *rcdIdDeclTipada = createRecord($2, "");
                                     init1(&$$, &rcdIdDeclTipada, &$1, &$4);
-                                    freeRecord(rcdIdDeclTipada);
+                                    
                                     printf("Record tipad freed\n");
                               } else {
                                     yyerror(cat("Initialization of ", $1, " from type ", $4->code, " is incompatible!"));
@@ -428,9 +429,9 @@ expre_logica_par: '(' expre_logica ')' {}
       ;
 
 base : ID {}
-      | NUMBER {}
-      | NUMBERFLOAT {}
-      | WORD {}
+      | NUMBER {baseIntNumber(&$$, &$1);}
+      | NUMBERFLOAT {baseRealNumber(&$$, &$1);}
+      | WORD {baseStringLiteral(&$$, &$1);}
       | TRUE {baseTrue(&$$);}
       | FALSE {baseFalse(&$$);}
       ;

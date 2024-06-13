@@ -1,3 +1,7 @@
 void main(){
-    bool b = true;
+    bool b = false;
+    int a = 1;
+    int c = 312;
+    float aula3 = 10.6;
+    string aula = "ttest";
 }

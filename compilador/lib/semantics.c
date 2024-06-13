@@ -39,10 +39,31 @@ void init1(record **ss, record **id, char **type, record **expr) {
     free(str);
 }
 
+//VALUE TRUE
 void baseTrue(record **ss) {
     *ss = createRecord("bool", "true");
 }
 
+//VALUE FALSE
 void baseFalse(record **ss) {
     *ss = createRecord("bool", "false");
+}
+
+//STRING LITERAL
+void baseStringLiteral(record **ss, char **s1) {
+    *ss = createRecord("string", *s1);
+    free(*s1);
+}
+//INT NUMBER						
+void baseIntNumber(record **ss, int *s1)  {
+	char strNum[50];
+	sprintf(strNum, "%d", *s1);
+
+	*ss = createRecord("int",strNum);
+}
+//NUMBER REAL							
+void baseRealNumber(record **ss, float *s1) {
+	char strNum[50];
+	sprintf(strNum, "%f", *s1);
+	*ss = createRecord("float", strNum);
 }
