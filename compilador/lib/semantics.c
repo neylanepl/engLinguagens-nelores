@@ -51,7 +51,7 @@ void baseFalse(record **ss) {
 }
 
 void printStringLiteral(record **ss, char **s3) {
-	char *str = cat("println(", *s3, ")", "", "");
+	char *str = cat("printf(", *s3, ")", ";\n", "");
 	*ss = createRecord(str, "");
 	free(*s3);
 	free(str);
