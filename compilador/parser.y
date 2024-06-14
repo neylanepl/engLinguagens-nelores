@@ -295,7 +295,7 @@ liberacao_memoria : FREE '(' ID ')' PV {}
                ;
 
 entrada : PRINTLN '(' expre_logica ')' PV {
-            printStringLiteral(&$$, &$3->opt1); 
+            printStringLiteral(&$$, &$3->code); 
         } 
         | PRINT '(' expre_logica ')' PV {} 
         ;
@@ -376,7 +376,7 @@ decl_var_atr_tipada:  TYPE ID '=' expre_logica PV{
                               int intfloat = !strcmp($1, "int") && !strcmp($4->code, "float");
                               int floatint = !strcmp($1, "float") && !strcmp($4->code, "int");
 
-                              if (strcmp($1, $4->code) == 0 || intfloat || floatint) {
+                              if (strcmp($1, $4->opt1) == 0 || intfloat || floatint) {
                                     record *rcdIdDeclTipada = createRecord($2, "");
                                     init1(&$$, &rcdIdDeclTipada, &$1, &$4);
                               } else {
@@ -542,36 +542,36 @@ expre_logica : expre_logica ANDCIRCUIT expre_logica {}
              ;
                
 expre_arit : expre_arit '+' termo {
-                  int intfloat = !(strcmp($1->code, "int") || strcmp($3->code, "float"));
-                  int floatint = !(strcmp($1->code, "float") || strcmp($3->code, "int"));
-                  printf("---- %s %s ----", $1->code, $3->code);
+                  int intfloat = !(strcmp($1->opt1, "int") || strcmp($3->opt1, "float"));
+                  int floatint = !(strcmp($1->opt1, "float") || strcmp($3->opt1, "int"));
+                  printf("---- %s %s ----", $1->opt1, $3->opt1);
 
-                  if((0 == strcmp($1->code, $3->code)) || intfloat || floatint){
+                  if((0 == strcmp($1->opt1, $3->opt1)) || intfloat || floatint){
                         char inType[100];
                         if (intfloat || floatint) {
                               strcpy(inType, "float"); // Resultante de int + float ou float + int deve ser float
                         } else {
-                              strcpy(inType, $1->code); // Se ambos os tipos são iguais
+                              strcpy(inType, $1->opt1); // Se ambos os tipos são iguais
                         }
                         ex2(&$$, &$1, "+", &$3, inType);
                   } else {
-                        yyerror(cat("Types ", $1->code, " and ", $3->code, " are incompatible!"));
+                        yyerror(cat("Types ", $1->opt1, " and ", $3->opt1, " are incompatible!"));
                   }
             }
             | expre_arit '-' termo {
-                  int intfloat = !(strcmp($1->code, "int") || strcmp($3->code, "float"));
-                  int floatint = !(strcmp($1->code, "float") || strcmp($3->code, "int"));
+                  int intfloat = !(strcmp($1->opt1, "int") || strcmp($3->opt1, "float"));
+                  int floatint = !(strcmp($1->opt1, "float") || strcmp($3->opt1, "int"));
 
-                  if((0 == strcmp($1->code, $3->code)) || intfloat || floatint){
+                  if((0 == strcmp($1->opt1, $3->opt1)) || intfloat || floatint){
                         char inType[100];
                         if (intfloat || floatint) {
                               strcpy(inType, "float"); // Resultante de int + float ou float + int deve ser float
                         } else {
-                              strcpy(inType, $1->code); // Se ambos os tipos são iguais
+                              strcpy(inType, $1->opt1); // Se ambos os tipos são iguais
                         }
                         ex2(&$$, &$1, "-", &$3, inType);
                   } else {
-                        yyerror(cat("Types ", $1->code, " and ", $3->code, " are incompatible!"));
+                        yyerror(cat("Types ", $1->opt1, " and ", $3->opt1, " are incompatible!"));
                   }
             }
             | ops termo {}
@@ -584,53 +584,32 @@ ops: INCREMENT {}
      ;
 
 termo: termo '*' fator {
-            int intfloat = !(strcmp($1->code, "int") || strcmp($3->code, "float"));
-            int floatint = !(strcmp($1->code, "float") || strcmp($3->code, "int"));
+            int intfloat = !(strcmp($1->opt1, "int") || strcmp($3->opt1, "float"));
+            int floatint = !(strcmp($1->opt1, "float") || strcmp($3->opt1, "int"));
 
-            if((0 == strcmp($1->code, $3->code)) || intfloat || floatint){
+            if((0 == strcmp($1->opt1, $3->opt1)) || intfloat || floatint){
                   char inType[100];
                   if (intfloat || floatint) {
                         strcpy(inType, "float"); // Resultante de int + float ou float + int deve ser float
                   } else {
-                        strcpy(inType, $1->code); // Se ambos os tipos são iguais
+                        strcpy(inType, $1->opt1); // Se ambos os tipos são iguais
                   }
                   ex2(&$$, &$1, "*", &$3, inType);
             } else {
-                  yyerror(cat("Types ", $1->code, " and ", $3->code, " are incompatible!"));
+                  yyerror(cat("Types ", $1->opt1, " and ", $3->opt1, " are incompatible!"));
             }
       }
 	| termo '/' fator {
-            int intfloat = !(strcmp($1->code, "int") || strcmp($3->code, "float"));
-            int floatint = !(strcmp($1->code, "float") || strcmp($3->code, "int"));
+            int number1 = !(strcmp($1->opt1, "int") || !strcmp($1->opt1, "float"));
+            int number3 = !(strcmp($3->opt1, "int") || !strcmp($3->opt1, "float"));
 
-            if((0 == strcmp($1->code, $3->code)) || intfloat || floatint){
-                  char inType[100];
-                  if (intfloat || floatint) {
-                        strcpy(inType, "float"); // Resultante de int + float ou float + int deve ser float
-                  } else {
-                        strcpy(inType, $1->code); // Se ambos os tipos são iguais
-                  }
-                  ex2(&$$, &$1, "/", &$3, inType);
+            if(number1 && number3){
+                  ex2(&$$, &$1, "/", &$3, "float");
             } else {
-                  yyerror(cat("Types ", $1->code, " and ", $3->code, " are incompatible!"));
+                  yyerror(cat("Types ", $1->opt1, " and ", $3->opt1, " are incompatible!"));
             }
       }
-	| termo '%' fator {
-            int intfloat = !(strcmp($1->code, "int") || strcmp($3->code, "float"));
-            int floatint = !(strcmp($1->code, "float") || strcmp($3->code, "int"));
-
-            if((0 == strcmp($1->code, $3->code)) || intfloat || floatint){
-                  char inType[100];
-                  if (intfloat || floatint) {
-                        strcpy(inType, "float"); // Resultante de int + float ou float + int deve ser float
-                  } else {
-                        strcpy(inType, $1->code); // Se ambos os tipos são iguais
-                  }
-                  ex2(&$$, &$1, "%", &$3, inType);
-            } else {
-                  yyerror(cat("Types ", $1->code, " and ", $3->code, " are incompatible!"));
-            }
-      }
+	| termo '%' fator {}
 	| fator {$$ = $1;}
 	;
 

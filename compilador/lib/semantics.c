@@ -32,15 +32,15 @@ void init1(record **ss, record **id, char **type, record **expr)
 
 	if (0 == strcmp(*type, "string"))
 	{
-		str = cat("char * ", (*id)->code, " = ", (*expr)->opt1, ";\n");
+		str = cat("char * ", (*id)->code, " = ", (*expr)->code, ";\n");
 	}
 	else if (0 == strcmp(*type, "bool"))
 	{
-		str = cat("int ", (*id)->code, " = ", (*expr)->opt1, ";\n");
+		str = cat("int ", (*id)->code, " = ", (*expr)->code, ";\n");
 	}
 	else
 	{
-		str = cat(*type, " ", (*id)->code, " = ", (*expr)->opt1);
+		str = cat(*type, " ", (*id)->code, " = ", (*expr)->code);
 		str = cat(str, ";\n", "", "", "");
 	}
 
@@ -55,13 +55,13 @@ void init1(record **ss, record **id, char **type, record **expr)
 // VALUE TRUE
 void baseTrue(record **ss)
 {
-	*ss = createRecord("bool", "1");
+	*ss = createRecord("1", "bool");
 }
 
 // VALUE FALSE
 void baseFalse(record **ss)
 {
-	*ss = createRecord("bool", "0");
+	*ss = createRecord("0", "bool");
 }
 
 void printStringLiteral(record **ss, char **s3)
@@ -75,7 +75,7 @@ void printStringLiteral(record **ss, char **s3)
 // STRING LITERAL
 void baseStringLiteral(record **ss, char **s1)
 {
-	*ss = createRecord("string", *s1);
+	*ss = createRecord(*s1, "string");
 	free(*s1);
 }
 // INT NUMBER
@@ -84,14 +84,14 @@ void baseIntNumber(record **ss, int *s1)
 	char strNum[50];
 	sprintf(strNum, "%d", *s1);
 
-	*ss = createRecord("int", strNum);
+	*ss = createRecord(strNum, "int");
 }
 // NUMBER REAL
 void baseRealNumber(record **ss, float *s1)
 {
 	char strNum[50];
 	sprintf(strNum, "%f", *s1);
-	*ss = createRecord("float", strNum);
+	*ss = createRecord(strNum, "float");
 }
 
 // chamada de função : ID '(' params ')'
@@ -134,7 +134,7 @@ void declaracaoFuncao(record **ss, char **s2, record **s4, char **s7, record **s
 
 // | expre_arit X termo
 void ex2(record **ss, record **s1, char *s2, record **s3, char *type) {
-	char *str = cat((*s1)->opt1, (s2), (*s3)->opt1, "", "");
+	char *str = cat((*s1)->code, (s2), (*s3)->code, "", "");
 	freeRecord(*s1);
 	freeRecord(*s3);
 	*ss = createRecord(str, type);
