@@ -18,6 +18,7 @@ SymbolTable *functionsTable;
 SymbolTable *typedTable;
 int countFuncCallParams;
 void insertFunctionParam(char *, char *);
+char* lookup_type(record *);
 
 
 %}
@@ -112,7 +113,7 @@ tipo: TYPE {$$ = createRecord($1,"");}
       | tipo_array {$$ = $1;}
       | ID {
             if(lookup(typedTable, $1) == NULL){
-                  yyerror(cat("unknow type ",$1,"","",""));
+                  yyerror(cat("unknown type ",$1,"","",""));
 	      } 
 		$$ = createRecord($1,""); 
       }
@@ -295,9 +296,11 @@ liberacao_memoria : FREE '(' ID ')' PV {}
                ;
 
 entrada : PRINTLN '(' expre_logica ')' PV {
+            printLnStringLiteral(&$$, &$3->code); 
+        } 
+        | PRINT '(' expre_logica ')' PV {
             printStringLiteral(&$$, &$3->code); 
         } 
-        | PRINT '(' expre_logica ')' PV {} 
         ;
 
 saida : SCANF '(' WORD ',' ID ')' PV {}
@@ -373,14 +376,14 @@ decl_var_atr_tipada:  TYPE ID '=' expre_logica PV{
                         } else {
                               insert(variablesTable, $2, $2, $1);
 
-                              int intfloat = !strcmp($1, "int") && !strcmp($4->code, "float");
-                              int floatint = !strcmp($1, "float") && !strcmp($4->code, "int");
+                              int intfloat = !strcmp($1, "int") && !strcmp(lookup_type($4), "float");
+                              int floatint = !strcmp($1, "float") && !strcmp(lookup_type($4), "int");
 
-                              if (strcmp($1, $4->opt1) == 0 || intfloat || floatint) {
+                              if (strcmp($1, lookup_type($4)) == 0 || intfloat || floatint) {
                                     record *rcdIdDeclTipada = createRecord($2, "");
                                     init1(&$$, &rcdIdDeclTipada, &$1, &$4);
                               } else {
-                                    yyerror(cat("Initialization of ", $1, " from type ", $4->code, " is incompatible!"));
+                                    yyerror(cat("Initialization of ", $1, " from type ", lookup_type($4), " is incompatible!"));
                               }
                         }  
                   }
@@ -433,107 +436,107 @@ parametro_com_vazio: {$$ = createRecord("","");}
 expre_logica : expre_logica ANDCIRCUIT expre_logica {} 
              | expre_logica ORCIRCUIT expre_logica {} 
              | expre_logica AND expre_logica {
-                  int intfloat = !(strcmp($1->opt1, "int") || strcmp($3->opt1, "float"));
-                  int floatint = !(strcmp($1->opt1, "float") || strcmp($3->opt1, "int"));
+                  int intfloat = !(strcmp(lookup_type($1), "int") || strcmp(lookup_type($3), "float"));
+                  int floatint = !(strcmp(lookup_type($1), "float") || strcmp(lookup_type($3), "int"));
 
-                  if((0 == strcmp($1->opt1, $3->opt1)) || intfloat || floatint){
+                  if((0 == strcmp(lookup_type($1), lookup_type($3))) || intfloat || floatint){
                         char inType[100];
-                        strcpy(inType, $3->opt1);
+                        strcpy(inType, lookup_type($3));
 
                         ex2(&$$, &$1, "&&", &$3, inType);
                   } else {
-                        yyerror(cat("Types ", $1->opt1, " and ", $3->opt1, " are incompatible!"));
+                        yyerror(cat("Types ", lookup_type($1), " and ", lookup_type($3), " are incompatible!"));
                   }
              }
              | expre_logica OR expre_logica {
-                  int intfloat = !(strcmp($1->opt1, "int") || strcmp($3->opt1, "float"));
-                  int floatint = !(strcmp($1->opt1, "float") || strcmp($3->opt1, "int"));
+                  int intfloat = !(strcmp(lookup_type($1), "int") || strcmp(lookup_type($3), "float"));
+                  int floatint = !(strcmp(lookup_type($1), "float") || strcmp(lookup_type($3), "int"));
 
-                  if((0 == strcmp($1->opt1, $3->opt1)) || intfloat || floatint){
+                  if((0 == strcmp(lookup_type($1), lookup_type($3))) || intfloat || floatint){
                         char inType[100];
-                        strcpy(inType, $3->opt1);
+                        strcpy(inType, lookup_type($3));
 
                         ex2(&$$, &$1, "||", &$3, inType);
                   } else {
-                        yyerror(cat("Types ", $1->opt1, " and ", $3->opt1, " are incompatible!"));
+                        yyerror(cat("Types ", lookup_type($1), " and ", lookup_type($3), " are incompatible!"));
                   }
              }
              | expre_logica LESSTHENEQ expre_logica {
-                  int intfloat = !(strcmp($1->opt1, "int") || strcmp($3->opt1, "float"));
-                  int floatint = !(strcmp($1->opt1, "float") || strcmp($3->opt1, "int"));
+                  int intfloat = !(strcmp(lookup_type($1), "int") || strcmp(lookup_type($3), "float"));
+                  int floatint = !(strcmp(lookup_type($1), "float") || strcmp(lookup_type($3), "int"));
 
-                  if((0 == strcmp($1->opt1, $3->opt1)) || intfloat || floatint){
+                  if((0 == strcmp(lookup_type($1), lookup_type($3))) || intfloat || floatint){
                         char inType[100];
-                        strcpy(inType, $3->opt1);
+                        strcpy(inType, lookup_type($3));
 
                         ex2(&$$, &$1, "<=", &$3, inType);
                   } else {
-                        yyerror(cat("Types ", $1->opt1, " and ", $3->opt1, " are incompatible!"));
+                        yyerror(cat("Types ", lookup_type($1), " and ", lookup_type($3), " are incompatible!"));
                   }
              }
              | expre_logica MORETHENEQ expre_logica {
-                  int intfloat = !(strcmp($1->opt1, "int") || strcmp($3->opt1, "float"));
-                  int floatint = !(strcmp($1->opt1, "float") || strcmp($3->opt1, "int"));
+                  int intfloat = !(strcmp(lookup_type($1), "int") || strcmp(lookup_type($3), "float"));
+                  int floatint = !(strcmp(lookup_type($1), "float") || strcmp(lookup_type($3), "int"));
 
-                  if((0 == strcmp($1->opt1, $3->opt1)) || intfloat || floatint){
+                  if((0 == strcmp(lookup_type($1), lookup_type($3))) || intfloat || floatint){
                         char inType[100];
-                        strcpy(inType, $3->opt1);
+                        strcpy(inType, lookup_type($3));
 
                         ex2(&$$, &$1, ">=", &$3, inType);
                   } else {
-                        yyerror(cat("Types ", $1->opt1, " and ", $3->opt1, " are incompatible!"));
+                        yyerror(cat("Types ", lookup_type($1), " and ", lookup_type($3), " are incompatible!"));
                   }
              }
              | expre_logica '<' expre_logica {
-                  int intfloat = !(strcmp($1->opt1, "int") || strcmp($3->opt1, "float"));
-                  int floatint = !(strcmp($1->opt1, "float") || strcmp($3->opt1, "int"));
+                  int intfloat = !(strcmp(lookup_type($1), "int") || strcmp(lookup_type($3), "float"));
+                  int floatint = !(strcmp(lookup_type($1), "float") || strcmp(lookup_type($3), "int"));
 
-                  if((0 == strcmp($1->opt1, $3->opt1)) || intfloat || floatint){
+                  if((0 == strcmp(lookup_type($1), lookup_type($3))) || intfloat || floatint){
                         char inType[100];
-                        strcpy(inType, $3->opt1);
+                        strcpy(inType, lookup_type($3));
 
                         ex2(&$$, &$1, "<", &$3, inType);
                   } else {
-                        yyerror(cat("Types ", $1->opt1, " and ", $3->opt1, " are incompatible!"));
+                        yyerror(cat("Types ", lookup_type($1), " and ", lookup_type($3), " are incompatible!"));
                   }
              }
              | expre_logica '>' expre_logica {
-                  int intfloat = !(strcmp($1->opt1, "int") || strcmp($3->opt1, "float"));
-                  int floatint = !(strcmp($1->opt1, "float") || strcmp($3->opt1, "int"));
+                  int intfloat = !(strcmp(lookup_type($1), "int") || strcmp(lookup_type($3), "float"));
+                  int floatint = !(strcmp(lookup_type($1), "float") || strcmp(lookup_type($3), "int"));
 
-                  if((0 == strcmp($1->opt1, $3->opt1)) || intfloat || floatint){
+                  if((0 == strcmp(lookup_type($1), lookup_type($3))) || intfloat || floatint){
                         char inType[100];
-                        strcpy(inType, $3->opt1);
+                        strcpy(inType, lookup_type($3));
 
                         ex2(&$$, &$1, ">", &$3, inType);
                   } else {
-                        yyerror(cat("Types ", $1->opt1, " and ", $3->opt1, " are incompatible!"));
+                        yyerror(cat("Types ", lookup_type($1), " and ", lookup_type($3), " are incompatible!"));
                   }
              }
              | expre_logica ISEQUAL expre_logica {
-                  int intfloat = !(strcmp($1->opt1, "int") || strcmp($3->opt1, "float"));
-                  int floatint = !(strcmp($1->opt1, "float") || strcmp($3->opt1, "int"));
+                  int intfloat = !(strcmp(lookup_type($1), "int") || strcmp(lookup_type($3), "float"));
+                  int floatint = !(strcmp(lookup_type($1), "float") || strcmp(lookup_type($3), "int"));
 
-                  if((0 == strcmp($1->opt1, $3->opt1)) || intfloat || floatint){
+                  if((0 == strcmp(lookup_type($1), lookup_type($3))) || intfloat || floatint){
                         char inType[100];
-                        strcpy(inType, $3->opt1);
+                        strcpy(inType, lookup_type($3));
 
                         ex2(&$$, &$1, "==", &$3, inType);
                   } else {
-                        yyerror(cat("Types ", $1->opt1, " and ", $3->opt1, " are incompatible!"));
+                        yyerror(cat("Types ", lookup_type($1), " and ", lookup_type($3), " are incompatible!"));
                   }
              }
              | expre_logica ISDIFFERENT expre_logica {
-                  int intfloat = !(strcmp($1->opt1, "int") || strcmp($3->opt1, "float"));
-                  int floatint = !(strcmp($1->opt1, "float") || strcmp($3->opt1, "int"));
+                  int intfloat = !(strcmp(lookup_type($1), "int") || strcmp(lookup_type($3), "float"));
+                  int floatint = !(strcmp(lookup_type($1), "float") || strcmp(lookup_type($3), "int"));
 
-                  if((0 == strcmp($1->opt1, $3->opt1)) || intfloat || floatint){
+                  if((0 == strcmp(lookup_type($1), lookup_type($3))) || intfloat || floatint){
                         char inType[100];
-                        strcpy(inType, $3->opt1);
+                        strcpy(inType, lookup_type($3));
 
                         ex2(&$$, &$1, "!=", &$3, inType);
                   } else {
-                        yyerror(cat("Types ", $1->opt1, " and ", $3->opt1, " are incompatible!"));
+                        yyerror(cat("Types ", lookup_type($1), " and ", lookup_type($3), " are incompatible!"));
                   }
              }
              | '!'  expre_logica {}
@@ -542,36 +545,35 @@ expre_logica : expre_logica ANDCIRCUIT expre_logica {}
              ;
                
 expre_arit : expre_arit '+' termo {
-                  int intfloat = !(strcmp($1->opt1, "int") || strcmp($3->opt1, "float"));
-                  int floatint = !(strcmp($1->opt1, "float") || strcmp($3->opt1, "int"));
-                  printf("---- %s %s ----", $1->opt1, $3->opt1);
+                  int intfloat = !(strcmp(lookup_type($1), "int") || strcmp(lookup_type($3), "float"));
+                  int floatint = !(strcmp(lookup_type($1), "float") || strcmp(lookup_type($3), "int"));
 
-                  if((0 == strcmp($1->opt1, $3->opt1)) || intfloat || floatint){
+                  if((0 == strcmp(lookup_type($1), lookup_type($3))) || intfloat || floatint){
                         char inType[100];
                         if (intfloat || floatint) {
                               strcpy(inType, "float"); // Resultante de int + float ou float + int deve ser float
                         } else {
-                              strcpy(inType, $1->opt1); // Se ambos os tipos são iguais
+                              strcpy(inType, lookup_type($1)); // Se ambos os tipos são iguais
                         }
                         ex2(&$$, &$1, "+", &$3, inType);
                   } else {
-                        yyerror(cat("Types ", $1->opt1, " and ", $3->opt1, " are incompatible!"));
+                        yyerror(cat("Types ", lookup_type($1), " and ", lookup_type($3), " are incompatible!"));
                   }
             }
             | expre_arit '-' termo {
-                  int intfloat = !(strcmp($1->opt1, "int") || strcmp($3->opt1, "float"));
-                  int floatint = !(strcmp($1->opt1, "float") || strcmp($3->opt1, "int"));
+                  int intfloat = !(strcmp(lookup_type($1), "int") || strcmp(lookup_type($3), "float"));
+                  int floatint = !(strcmp(lookup_type($1), "float") || strcmp(lookup_type($3), "int"));
 
-                  if((0 == strcmp($1->opt1, $3->opt1)) || intfloat || floatint){
+                  if((0 == strcmp(lookup_type($1), lookup_type($3))) || intfloat || floatint){
                         char inType[100];
                         if (intfloat || floatint) {
                               strcpy(inType, "float"); // Resultante de int + float ou float + int deve ser float
                         } else {
-                              strcpy(inType, $1->opt1); // Se ambos os tipos são iguais
+                              strcpy(inType, lookup_type($1)); // Se ambos os tipos são iguais
                         }
                         ex2(&$$, &$1, "-", &$3, inType);
                   } else {
-                        yyerror(cat("Types ", $1->opt1, " and ", $3->opt1, " are incompatible!"));
+                        yyerror(cat("Types ", lookup_type($1), " and ", lookup_type($3), " are incompatible!"));
                   }
             }
             | ops termo {}
@@ -584,29 +586,29 @@ ops: INCREMENT {}
      ;
 
 termo: termo '*' fator {
-            int intfloat = !(strcmp($1->opt1, "int") || strcmp($3->opt1, "float"));
-            int floatint = !(strcmp($1->opt1, "float") || strcmp($3->opt1, "int"));
+            int intfloat = !(strcmp(lookup_type($1), "int") || strcmp(lookup_type($3), "float"));
+            int floatint = !(strcmp(lookup_type($1), "float") || strcmp(lookup_type($3), "int"));
 
-            if((0 == strcmp($1->opt1, $3->opt1)) || intfloat || floatint){
+            if((0 == strcmp(lookup_type($1), lookup_type($3))) || intfloat || floatint){
                   char inType[100];
                   if (intfloat || floatint) {
                         strcpy(inType, "float"); // Resultante de int + float ou float + int deve ser float
                   } else {
-                        strcpy(inType, $1->opt1); // Se ambos os tipos são iguais
+                        strcpy(inType, lookup_type($1)); // Se ambos os tipos são iguais
                   }
                   ex2(&$$, &$1, "*", &$3, inType);
             } else {
-                  yyerror(cat("Types ", $1->opt1, " and ", $3->opt1, " are incompatible!"));
+                  yyerror(cat("Types ", lookup_type($1), " and ", lookup_type($3), " are incompatible!"));
             }
       }
 	| termo '/' fator {
-            int number1 = !(strcmp($1->opt1, "int") || !strcmp($1->opt1, "float"));
-            int number3 = !(strcmp($3->opt1, "int") || !strcmp($3->opt1, "float"));
+            int number1 = !(strcmp(lookup_type($1), "int") || !strcmp(lookup_type($1), "float"));
+            int number3 = !(strcmp(lookup_type($3), "int") || !strcmp(lookup_type($3), "float"));
 
             if(number1 && number3){
                   ex2(&$$, &$1, "/", &$3, "float");
             } else {
-                  yyerror(cat("Types ", $1->opt1, " and ", $3->opt1, " are incompatible!"));
+                  yyerror(cat("Types ", lookup_type($1), " and ", lookup_type($3), " are incompatible!"));
             }
       }
 	| termo '%' fator {}
@@ -623,7 +625,7 @@ fator : fator '^' base {}
 expre_logica_par: '(' expre_logica ')' {}
       ;
 
-base : ID {}
+base : ID {baseID(&$$, &$1);}
       | NUMBER {baseIntNumber(&$$, &$1);}
       | NUMBERFLOAT {baseRealNumber(&$$, &$1);}
       | WORD {baseStringLiteral(&$$, &$1);}
@@ -702,4 +704,18 @@ void insertFunctionParam( char *paramName, char *paramType){
 	} while(lookup(functionsTable, cat(strNum,"","","","")));
 
 	insert(functionsTable, cat(strNum,"","","",""), paramName, paramType);
+}
+
+char* lookup_type(record *r) {
+	char* type = r->opt1;
+	if (!strcmp(type, "id")) {
+		SymbolInfos *info = lookup(variablesTable, r->code);
+		if (info == NULL) {
+                  yyerror(cat("Cannot use variable ", r->code, " before initialization!", "", ""));
+		} else {
+                  return info->type;
+            }
+	} else {
+            return r->opt1;
+      }
 }

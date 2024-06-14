@@ -72,6 +72,14 @@ void printStringLiteral(record **ss, char **s3)
 	free(str);
 };
 
+void printLnStringLiteral(record **ss, char **s3)
+{
+	char *str = cat("printf(", *s3, ")", ";\n", "printf(\"\\n\");\n");
+	*ss = createRecord(str, "");
+	free(*s3);
+	free(str);
+};
+
 // STRING LITERAL
 void baseStringLiteral(record **ss, char **s1)
 {
@@ -80,7 +88,7 @@ void baseStringLiteral(record **ss, char **s1)
 }
 
 void baseID(record **ss, char **s1) {
-    *ss = createRecord(*s1, "");
+    *ss = createRecord(*s1, "id");
 	free(*s1);
 }
 
@@ -141,6 +149,7 @@ void declaracaoFuncao(record **ss, char **s2, record **s4, char **s7, record **s
 // | expre_arit X termo
 void ex2(record **ss, record **s1, char *s2, record **s3, char *type) {
 	char *str = cat((*s1)->code, (s2), (*s3)->code, "", "");
+	printf("---- %s %s %s ----\n", (*s1)->code, (s2), (*s3)->code);
 	freeRecord(*s1);
 	freeRecord(*s3);
 	*ss = createRecord(str, type);

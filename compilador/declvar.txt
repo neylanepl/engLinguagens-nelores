@@ -1,15 +1,8 @@
-int rijwerwnekr;
-function float Calculando(int aiowutiw){
-    int skfs=10;
+void main() {
+    float x = 3.5;
+    float y = 2.1;
+    int c = 4;
+    float resultado =  x * x - y + c;
+    print("O resultado da expressao ");
+    println(resultado);
 }
-
-void main(){
-    bool fa=true;
-    int a = 1;
-    int c = 2;
-    float aula3 = 10.6;
-    string aula = "ttest";
-    int resultado = a + a;
-    Calculando(20-20.2);
-}
-
