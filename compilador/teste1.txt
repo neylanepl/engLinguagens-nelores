@@ -2,9 +2,6 @@ void main() {
     float x = 3.5;
     float y = 2.1;
     int c = 4;
-    Calculando(x,y,c);
-}
-void Calculando(float x, float y, int c){
-    float resultado =  x ^ 2 - y + c;
+    float resultado =  x * x - y + c;
     println("O resultado da expressao " + resultado);
 }

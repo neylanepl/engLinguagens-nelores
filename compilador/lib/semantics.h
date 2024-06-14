@@ -10,6 +10,7 @@ void baseTrue(record **);
 void baseFalse(record **);
 void printStringLiteral(record **, char **);
 void baseStringLiteral(record **, char **);
+void baseID(record **, char **);
 void baseIntNumber(record **, int *);
 void baseRealNumber(record **, float *);
 void chamadaParamFuncao(record **ss, char **s1, record **s3, char *type);

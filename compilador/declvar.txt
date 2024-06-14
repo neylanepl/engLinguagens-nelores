@@ -6,9 +6,10 @@ function float Calculando(int aiowutiw){
 void main(){
     bool fa=true;
     int a = 1;
-    int c = 312;
+    int c = 2;
     float aula3 = 10.6;
     string aula = "ttest";
+    int resultado = a + a;
     Calculando(20-20.2);
 }
 

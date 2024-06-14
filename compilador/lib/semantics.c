@@ -78,6 +78,12 @@ void baseStringLiteral(record **ss, char **s1)
 	*ss = createRecord(*s1, "string");
 	free(*s1);
 }
+
+void baseID(record **ss, char **s1) {
+    *ss = createRecord(*s1, "");
+	free(*s1);
+}
+
 // INT NUMBER
 void baseIntNumber(record **ss, int *s1)
 {
