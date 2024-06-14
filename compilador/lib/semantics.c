@@ -134,9 +134,9 @@ void declaracaoFuncao(record **ss, char **s2, record **s4, char **s7, record **s
 
 // | expre_arit X termo
 void ex2(record **ss, record **s1, char *s2, record **s3, char *type) {
-	char *str = cat((*s1)->code, (s2), (*s3)->code, "", "");
+	char *str = cat((*s1)->opt1, (s2), (*s3)->opt1, "", "");
 	freeRecord(*s1);
 	freeRecord(*s3);
-	*ss = createRecord(type, str);
+	*ss = createRecord(str, type);
 	free(str);
 };

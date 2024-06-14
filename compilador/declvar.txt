@@ -9,6 +9,6 @@ void main(){
     int c = 312;
     float aula3 = 10.6;
     string aula = "ttest";
-    Calculando(10);
+    Calculando(20-20.2);
 }
 
