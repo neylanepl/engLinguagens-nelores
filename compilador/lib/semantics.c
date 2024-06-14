@@ -97,8 +97,8 @@ void baseRealNumber(record **ss, float *s1)
 // chamada de função : ID '(' params ')'
 void chamadaParamFuncao(record **ss, char **s1, record **s3, char *type)
 {
-	char *str = cat(*s1, "(", (*s3)->code, ")", ";\n");
-	*ss = createRecord(type, str);
+	char *str = cat(*s1, "(", (*s3)->code, ")", "");
+	*ss = createRecord(str, type);
 	freeRecord(*s3);
 	// free(*s1);
 	free(str);
@@ -129,4 +129,14 @@ void declaracaoFuncao(record **ss, char **s2, record **s4, char **s7, record **s
 	free(*s7);
 	free(str1);
 	free(str2);
+};
+
+
+// | expre_arit X termo
+void ex2(record **ss, record **s1, char *s2, record **s3, char *type) {
+	char *str = cat((*s1)->code, (s2), (*s3)->code, "", "");
+	freeRecord(*s1);
+	freeRecord(*s3);
+	*ss = createRecord(type, str);
+	free(str);
 };

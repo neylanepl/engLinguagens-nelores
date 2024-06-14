@@ -183,7 +183,7 @@ comando : condicional {$$ = $1;}
       | iteracao {$$ = $1;} 
       | selecao {$$ = $1;}
       | chamada_funcao PV {
-            char *s = cat($1->code,";","","","");
+            char *s = cat($1->code,";\n","","","");
             freeRecord($1);
             $$ = createRecord(s, "");
             free(s);
@@ -431,22 +431,146 @@ parametro_com_vazio: {$$ = createRecord("","");}
             ;
 
 expre_logica : expre_logica ANDCIRCUIT expre_logica {} 
-             | expre_logica ORCIRCUIT expre_logica {}
-             | expre_logica AND expre_logica {}
-             | expre_logica OR expre_logica {}
-             | expre_logica LESSTHENEQ expre_logica {}
-             | expre_logica MORETHENEQ expre_logica {}
-             | expre_logica '<' expre_logica {}
-             | expre_logica '>' expre_logica {}
-             | expre_logica ISEQUAL expre_logica {}
-             | expre_logica ISDIFFERENT expre_logica {}
+             | expre_logica ORCIRCUIT expre_logica {} 
+             | expre_logica AND expre_logica {
+                  int intfloat = !(strcmp($1->opt1, "int") || strcmp($3->opt1, "float"));
+                  int floatint = !(strcmp($1->opt1, "float") || strcmp($3->opt1, "int"));
+
+                  if((0 == strcmp($1->opt1, $3->opt1)) || intfloat || floatint){
+                        char inType[100];
+                        strcpy(inType, $3->opt1);
+
+                        ex2(&$$, &$1, "&&", &$3, inType);
+                  } else {
+                        yyerror(cat("Types ", $1->opt1, " and ", $3->opt1, " are incompatible!"));
+                  }
+             }
+             | expre_logica OR expre_logica {
+                  int intfloat = !(strcmp($1->opt1, "int") || strcmp($3->opt1, "float"));
+                  int floatint = !(strcmp($1->opt1, "float") || strcmp($3->opt1, "int"));
+
+                  if((0 == strcmp($1->opt1, $3->opt1)) || intfloat || floatint){
+                        char inType[100];
+                        strcpy(inType, $3->opt1);
+
+                        ex2(&$$, &$1, "||", &$3, inType);
+                  } else {
+                        yyerror(cat("Types ", $1->opt1, " and ", $3->opt1, " are incompatible!"));
+                  }
+             }
+             | expre_logica LESSTHENEQ expre_logica {
+                  int intfloat = !(strcmp($1->opt1, "int") || strcmp($3->opt1, "float"));
+                  int floatint = !(strcmp($1->opt1, "float") || strcmp($3->opt1, "int"));
+
+                  if((0 == strcmp($1->opt1, $3->opt1)) || intfloat || floatint){
+                        char inType[100];
+                        strcpy(inType, $3->opt1);
+
+                        ex2(&$$, &$1, "<=", &$3, inType);
+                  } else {
+                        yyerror(cat("Types ", $1->opt1, " and ", $3->opt1, " are incompatible!"));
+                  }
+             }
+             | expre_logica MORETHENEQ expre_logica {
+                  int intfloat = !(strcmp($1->opt1, "int") || strcmp($3->opt1, "float"));
+                  int floatint = !(strcmp($1->opt1, "float") || strcmp($3->opt1, "int"));
+
+                  if((0 == strcmp($1->opt1, $3->opt1)) || intfloat || floatint){
+                        char inType[100];
+                        strcpy(inType, $3->opt1);
+
+                        ex2(&$$, &$1, ">=", &$3, inType);
+                  } else {
+                        yyerror(cat("Types ", $1->opt1, " and ", $3->opt1, " are incompatible!"));
+                  }
+             }
+             | expre_logica '<' expre_logica {
+                  int intfloat = !(strcmp($1->opt1, "int") || strcmp($3->opt1, "float"));
+                  int floatint = !(strcmp($1->opt1, "float") || strcmp($3->opt1, "int"));
+
+                  if((0 == strcmp($1->opt1, $3->opt1)) || intfloat || floatint){
+                        char inType[100];
+                        strcpy(inType, $3->opt1);
+
+                        ex2(&$$, &$1, "<", &$3, inType);
+                  } else {
+                        yyerror(cat("Types ", $1->opt1, " and ", $3->opt1, " are incompatible!"));
+                  }
+             }
+             | expre_logica '>' expre_logica {
+                  int intfloat = !(strcmp($1->opt1, "int") || strcmp($3->opt1, "float"));
+                  int floatint = !(strcmp($1->opt1, "float") || strcmp($3->opt1, "int"));
+
+                  if((0 == strcmp($1->opt1, $3->opt1)) || intfloat || floatint){
+                        char inType[100];
+                        strcpy(inType, $3->opt1);
+
+                        ex2(&$$, &$1, ">", &$3, inType);
+                  } else {
+                        yyerror(cat("Types ", $1->opt1, " and ", $3->opt1, " are incompatible!"));
+                  }
+             }
+             | expre_logica ISEQUAL expre_logica {
+                  int intfloat = !(strcmp($1->opt1, "int") || strcmp($3->opt1, "float"));
+                  int floatint = !(strcmp($1->opt1, "float") || strcmp($3->opt1, "int"));
+
+                  if((0 == strcmp($1->opt1, $3->opt1)) || intfloat || floatint){
+                        char inType[100];
+                        strcpy(inType, $3->opt1);
+
+                        ex2(&$$, &$1, "==", &$3, inType);
+                  } else {
+                        yyerror(cat("Types ", $1->opt1, " and ", $3->opt1, " are incompatible!"));
+                  }
+             }
+             | expre_logica ISDIFFERENT expre_logica {
+                  int intfloat = !(strcmp($1->opt1, "int") || strcmp($3->opt1, "float"));
+                  int floatint = !(strcmp($1->opt1, "float") || strcmp($3->opt1, "int"));
+
+                  if((0 == strcmp($1->opt1, $3->opt1)) || intfloat || floatint){
+                        char inType[100];
+                        strcpy(inType, $3->opt1);
+
+                        ex2(&$$, &$1, "!=", &$3, inType);
+                  } else {
+                        yyerror(cat("Types ", $1->opt1, " and ", $3->opt1, " are incompatible!"));
+                  }
+             }
              | '!'  expre_logica {}
              | expre_logica_par {}
              | expre_arit {$$ = $1;}
              ;
                
-expre_arit : expre_arit '+' termo {}
-            | expre_arit '-' termo {}
+expre_arit : expre_arit '+' termo {
+                  int intfloat = !(strcmp($1->opt1, "int") || strcmp($3->opt1, "float"));
+                  int floatint = !(strcmp($1->opt1, "float") || strcmp($3->opt1, "int"));
+
+                  if((0 == strcmp($1->opt1, $3->opt1)) || intfloat || floatint){
+                        char inType[100];
+                        if (intfloat || floatint) {
+                              strcpy(inType, "float"); // Resultante de int + float ou float + int deve ser float
+                        } else {
+                              strcpy(inType, $1->opt1); // Se ambos os tipos são iguais
+                        }
+                        
+                        ex2(&$$, &$1, "+", &$3, inType);
+                  } else {
+                        yyerror(cat("Types ", $1->opt1, " and ", $3->opt1, " are incompatible!"));
+                  }
+            }
+            | expre_arit '-' termo {
+                  int intfloat = !(strcmp($1->opt1, "int") || strcmp($3->opt1, "float"));
+                  int floatint = !(strcmp($1->opt1, "float") || strcmp($3->opt1, "int"));
+
+                  if((0 == strcmp($1->opt1, $3->opt1)) || intfloat || floatint){
+                        char inType[100];
+                        strcpy(inType, $3->opt1);
+
+                        ex2(&$$, &$1, "-", &$3, inType);
+                  } else {
+                        yyerror(cat("Types ", $1->opt1, " and ", $3->opt1, " are incompatible!"));
+                  }
+            }
             | ops termo {}
             | termo ops {}
             | termo {$$ = $1;}
