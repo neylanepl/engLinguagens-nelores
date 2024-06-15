@@ -54,11 +54,11 @@ char* lookup_type(record *);
 %nonassoc UMINUS
 
 
-%type <rec> decl_vars decl_variavel expre_logica expre_arit termo fator chamada_funcao
+%type <rec> decl_vars decl_variavel expre_logica expre_arit termo fator chamada_funcao 
 %type <rec> ops main args subprogs subprog decl_funcao decl_procedimento bloco comando args_com_vazio alocacao_memoria liberacao_memoria
-%type <rec> condicional retorno iteracao selecao casos caso elementos_array base casoDefault listaCasos
+%type <rec> condicional if_simples retorno iteracao selecao casos caso elementos_array base casoDefault listaCasos condicional_aux  else elseif
 %type <rec> decl_array tamanho_array definicao_struct lista_campos atribuicao_struct expressao_tamanho_array elemento_matriz definicao_enum lista_enum decl_array_atr_tipada decl_array_atr
-%type <rec> entrada saida comentario_selecao comentario decl_var_atr_tipada decl_var_atr decl_var_ponteiro decl_var_const decl_var saida_atribuicao
+%type <rec> entrada expre_logica_iterador saida comentario_selecao comentario decl_var_atr_tipada decl_var_atr decl_var_ponteiro decl_var_const decl_var saida_atribuicao
 %type <rec> endereco tipo_ponteiro stmts base_case_array expressao_for_inicial parametros_rec parametro acesso_array parametro_com_vazio tipo tipo_array
 
 %start prog
@@ -109,7 +109,6 @@ endereco: '&' ID {
       } else {
         char address[100];
         snprintf(address, sizeof(address), "&%s", $2);
-        $$ = createRecord($2, address);
         
         char addressType[100];
         snprintf(addressType, sizeof(addressType), "%s*", info->type);
@@ -204,6 +203,9 @@ comando : condicional {$$ = $1;}
       | retorno {$$ = $1;}
       | iteracao {$$ = $1;} 
       | selecao {$$ = $1;}
+      | BREAK PV {
+            $$ = createRecord("break;\n", "");
+      }
       | chamada_funcao PV {
             char *s = cat($1->code,";\n","","","");
             freeRecord($1);
@@ -234,11 +236,22 @@ lista_campos : decl_vars {}
              | decl_vars lista_campos {}
              ;
 
-iteracao : WHILE '(' expre_logica_iterador ')' '{' bloco '}' {}
+iteracao : WHILE '(' expre_logica_iterador ')' '{' bloco '}' {
+            printf("---- %s ----", lookup_type($3));
+            if (strcmp(lookup_type($3), "bool") == 0){
+                  char *sWhile = cat("while(",$3->code,"){\n",$6->code,"\n}\n");
+                  freeRecord($3);
+                  freeRecord($6);
+                  $$ = createRecord(sWhile, "");
+                  free(sWhile);
+            } else {
+                  yyerror(cat("invalid type of expression ",$3->code," (expected bool, received ",lookup_type($3),")"));
+            }
+      }
 	     | FOR '(' expressao_for_inicial expre_logica_iterador PV expressao_for_final ')' '{' bloco '}' {}
            ;
 
-expre_logica_iterador: expre_logica {}
+expre_logica_iterador: expre_logica {$$ = $1;}
                      ;
 
 expressao_for_inicial : decl_var_atr_tipada {}
@@ -265,31 +278,68 @@ listaCasos : caso listaCasos {}
            | caso  {}
            ;
 
-caso : CASE base_case_array ':' bloco BREAK PV comentario_selecao  {}
+caso : CASE base_case_array ':' bloco  PV comentario_selecao  {}
 	;
 
-casoDefault : DEFAULT ':' bloco BREAK PV comentario_selecao {}
+casoDefault : DEFAULT ':' bloco  PV comentario_selecao {}
 	       ;
 
 retorno : RETURN PV  {}
         | RETURN expre_logica  PV  {}
         ;
 
-condicional : if_simples condicional_aux {}
+condicional : if_simples condicional_aux {
+       char *sCondicional = cat($1->code,$2->code,"", "","");
+                  freeRecord($1);
+                  freeRecord($2);
+                  $$ = createRecord(sCondicional, "");
+                  free(sCondicional);
+}
             ;
 
-condicional_aux : 
-                | elseif condicional_aux {}
-                | else {}
+condicional_aux : {$$ = createRecord("","");}
+                | elseif condicional_aux {
+                  char *sCondicionalAux = cat($1->code,$2->code,"", "","");
+                  freeRecord($1);
+                  freeRecord($2);
+                  $$ = createRecord(sCondicionalAux, "");
+                  free(sCondicionalAux);
+                }
+                | else {$$ = $1;}
                 ;
 
-else : ELSE '{' bloco '}'  {}
+else : ELSE '{' bloco '}'  {
+       char *sElse = cat("else{",$3->code,"}","", "");
+                  freeRecord($3);
+                  $$ = createRecord(sElse, "");
+                  free(sElse);
+}
      ;
 
-elseif : ELSE IF '(' expre_logica_iterador ')' '{' bloco '}' {}
+elseif : ELSE IF '(' expre_logica_iterador ')' '{' bloco '}' {
+      if (strcmp(lookup_type($4), "bool") == 0){
+                  char *sElseIf = cat("else if(",$4->code,"){\n",$7->code,"\n}\n");
+                  freeRecord($4);
+                  freeRecord($7);
+                  $$ = createRecord(sElseIf, "");
+                  free(sElseIf);
+            } else {
+                  yyerror(cat("invalid type of expression ",$4->code," (expected bool, received ",lookup_type($4),")"));
+            }
+}
        ;
 
-if_simples : IF '(' expre_logica_iterador ')' '{' bloco '}' {}
+if_simples : IF '(' expre_logica_iterador ')' '{' bloco '}' {
+       if (strcmp(lookup_type($3), "bool") == 0){
+                  char *sIFsimples = cat("if(",$3->code,"){\n",$6->code,"\n}\n");
+                  freeRecord($3);
+                  freeRecord($6);
+                  $$ = createRecord(sIFsimples, "");
+                  free(sIFsimples);
+            } else {
+                  yyerror(cat("invalid type of expression ",$3->code," (expected bool, received ",lookup_type($3),")"));
+            }
+}
             ;
 
 chamada_funcao : ID '(' parametro_com_vazio ')' {
@@ -465,10 +515,7 @@ expre_logica : expre_logica ANDCIRCUIT expre_logica {}
                   int floatint = !(strcmp(lookup_type($1), "float") || strcmp(lookup_type($3), "int"));
 
                   if((0 == strcmp(lookup_type($1), lookup_type($3))) || intfloat || floatint){
-                        char inType[100];
-                        strcpy(inType, lookup_type($3));
-
-                        ex2(&$$, &$1, "&&", &$3, inType);
+                        ex2(&$$, &$1, "&&", &$3, "bool");
                   } else {
                         yyerror(cat("Types ", lookup_type($1), " and ", lookup_type($3), " are incompatible!"));
                   }
@@ -478,10 +525,7 @@ expre_logica : expre_logica ANDCIRCUIT expre_logica {}
                   int floatint = !(strcmp(lookup_type($1), "float") || strcmp(lookup_type($3), "int"));
 
                   if((0 == strcmp(lookup_type($1), lookup_type($3))) || intfloat || floatint){
-                        char inType[100];
-                        strcpy(inType, lookup_type($3));
-
-                        ex2(&$$, &$1, "||", &$3, inType);
+                        ex2(&$$, &$1, "||", &$3, "bool");
                   } else {
                         yyerror(cat("Types ", lookup_type($1), " and ", lookup_type($3), " are incompatible!"));
                   }
@@ -491,10 +535,7 @@ expre_logica : expre_logica ANDCIRCUIT expre_logica {}
                   int floatint = !(strcmp(lookup_type($1), "float") || strcmp(lookup_type($3), "int"));
 
                   if((0 == strcmp(lookup_type($1), lookup_type($3))) || intfloat || floatint){
-                        char inType[100];
-                        strcpy(inType, lookup_type($3));
-
-                        ex2(&$$, &$1, "<=", &$3, inType);
+                        ex2(&$$, &$1, "<=", &$3, "bool");
                   } else {
                         yyerror(cat("Types ", lookup_type($1), " and ", lookup_type($3), " are incompatible!"));
                   }
@@ -504,10 +545,7 @@ expre_logica : expre_logica ANDCIRCUIT expre_logica {}
                   int floatint = !(strcmp(lookup_type($1), "float") || strcmp(lookup_type($3), "int"));
 
                   if((0 == strcmp(lookup_type($1), lookup_type($3))) || intfloat || floatint){
-                        char inType[100];
-                        strcpy(inType, lookup_type($3));
-
-                        ex2(&$$, &$1, ">=", &$3, inType);
+                        ex2(&$$, &$1, ">=", &$3, "bool");
                   } else {
                         yyerror(cat("Types ", lookup_type($1), " and ", lookup_type($3), " are incompatible!"));
                   }
@@ -517,10 +555,7 @@ expre_logica : expre_logica ANDCIRCUIT expre_logica {}
                   int floatint = !(strcmp(lookup_type($1), "float") || strcmp(lookup_type($3), "int"));
 
                   if((0 == strcmp(lookup_type($1), lookup_type($3))) || intfloat || floatint){
-                        char inType[100];
-                        strcpy(inType, lookup_type($3));
-
-                        ex2(&$$, &$1, "<", &$3, inType);
+                        ex2(&$$, &$1, "<", &$3, "bool");
                   } else {
                         yyerror(cat("Types ", lookup_type($1), " and ", lookup_type($3), " are incompatible!"));
                   }
@@ -530,10 +565,7 @@ expre_logica : expre_logica ANDCIRCUIT expre_logica {}
                   int floatint = !(strcmp(lookup_type($1), "float") || strcmp(lookup_type($3), "int"));
 
                   if((0 == strcmp(lookup_type($1), lookup_type($3))) || intfloat || floatint){
-                        char inType[100];
-                        strcpy(inType, lookup_type($3));
-
-                        ex2(&$$, &$1, ">", &$3, inType);
+                        ex2(&$$, &$1, ">", &$3, "bool");
                   } else {
                         yyerror(cat("Types ", lookup_type($1), " and ", lookup_type($3), " are incompatible!"));
                   }
@@ -543,10 +575,7 @@ expre_logica : expre_logica ANDCIRCUIT expre_logica {}
                   int floatint = !(strcmp(lookup_type($1), "float") || strcmp(lookup_type($3), "int"));
 
                   if((0 == strcmp(lookup_type($1), lookup_type($3))) || intfloat || floatint){
-                        char inType[100];
-                        strcpy(inType, lookup_type($3));
-
-                        ex2(&$$, &$1, "==", &$3, inType);
+                        ex2(&$$, &$1, "==", &$3, "bool");
                   } else {
                         yyerror(cat("Types ", lookup_type($1), " and ", lookup_type($3), " are incompatible!"));
                   }
@@ -556,10 +585,7 @@ expre_logica : expre_logica ANDCIRCUIT expre_logica {}
                   int floatint = !(strcmp(lookup_type($1), "float") || strcmp(lookup_type($3), "int"));
 
                   if((0 == strcmp(lookup_type($1), lookup_type($3))) || intfloat || floatint){
-                        char inType[100];
-                        strcpy(inType, lookup_type($3));
-
-                        ex2(&$$, &$1, "!=", &$3, inType);
+                        ex2(&$$, &$1, "!=", &$3, "bool");
                   } else {
                         yyerror(cat("Types ", lookup_type($1), " and ", lookup_type($3), " are incompatible!"));
                   }
@@ -601,13 +627,17 @@ expre_arit : expre_arit '+' termo {
                         yyerror(cat("Types ", lookup_type($1), " and ", lookup_type($3), " are incompatible!"));
                   }
             }
-            | ops termo {}
-            | termo ops {}
+            | ops termo {
+                
+            }
+            | termo ops {
+                 
+            }
             | termo {$$ = $1;}
             ;
 	    
-ops: INCREMENT {}
-     | DECREMENT {}
+ops: INCREMENT {$$ = createRecord("++", "");}
+     | DECREMENT {$$ = createRecord("--", "");}
      ;
 
 termo: termo '*' fator {

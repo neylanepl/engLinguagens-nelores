@@ -6,8 +6,8 @@ function int analiseDeIntervalos() {
     int count5175 = 0;
     int count76100 = 0;
 
-    while (true) {
-        printf("Digite um número: ");
+    while (0) {
+        print("Digite um número: ");
         scanf("%d", &num);
 
         if (num < 0) {
