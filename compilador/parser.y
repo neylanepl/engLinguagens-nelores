@@ -615,7 +615,25 @@ termo: termo '*' fator {
 	| fator {$$ = $1;}
 	;
 
-fator : fator '^' base {}
+fator : fator '^' base {
+            int baseInt = !strcmp(lookup_type($1), "int");
+            int baseFloat = !strcmp(lookup_type($1), "float");
+            int expInt = !strcmp(lookup_type($3), "int");
+            int expFloat = !strcmp(lookup_type($3), "float");
+
+            if((baseInt || baseFloat) && (expInt || expFloat)){
+                  char resultType[100];
+                  if (baseFloat || expFloat) {
+                        strcpy(resultType, "float"); 
+                  } else {
+                        strcpy(resultType, "int"); 
+                  }
+                  ex2(&$$, &$1, "^", &$3, resultType);
+            } else {
+                  yyerror(cat("Types ", lookup_type($1), " and ", lookup_type($3), " are incompatible for exponentiation!"));
+            }
+
+}
       | ID acesso_array {}
       | endereco acesso_array {}
       | endereco {}

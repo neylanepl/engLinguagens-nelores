@@ -2,7 +2,7 @@ void main() {
     float x = 3.5;
     float y = 2.1;
     int c = 4;
-    float resultado =  x * x - y + c;
+    float resultado =  x ^ 2 - y + c;
     print("O resultado da expressao ");
     println(resultado);
 }
