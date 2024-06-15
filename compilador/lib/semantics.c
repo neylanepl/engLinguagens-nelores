@@ -72,12 +72,13 @@ void printStringLiteral(record **ss, char **s3)
 	free(str);
 };
 
-void printLnStringLiteral(record **ss, char **s3)
+void printLnStringLiteral(record **ss, char **s3, record**s5)
 {
-	char *str = cat("printf(", *s3, ")", ";\n", "printf(\"\\n\");\n");
-	*ss = createRecord(str, "");
-	free(*s3);
-	free(str);
+    char *str = cat("printf(", *s3, ",", (*s5)->code, ");\n");
+    *ss = createRecord(str, "");
+    free(*s3);
+    freeRecord(*s5);
+    free(str);
 };
 
 // STRING LITERAL
@@ -148,10 +149,20 @@ void declaracaoFuncao(record **ss, char **s2, record **s4, char **s7, record **s
 
 // | expre_arit X termo
 void ex2(record **ss, record **s1, char *s2, record **s3, char *type) {
-	char *str = cat((*s1)->code, (s2), (*s3)->code, "", "");
-	printf("---- %s %s %s ----\n", (*s1)->code, (s2), (*s3)->code);
-	freeRecord(*s1);
-	freeRecord(*s3);
-	*ss = createRecord(str, type);
-	free(str);
-};
+    char *str;
+    if (strcmp(s2, "^") == 0) {
+        if (strcmp(type, "int") == 0) {
+            str = cat("(int)pow((double)(", (*s1)->code, "), (double)(", (*s3)->code, "))");
+        } else {
+            str = cat("pow(", (*s1)->code, ", ", (*s3)->code, ")");
+        }
+    } else {
+        str = cat((*s1)->code, s2, (*s3)->code, "", "");
+    }
+
+    printf("---- %s %s %s ----\n", (*s1)->code, s2, (*s3)->code);
+    freeRecord(*s1);
+    freeRecord(*s3);
+    *ss = createRecord(str, type);
+    free(str);
+}

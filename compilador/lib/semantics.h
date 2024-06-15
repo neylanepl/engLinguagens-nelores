@@ -9,7 +9,7 @@ void init1(record **, record **, char **, record **);
 void baseTrue(record **);
 void baseFalse(record **);
 void printStringLiteral(record **, char **);
-void printLnStringLiteral(record **ss, char **s3);
+void printLnStringLiteral(record **ss, char **s, record **s1);
 void baseStringLiteral(record **, char **);
 void baseID(record **, char **);
 void baseIntNumber(record **, int *);

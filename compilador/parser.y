@@ -64,7 +64,7 @@ char* lookup_type(record *);
 %start prog
 
 %%
-prog : stmts subprogs main {fprintf(yyout, "%s\n%s\n%s", $1->code, $2->code, $3->code);
+prog : stmts subprogs main {fprintf(yyout, "#include <stdio.h>\n#include <math.h>\n%s\n%s\n%s", $1->code, $2->code, $3->code);
                            freeRecord($1);
                            freeRecord($2);
                            freeRecord($3);
@@ -295,11 +295,11 @@ alocacao_memoria_parametros : expre_arit  {}
 liberacao_memoria : FREE '(' ID ')' PV {}
                ;
 
-entrada : PRINTLN '(' expre_logica ')' PV {
-            printLnStringLiteral(&$$, &$3->code); 
+entrada : PRINTLN '(' WORD '+' expre_logica ')' PV {
+            printLnStringLiteral(&$$, &$3, &$5); 
         } 
-        | PRINT '(' expre_logica ')' PV {
-            printStringLiteral(&$$, &$3->code); 
+        | PRINT '(' WORD ')' PV {
+            printStringLiteral(&$$, &$3); 
         } 
         ;
 
