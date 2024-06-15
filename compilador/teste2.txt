@@ -1,5 +1,10 @@
-procedure analiseDeIntervalos() {
-   printf("Digite uma sequência de números (um número negativo para terminar):\n");
+
+function int analiseDeIntervalos() {
+    int num;
+    int count025 = 0;
+    int count2650 = 0;
+    int count5175 = 0;
+    int count76100 = 0;
 
     while (true) {
         printf("Digite um número: ");
@@ -8,7 +13,6 @@ procedure analiseDeIntervalos() {
         if (num < 0) {
             break;  
         }
-
         if (num >= 0 && num <= 25) {
             count025++;
         } else if (num >= 26 && num <= 50) {
@@ -17,16 +21,19 @@ procedure analiseDeIntervalos() {
             count5175++;
         } else if (num >= 76 && num <= 100) {
             count76100++;
-        }
+        }                        
+                
+
+    // Exibindo os resultados
+    print("Quantidade de números nos intervalos:\n");
+    print("[0, 25]:" + count025);
+    print("[26, 50]:" + count2650);
+    print("[51, 75]:" + count5175);
+    print("[76, 100]:" + count76100);
+
+    return 0;
     }
-
-    printf("Quantidade de números nos intervalos:\n");
-    printf("[0, 25]: %d\n", count025);
-    printf("[26, 50]: %d\n", count2650);
-    printf("[51, 75]: %d\n", count5175);
-    printf("[76, 100]: %d\n", count76100);
 }
-
 void main() {
     analiseDeIntervalos();
 }
