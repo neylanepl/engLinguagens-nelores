@@ -177,6 +177,16 @@ void argumentoTipoId(record **ss, char **s1, record **s3) {
 };
 
 
+// saida : SCANF '(' WORD ',' ID ')' PV	
+void scanfPalavraIdeEndereco(record **ss, char **s3, char **s5) {
+	char *str = cat("scanf(", *s3, ",", (*s5), ")");
+    *ss = createRecord(str, "");
+	free(str);
+	free(*s3);
+	free(*s5);
+}
+
+
 // | expre_arit X termo
 void ex2(record **ss, record **s1, char *s2, record **s3, char *type) {
     char *str;

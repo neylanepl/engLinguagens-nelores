@@ -324,9 +324,13 @@ entrada : PRINTLN '(' WORD '+' expre_logica ')' PV {
         } 
         ;
 
-saida : SCANF '(' WORD ',' ID ')' PV {}
+saida : SCANF '(' WORD ',' ID ')' PV {
+            scanfPalavraIdeEndereco(&$$, &$3, &$5);
+      }
       | SCANF '(' WORD ',' ID acesso_array ')' PV {}
-      | SCANF '(' WORD ',' endereco ')' PV {}
+      | SCANF '(' WORD ',' endereco ')' PV {
+            scanfPalavraIdeEndereco(&$$, &$3, &$5->code);
+      }
       | SCANF '(' WORD ',' endereco acesso_array ')' PV {}
       | saida_atribuicao {}
       ;
