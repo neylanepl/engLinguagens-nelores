@@ -146,6 +146,35 @@ void declaracaoFuncao(record **ss, char **s2, record **s4, char **s7, record **s
 	free(str2);
 };
 
+// Declaração de procedimento : PROCEDURE ID '(' args_com_vazio ')' '{' bloco '}'
+void declaracaoProcedimento(record **ss, char **s2, record **s4, record **s7) {
+	char *str1 = cat("void ", *s2, "(", (*s4)->code, "");
+	char *str2 = cat(str1, "){\n", (*s7)->code, "}\n", "");
+	*ss = createRecord(str2, "void");
+	freeRecord(*s4);
+	freeRecord(*s7);
+	//free(*s2);
+	free(str1);
+	free(str2);
+};
+
+//args : tipo ID 
+void argumentoTipoId(record **ss, char **s1, record **s3) {
+	char *str;
+
+	if(0 == strcmp((*s3)->code, "string")){
+		str = cat("char *", " ", (*s1), "", "");
+	} else if (0 == strcmp((*s3)->code, "boolean")){
+		str = cat("int", " ", (*s1), "", "");
+	} else {
+		str = cat((*s3)->code, " ", (*s1), "", "");
+	}
+	*ss = createRecord(str, "");
+	freeRecord(*s3);
+	free(*s1);
+	free(str);
+};
+
 
 // | expre_arit X termo
 void ex2(record **ss, record **s1, char *s2, record **s3, char *type) {

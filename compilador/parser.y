@@ -122,6 +122,7 @@ tipo: TYPE {$$ = createRecord($1,"");}
 args : tipo ID   {
             insert(variablesTable, $2, $2, $1->code);
 	      insertFunctionParam($2, $1->code);
+            argumentoTipoId(&$$, &$2, &$1); 
       }
       | tipo ID ',' args  {}
       ;
@@ -154,7 +155,14 @@ decl_funcao : FUNCTION tipo ID '(' args_com_vazio ')' '{' bloco '}'       {
 }           
             ;
 
-decl_procedimento : PROCEDURE ID '(' args_com_vazio ')' '{' bloco '}'  {}                   
+decl_procedimento : PROCEDURE ID '(' args_com_vazio ')' '{' bloco '}'  {
+                        if (lookup(variablesTable, $2)) {
+                              yyerror(cat("error: redeclaration of procedure ", $2, "", "", ""));
+                        } else {
+                              insert(functionsTable, cat($2,"","","",""),"r","void");
+                              declaracaoProcedimento(&$$, &$2, &$4, &$7);
+                        }  
+}                   
                   ;
 
 bloco : {$$ = createRecord("","");}

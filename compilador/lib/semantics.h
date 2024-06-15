@@ -16,6 +16,8 @@ void baseIntNumber(record **, int *);
 void baseRealNumber(record **, float *);
 void chamadaParamFuncao(record **ss, char **s1, record **s3, char *type);
 void declaracaoFuncao(record **ss, char **s2, record **s4, char **s7, record **s9);
+void declaracaoProcedimento(record **ss, char **s2, record **s4, record **s7);
+void argumentoTipoId(record **ss, char **s1, record **s3);
 void ex2(record **ss, record **s1, char *s2, record **s3, char *type);
 
 #endif
