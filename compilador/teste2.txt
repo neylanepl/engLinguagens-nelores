@@ -1,45 +1,32 @@
-void main() {
-    analiseDeIntervalos();
-}
+procedure analiseDeIntervalos() {
+   printf("Digite uma sequência de números (um número negativo para terminar):\n");
 
-void lerNumero(int *num) {
-    print("Digite um número (negativo para terminar): ");
-    scanf("%d", num);
-}
+    while (true) {
+        printf("Digite um número: ");
+        scanf("%d", &num);
 
-int analiseDeIntervalos() {
-    int num;
-    int count025 = 0;
-    int count2650 = 0;
-    int count5175 = 0;
-    int count76100 = 0;
-    lerNumero(&num);
+        if (num < 0) {
+            break;  
+        }
 
-    while ((num >= 0 && num >= 0) || (num >= 0 && num >= 0)) {
-            if (num <= 25) {
-                count025++;
-            } else if (num >= 26) {
-                if (num <= 50) {
-                    count2650++;
-                } else if (num >= 51) {
-                    if (num <= 75) {
-                        count5175++;
-                    } else if (num >= 76) {
-                        if (num <= 100) {
-                            count76100++;
-                        }
-                    }
-                }
-            }
-        lerNumero(&num);
+        if (num >= 0 && num <= 25) {
+            count025++;
+        } else if (num >= 26 && num <= 50) {
+            count2650++;
+        } else if (num >= 51 && num <= 75) {
+            count5175++;
+        } else if (num >= 76 && num <= 100) {
+            count76100++;
+        }
     }
 
-    // Exibindo os resultados
-    print("Quantidade de números nos intervalos:\n");
-    print("[0, 25]:" + count025);
-    print("[26, 50]:" + count2650);
-    print("[51, 75]:" + count5175);
-    print("[76, 100]:" + count76100);
+    printf("Quantidade de números nos intervalos:\n");
+    printf("[0, 25]: %d\n", count025);
+    printf("[26, 50]: %d\n", count2650);
+    printf("[51, 75]: %d\n", count5175);
+    printf("[76, 100]: %d\n", count76100);
+}
 
-    return 0;
+void main() {
+    analiseDeIntervalos();
 }
