@@ -1,7 +1,14 @@
+procedure lerNumero(int * num2) {
+    print("Digite um número (negativo para terminar): ");
+}
+function int analiseDeIntervalos() {
+    int num;
+    int count025 = 0;
+    int count2650 = 0;
+    int count5175 = 0;
+    int count76100 = 0;
+    lerNumero(&num);
+}
 void main() {
-    float x = 3.5;
-    float y = 2.1;
-    int c = 4;
-    float resultado =  x ^ 2 - y + c;
-    println("O resultado da expressao %f" + resultado);
+        analiseDeIntervalos();
 }

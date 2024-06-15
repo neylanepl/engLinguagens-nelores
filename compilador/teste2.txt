@@ -13,7 +13,6 @@ int analiseDeIntervalos() {
     int count2650 = 0;
     int count5175 = 0;
     int count76100 = 0;
-
     lerNumero(&num);
 
     while ((num >= 0 && num >= 0) || (num >= 0 && num >= 0)) {

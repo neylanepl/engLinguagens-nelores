@@ -26,6 +26,7 @@ void dec1(record **ss, record **s2, char **s4)
 	free(str);
 }
 
+
 void init1(record **ss, record **id, char **type, record **expr)
 {
 	char *str;

@@ -1,11 +1,17 @@
 #include <stdio.h>
 #include <math.h>
 
-
+void lerNumero(int* num2){
+printf("Digite um número (negativo para terminar): ");
+}
+int analiseDeIntervalos(){
+int num;
+int count025 = 0;
+int count2650 = 0;
+int count5175 = 0;
+int count76100 = 0;
+lerNumero(&num);
+}
 int main(){
-float x = 3.500000;
-float y = 2.100000;
-int c = 4;
-float resultado = pow(x, 2)-y+c;
-printf("O resultado da expressao %f",resultado);
+analiseDeIntervalos();
 }

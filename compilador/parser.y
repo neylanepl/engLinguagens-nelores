@@ -59,7 +59,7 @@ char* lookup_type(record *);
 %type <rec> condicional retorno iteracao selecao casos caso elementos_array base casoDefault listaCasos
 %type <rec> decl_array tamanho_array definicao_struct lista_campos atribuicao_struct expressao_tamanho_array elemento_matriz definicao_enum lista_enum decl_array_atr_tipada decl_array_atr
 %type <rec> entrada saida comentario_selecao comentario decl_var_atr_tipada decl_var_atr decl_var_ponteiro decl_var_const decl_var saida_atribuicao
-%type <rec> tipo_endereco tipo_ponteiro stmts base_case_array expressao_for_inicial parametros_rec parametro acesso_array parametro_com_vazio tipo tipo_array
+%type <rec> endereco tipo_ponteiro stmts base_case_array expressao_for_inicial parametros_rec parametro acesso_array parametro_com_vazio tipo tipo_array
 
 %start prog
 
@@ -92,23 +92,36 @@ main : VOID MAIN '(' args_com_vazio ')' '{' bloco '}' {
       free(s);
 };
 
-tipo_ponteiro: TYPE '*' {}
-		  ;
+tipo_ponteiro: TYPE '*' {
+    char pointerType[100];
+    snprintf(pointerType, sizeof(pointerType), "%s*", $1);
+    $$ = createRecord(pointerType,"");
+}
+;
 
 ponteiro: '*' ID {}
           ;
 
-tipo_endereco: TYPE '&' {}
-		  ;
-
-endereco: '&' ID {}
+endereco: '&' ID {
+       SymbolInfos *info = lookup(variablesTable, $2);
+      if (info == NULL) {
+        yyerror(cat("Cannot use variable ", $2, " before initialization!", "", ""));
+      } else {
+        char address[100];
+        snprintf(address, sizeof(address), "&%s", $2);
+        $$ = createRecord($2, address);
+        
+        char addressType[100];
+        snprintf(addressType, sizeof(addressType), "%s*", info->type);
+        $$ = createRecord(address, addressType);
+    }
+}
           ;
 
 tipo_array: TYPE tamanho_array {}
             ;
 
 tipo: TYPE {$$ = createRecord($1,"");}
-      | tipo_endereco {$$ = $1;}
       | tipo_ponteiro {$$ = $1;}
       | tipo_array {$$ = $1;}
       | ID {
@@ -644,7 +657,7 @@ fator : fator '^' base {
 }
       | ID acesso_array {}
       | endereco acesso_array {}
-      | endereco {}
+      | endereco {$$ = $1;}
       | base {$$ = $1;}
       ;
 
