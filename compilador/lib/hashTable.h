@@ -3,18 +3,21 @@
 
 #define TABLE_SIZE 109
 
-typedef struct SymbolInfos {
+typedef struct SymbolInfos
+{
     char *key;
     char *name;
     char *type;
 } SymbolInfos;
 
-typedef struct listNode {
+typedef struct listNode
+{
     SymbolInfos *symbol;
     struct listNode *nextNode;
 } listNode;
 
-typedef struct {
+typedef struct
+{
     listNode **symbols;
     int size;
 } SymbolTable;
@@ -27,5 +30,6 @@ void insert(SymbolTable *table, char *key, char *name, char *type);
 SymbolInfos *lookup(SymbolTable *table, char *key);
 void printTable(SymbolTable *table);
 void freeSymbolTable(SymbolTable *table);
+char *lookup_variable_type(SymbolTable *table, char *key);
 
-#endif 
+#endif

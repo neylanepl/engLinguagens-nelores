@@ -26,7 +26,6 @@ void dec1(record **ss, record **s2, char **s4)
 	free(str);
 }
 
-
 void init1(record **ss, record **id, char **type, record **expr)
 {
 	char *str;
@@ -73,13 +72,13 @@ void printStringLiteral(record **ss, char **s3)
 	free(str);
 };
 
-void printLnStringLiteral(record **ss, char **s3, record**s5)
+void printLnStringLiteral(record **ss, char **s3, record **s5)
 {
-    char *str = cat("printf(", *s3, ",", (*s5)->code, ");\n");
-    *ss = createRecord(str, "");
-    free(*s3);
-    freeRecord(*s5);
-    free(str);
+	char *str = cat("printf(", *s3, ",", (*s5)->code, ");\n");
+	*ss = createRecord(str, "");
+	free(*s3);
+	freeRecord(*s5);
+	free(str);
 };
 
 // STRING LITERAL
@@ -89,8 +88,9 @@ void baseStringLiteral(record **ss, char **s1)
 	free(*s1);
 }
 
-void baseID(record **ss, char **s1) {
-    *ss = createRecord(*s1, "id");
+void baseID(record **ss, char **s1)
+{
+	*ss = createRecord(*s1, "id");
 	free(*s1);
 }
 
@@ -148,26 +148,33 @@ void declaracaoFuncao(record **ss, char **s2, record **s4, char **s7, record **s
 };
 
 // Declaração de procedimento : PROCEDURE ID '(' args_com_vazio ')' '{' bloco '}'
-void declaracaoProcedimento(record **ss, char **s2, record **s4, record **s7) {
+void declaracaoProcedimento(record **ss, char **s2, record **s4, record **s7)
+{
 	char *str1 = cat("void ", *s2, "(", (*s4)->code, "");
 	char *str2 = cat(str1, "){\n", (*s7)->code, "}\n", "");
 	*ss = createRecord(str2, "void");
 	freeRecord(*s4);
 	freeRecord(*s7);
-	//free(*s2);
+	// free(*s2);
 	free(str1);
 	free(str2);
 };
 
-//args : tipo ID 
-void argumentoTipoId(record **ss, char **s1, record **s3) {
+// args : tipo ID
+void argumentoTipoId(record **ss, char **s1, record **s3)
+{
 	char *str;
 
-	if(0 == strcmp((*s3)->code, "string")){
+	if (0 == strcmp((*s3)->code, "string"))
+	{
 		str = cat("char *", " ", (*s1), "", "");
-	} else if (0 == strcmp((*s3)->code, "boolean")){
+	}
+	else if (0 == strcmp((*s3)->code, "boolean"))
+	{
 		str = cat("int", " ", (*s1), "", "");
-	} else {
+	}
+	else
+	{
 		str = cat((*s3)->code, " ", (*s1), "", "");
 	}
 	*ss = createRecord(str, "");
@@ -176,33 +183,79 @@ void argumentoTipoId(record **ss, char **s1, record **s3) {
 	free(str);
 };
 
-
-// saida : SCANF '(' WORD ',' ID ')' PV	
-void scanfPalavraIdeEndereco(record **ss, char **s3, char **s5) {
-	char *str = cat("scanf(", *s3, ",", (*s5), ")");
-    *ss = createRecord(str, "");
+// saida : SCANF '(' WORD ',' ID ')' PV
+void scanfPalavraIdeEndereco(record **ss, char **s3, char **s5)
+{
+	char *str = cat("scanf(", *s3, ",", (*s5), ");\n");
+	*ss = createRecord(str, "");
 	free(str);
 	free(*s3);
 	free(*s5);
 }
 
-
 // | expre_arit X termo
-void ex2(record **ss, record **s1, char *s2, record **s3, char *type) {
-    char *str;
-    if (strcmp(s2, "^") == 0) {
-        if (strcmp(type, "int") == 0) {
-            str = cat("(int)pow((double)(", (*s1)->code, "), (double)(", (*s3)->code, "))");
-        } else {
-            str = cat("pow(", (*s1)->code, ", ", (*s3)->code, ")");
-        }
-    } else {
-        str = cat((*s1)->code, s2, (*s3)->code, "", "");
-    }
+void ex2(record **ss, record **s1, char *s2, record **s3, char *type)
+{
+	char *str;
+	if (strcmp(s2, "^") == 0)
+	{
+		if (strcmp(type, "int") == 0)
+		{
+			str = cat("(int)pow((double)(", (*s1)->code, "), (double)(", (*s3)->code, "))");
+		}
+		else
+		{
+			str = cat("pow(", (*s1)->code, ", ", (*s3)->code, ")");
+		}
+	}
+	else
+	{
+		str = cat((*s1)->code, s2, (*s3)->code, "", "");
+	}
 
-    printf("---- %s %s %s ----\n", (*s1)->code, s2, (*s3)->code);
-    freeRecord(*s1);
-    freeRecord(*s3);
-    *ss = createRecord(str, type);
-    free(str);
+	printf("---- %s %s %s ----\n", (*s1)->code, s2, (*s3)->code);
+	freeRecord(*s1);
+	freeRecord(*s3);
+	*ss = createRecord(str, type);
+	free(str);
+}
+
+// b = expressao;
+void atribuicaoVariavel(record **ss, record **s1, record **s2)
+{
+	char *str = cat((*s1)->code, "=", (*s2)->code, ";\n", "");
+	*ss = createRecord(str, "");
+	freeRecord(*s1);
+	freeRecord(*s2);
+	free(str);
+}
+
+// b += expressao;
+void atribuicaoVariavelMaisIgual(record **ss, record **s1, record **s2)
+{
+	char *str = cat((*s1)->code, "+=", (*s2)->code, ";\n", "");
+	*ss = createRecord(str, "");
+	freeRecord(*s1);
+	freeRecord(*s2);
+	free(str);
+}
+
+// b -= expressao;
+void atribuicaoVariavelMenosIgual(record **ss, record **s1, record **s2)
+{
+	char *str = cat((*s1)->code, "+=", (*s2)->code, ";\n", "");
+	*ss = createRecord(str, "");
+	freeRecord(*s1);
+	freeRecord(*s2);
+	free(str);
+}
+
+// incremento e decremento ++b ou --b ou b++ ou b--
+void atribuicaoIncreDecre(record **ss, char **s1, char **s2)
+{
+	char *str = cat((*s1), (*s2), "", "", "");
+	*ss = createRecord(str, "");
+	free(*s1);
+	free(*s2);
+	free(str);
 }

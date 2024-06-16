@@ -26,10 +26,10 @@ function int analiseDeIntervalos() {
 
     // Exibindo os resultados
     print("Quantidade de números nos intervalos:\n");
-    print("[0, 25]:" + count025);
-    print("[26, 50]:" + count2650);
-    print("[51, 75]:" + count5175);
-    print("[76, 100]:" + count76100);
+    println("[0, 25]:" + count025);
+    println("[26, 50]:" + count2650);
+    println("[51, 75]:" + count5175);
+    println("[76, 100]:" + count76100);
 
     return 0;
     }

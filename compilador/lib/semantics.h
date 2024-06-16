@@ -20,5 +20,9 @@ void declaracaoProcedimento(record **ss, char **s2, record **s4, record **s7);
 void argumentoTipoId(record **ss, char **s1, record **s3);
 void scanfPalavraIdeEndereco(record **ss, char **s3, char **s5);
 void ex2(record **ss, record **s1, char *s2, record **s3, char *type);
+void atribuicaoVariavel(record **ss, record **s1, record **s2);
+void atribuicaoVariavelMaisIgual(record **ss, record **s1, record **s2);
+void atribuicaoVariavelMenosIgual(record **ss, record **s1, record **s2);
+void atribuicaoIncreDecre(record **ss, char **s1, char **s2);
 
 #endif

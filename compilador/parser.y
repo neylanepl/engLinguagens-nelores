@@ -19,6 +19,7 @@ SymbolTable *typedTable;
 int countFuncCallParams;
 void insertFunctionParam(char *, char *);
 char* lookup_type(record *);
+char* lookup_variable_type(SymbolTable *table, char *key);
 
 
 %}
@@ -467,10 +468,60 @@ decl_var_atr_tipada:  TYPE ID '=' expre_logica PV{
                   | TYPE ID '=' chamada_funcao PV {}
                   ;
 
-decl_var_atr: ID '=' expre_logica PV {}
+decl_var_atr: ID '=' expre_logica PV {
+                        if (!lookup(variablesTable, $1)) {
+                              yyerror(cat("error: nondeclaration of variable ", $1, "", "", ""));
+                        } else {
+                              char *typeVariable = lookup_variable_type(variablesTable, $1);
+                              record *rcdAtribuicao = createRecord($1, "");
+                              int intfloat = !strcmp(typeVariable, "int") && !strcmp(lookup_type($3), "float");
+                              int floatint = !strcmp(typeVariable, "float") && !strcmp(lookup_type($3), "int");
+                              
+                              if (strcmp(typeVariable, lookup_type($3)) == 0 || intfloat || floatint) {
+                                    atribuicaoVariavel(&$$, &rcdAtribuicao, &$3);
+                              } else {
+                                    yyerror(cat("Initialization of ", $1, " from type ", lookup_type($3), " is incompatible!"));
+                              }
+                              free(typeVariable);
+                        }  
+            }
             | ID '=' ponteiro PV {}
-            | ID MOREISEQUAL expre_logica PV {}
-            | ID LESSISEQUAL expre_logica PV {}
+            | ID MOREISEQUAL expre_logica PV {
+                        if (!lookup(variablesTable, $1)) {
+                              yyerror(cat("error: nondeclaration of variable ", $1, "", "", ""));
+                        } else {
+                              char *typeVariable = lookup_variable_type(variablesTable, $1);
+                              record *rcdAtribuicao = createRecord($1, "");
+
+                              int intfloat = !strcmp(typeVariable, "int") && !strcmp(lookup_type($3), "float");
+                              int floatint = !strcmp(typeVariable, "float") && !strcmp(lookup_type($3), "int");
+                              
+                              if (strcmp(typeVariable, lookup_type($3)) == 0 || intfloat || floatint) {
+                                    atribuicaoVariavelMaisIgual(&$$, &rcdAtribuicao, &$3);
+                              } else {
+                                    yyerror(cat("Initialization of ", $1, " from type ", lookup_type($3), " is incompatible!"));
+                              }
+                              free(typeVariable);
+                        }  
+            }
+            | ID LESSISEQUAL expre_logica PV {
+                  if (!lookup(variablesTable, $1)) {
+                              yyerror(cat("error: nondeclaration of variable ", $1, "", "", ""));
+                        } else {
+                              char *typeVariable = lookup_variable_type(variablesTable, $1);
+                              record *rcdAtribuicao = createRecord($1, "");
+
+                              int intfloat = !strcmp(typeVariable, "int") && !strcmp(lookup_type($3), "float");
+                              int floatint = !strcmp(typeVariable, "float") && !strcmp(lookup_type($3), "int");
+                              
+                              if (strcmp(typeVariable, lookup_type($3)) == 0 || intfloat || floatint) {
+                                    atribuicaoVariavelMenosIgual(&$$, &rcdAtribuicao, &$3);
+                              } else {
+                                    yyerror(cat("Initialization of ", $1, " from type ", lookup_type($3), " is incompatible!"));
+                              }
+                              free(typeVariable);
+                        }  
+            }
             | ID '=' chamada_funcao PV {}
             ;
 
@@ -628,10 +679,18 @@ expre_arit : expre_arit '+' termo {
                   }
             }
             | ops termo {
-                
+                        if(strcmp(lookup_type($2), "int") == 0 || strcmp(lookup_type($2), "float") == 0 ){
+                              atribuicaoIncreDecre(&$$, &$1->code, &$2->code);
+                        } else {
+                              yyerror(cat("Types ", lookup_type($2), "", "", " is not incompatible!"));
+                        }                  
             }
-            | termo ops {
-                 
+            | termo ops { 
+                        if(strcmp(lookup_type($1), "int") == 0 || strcmp(lookup_type($1), "float") == 0 ){
+                              atribuicaoIncreDecre(&$$, &$1->code, &$2->code);
+                        } else {
+                              yyerror(cat("Types ", lookup_type($1), "", "", " is not incompatible!"));
+                        } 
             }
             | termo {$$ = $1;}
             ;

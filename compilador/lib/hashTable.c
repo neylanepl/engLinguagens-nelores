@@ -5,7 +5,8 @@
 
 #define TABLE_SIZE 109
 
-unsigned int hash(unsigned char *str, int tamanho) {
+unsigned int hash(unsigned char *str, int tamanho)
+{
     unsigned long hash = 5381;
     int c;
 
@@ -15,87 +16,104 @@ unsigned int hash(unsigned char *str, int tamanho) {
     return hash % tamanho;
 }
 
-SymbolInfos *createSymbol(char *key, char *name, char *type) {
+SymbolInfos *createSymbol(char *key, char *name, char *type)
+{
     SymbolInfos *symbol = malloc(sizeof(SymbolInfos));
-    
+
     symbol->key = strdup(key);
     symbol->name = strdup(name);
     symbol->type = strdup(type);
-    
+
     return symbol;
 }
 
-listNode *createListNode(SymbolInfos *symbol) {
+listNode *createListNode(SymbolInfos *symbol)
+{
     listNode *node = malloc(sizeof(listNode));
     node->symbol = symbol;
     node->nextNode = NULL;
     return node;
 }
 
-SymbolTable *createSymbolTable(int size) {
+SymbolTable *createSymbolTable(int size)
+{
     SymbolTable *table = malloc(sizeof(SymbolTable));
-    
+
     table->symbols = calloc(size, sizeof(listNode *));
     table->size = size;
-    
+
     return table;
 }
 
-void insert(SymbolTable *table, char *key, char *name, char *type) {
-    unsigned int index = hash((unsigned char*)key, table->size);
-    
+void insert(SymbolTable *table, char *key, char *name, char *type)
+{
+    unsigned int index = hash((unsigned char *)key, table->size);
+
     SymbolInfos *symbol = createSymbol(key, name, type);
     listNode *node = createListNode(symbol);
-    
-    if (table->symbols[index] == NULL) {
+
+    if (table->symbols[index] == NULL)
+    {
         table->symbols[index] = node;
-    } else {
+    }
+    else
+    {
         listNode *current = table->symbols[index];
-        
-        while (current->nextNode != NULL) {
+
+        while (current->nextNode != NULL)
+        {
             current = current->nextNode;
         }
-        
+
         current->nextNode = node;
     }
 }
 
-SymbolInfos *lookup(SymbolTable *table, char *key) {
-    unsigned int index = hash((unsigned char*)key, table->size);
-    
+SymbolInfos *lookup(SymbolTable *table, char *key)
+{
+    unsigned int index = hash((unsigned char *)key, table->size);
+
     listNode *current = table->symbols[index];
-    
-    while (current != NULL) {
-        if (strcmp(current->symbol->key, key) == 0) {
+
+    while (current != NULL)
+    {
+        if (strcmp(current->symbol->key, key) == 0)
+        {
             return current->symbol;
         }
-        
+
         current = current->nextNode;
     }
-    
+
     return NULL;
 }
 
-void printTable(SymbolTable *table) {
-    for (int i = 0; i < table->size; i++) {
+void printTable(SymbolTable *table)
+{
+    for (int i = 0; i < table->size; i++)
+    {
         listNode *current = table->symbols[i];
-        
-        while (current != NULL) {
+
+        while (current != NULL)
+        {
             printf("--------------------------\n");
             printf("Chave:  | %s\n", current->symbol->key);
             printf("Nome:   | %s\n", current->symbol->name);
             printf("Tipo:   | %s\n", current->symbol->type);
-            
+
             current = current->nextNode;
         }
     }
     printf("--------------------------\n");
 }
 
-void freeSymbolTable(SymbolTable *table) {
-    for (int i = 0; i < table->size; i++) {
+void freeSymbolTable(SymbolTable *table)
+{
+    for (int i = 0; i < table->size; i++)
+    {
         listNode *current = table->symbols[i];
-        while (current != NULL) {
+        while (current != NULL)
+        {
             listNode *temp = current;
             current = current->nextNode;
             free(temp->symbol->key);
@@ -105,7 +123,26 @@ void freeSymbolTable(SymbolTable *table) {
             free(temp);
         }
     }
-    
+
     free(table->symbols);
     free(table);
+}
+
+char *lookup_variable_type(SymbolTable *table, char *key)
+{
+    unsigned int index = hash((unsigned char *)key, table->size);
+
+    listNode *current = table->symbols[index];
+
+    while (current != NULL)
+    {
+        if (strcmp(current->symbol->key, key) == 0)
+        {
+            return strdup(current->symbol->type);
+        }
+
+        current = current->nextNode;
+    }
+
+    return NULL;
 }
