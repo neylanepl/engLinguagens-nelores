@@ -200,7 +200,7 @@ bloco : {$$ = createRecord("","");}
       | liberacao_memoria {}            
       ;
 
-comando : condicional {$$ = $1;}
+comando : condicional {$$ = $1;} //palavra fimIF + usar o contador de condicional
       | retorno {$$ = $1;}
       | iteracao {$$ = $1;} 
       | selecao {$$ = $1;}
@@ -240,11 +240,7 @@ lista_campos : decl_vars {}
 iteracao : WHILE '(' expre_logica_iterador ')' '{' bloco '}' {
             printf("---- %s ----", lookup_type($3));
             if (strcmp(lookup_type($3), "bool") == 0){
-                  char *sWhile = cat("while(",$3->code,"){\n",$6->code,"\n}\n");
-                  freeRecord($3);
-                  freeRecord($6);
-                  $$ = createRecord(sWhile, "");
-                  free(sWhile);
+                  ctrl_b3(&$$, &$3, &$6, "while");
             } else {
                   yyerror(cat("invalid type of expression ",$3->code," (expected bool, received ",lookup_type($3),")"));
             }
@@ -310,20 +306,13 @@ condicional_aux : {$$ = createRecord("","");}
                 ;
 
 else : ELSE '{' bloco '}'  {
-       char *sElse = cat("else{",$3->code,"}","", "");
-                  freeRecord($3);
-                  $$ = createRecord(sElse, "");
-                  free(sElse);
+       else_b(&$$, &$3, "else"); 
 }
      ;
 
 elseif : ELSE IF '(' expre_logica_iterador ')' '{' bloco '}' {
       if (strcmp(lookup_type($4), "bool") == 0){
-                  char *sElseIf = cat("else if(",$4->code,"){\n",$7->code,"\n}\n");
-                  freeRecord($4);
-                  freeRecord($7);
-                  $$ = createRecord(sElseIf, "");
-                  free(sElseIf);
+                  ctrl_b1(&$$, &$4, &$7, "if");
             } else {
                   yyerror(cat("invalid type of expression ",$4->code," (expected bool, received ",lookup_type($4),")"));
             }
@@ -332,11 +321,7 @@ elseif : ELSE IF '(' expre_logica_iterador ')' '{' bloco '}' {
 
 if_simples : IF '(' expre_logica_iterador ')' '{' bloco '}' {
        if (strcmp(lookup_type($3), "bool") == 0){
-                  char *sIFsimples = cat("if(",$3->code,"){\n",$6->code,"\n}\n");
-                  freeRecord($3);
-                  freeRecord($6);
-                  $$ = createRecord(sIFsimples, "");
-                  free(sIFsimples);
+                 ctrl_b1(&$$, &$3, &$6, "if");
             } else {
                   yyerror(cat("invalid type of expression ",$3->code," (expected bool, received ",lookup_type($3),")"));
             }

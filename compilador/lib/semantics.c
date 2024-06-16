@@ -4,6 +4,20 @@
 #include <string.h>
 #include "record.h"
 
+char * getIfID(){
+    char *outStr = (char *) malloc(sizeof(char) * 30);
+	sprintf(outStr, "%d", ifID);
+
+    return outStr;
+};
+char * incIfID(){
+    char *outStr = (char *) malloc(sizeof(char) * 30);
+    ifID++;
+	sprintf(outStr, "%d", ifID);
+
+    return outStr;
+};
+
 void dec1(record **ss, record **s2, char **s4)
 {
 	char *str;
@@ -160,9 +174,47 @@ void declaracaoProcedimento(record **ss, char **s2, record **s4, record **s7)
 	free(str2);
 };
 
-// args : tipo ID
-void argumentoTipoId(record **ss, char **s1, record **s3)
-{
+
+
+//if_simples : IF '(' expre_logica_iterador ')' '{' bloco '}'
+void ctrl_b1(record **ss, record **exp, record **commands, char *ifId) {
+	char *str1 = cat("if (!(", (*exp)->code, ")){\n", "goto ", cat(ifId,getIfID(), ";", "", ""));
+	char *str2 = cat(str1,"\n}\n",(*commands)->code,"goto ", cat("fimelse",";", "", "", ""));
+	char *str3 = cat(str2,"\n\n",cat(ifId,getIfID(), "", "", ""),"\n", "");
+	incIfID();
+	*ss = createRecord(str3, "");
+	freeRecord(*exp);
+	freeRecord(*commands);
+	free(str1);
+	free(str2);
+	free(str3);
+}
+
+void else_b(record **ss, record **commands, char *ifId) {
+	char *str = cat("{\n", (*commands)->code, "};\n", cat("fim",ifId,"","",""), ":\n");
+	incIfID();
+	*ss = createRecord(str, "");
+	freeRecord(*commands);
+	free(str);
+}
+
+//iteracao : WHILE '(' expre_logica_iterador ')' '{' bloco '}'
+void ctrl_b3(record **ss, record **s3, record **s6, char *whileId) {
+	char *str1 = cat("{\n", cat(whileId,getIfID(),"","",""), ":\n", "if(", (*s3)->code);
+	char *str2 = cat(str1, "){\n", (*s6)->code, "goto ", cat(whileId,getIfID(),";","",""));
+	char *str3 = cat(str2, "\n}\n}\n", cat("fimWhile",getIfID(),":","",""), "\n", "");
+	incIfID();
+	*ss = createRecord(str3, "");
+	freeRecord(*s3);
+	freeRecord(*s6);
+	free(str1);
+	free(str2);
+	free(str3);
+};
+
+
+//args : tipo ID 
+void argumentoTipoId(record **ss, char **s1, record **s3) {
 	char *str;
 
 	if (0 == strcmp((*s3)->code, "string"))

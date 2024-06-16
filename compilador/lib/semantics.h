@@ -3,6 +3,10 @@
 
 #include "record.h"
 
+static int ifID = 0;
+
+char * getIfID();
+char * incIfID();
 void dec1(record **, record **, char **);
 char *cat(char *, char *, char *, char *, char *);
 void init1(record **, record **, char **, record **);
@@ -19,6 +23,9 @@ void declaracaoFuncao(record **ss, char **s2, record **s4, char **s7, record **s
 void declaracaoProcedimento(record **ss, char **s2, record **s4, record **s7);
 void argumentoTipoId(record **ss, char **s1, record **s3);
 void scanfPalavraIdeEndereco(record **ss, char **s3, char **s5);
+void ctrl_b1(record **ss, record **exp, record **commands, char *ifId);
+void else_b(record **ss, record **commands, char *ifId);
+void ctrl_b3(record **ss, record **s3, record **s6, char *whileId);
 void ex2(record **ss, record **s1, char *s2, record **s3, char *type);
 void atribuicaoVariavel(record **ss, record **s1, record **s2);
 void atribuicaoVariavelMaisIgual(record **ss, record **s1, record **s2);
