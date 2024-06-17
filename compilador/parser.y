@@ -306,13 +306,13 @@ condicional_aux : {$$ = createRecord("","");}
                 ;
 
 else : ELSE '{' bloco '}'  {
-       else_b(&$$, &$3, "if"); 
+       else_b(&$$, &$3); 
 }
      ;
 
 elseif : ELSE IF '(' expre_logica_iterador ')' '{' bloco '}' {
       if (strcmp(lookup_type($4), "bool") == 0){
-                  ctrl_b1(&$$, &$4, &$7, "if");
+                  ctrl_b1(&$$, &$4, &$7);
             } else {
                   yyerror(cat("invalid type of expression ",$4->code," (expected bool, received ",lookup_type($4),")"));
             }
@@ -321,7 +321,7 @@ elseif : ELSE IF '(' expre_logica_iterador ')' '{' bloco '}' {
 
 if_simples : IF '(' expre_logica_iterador ')' '{' bloco '}' {
        if (strcmp(lookup_type($3), "bool") == 0){
-                 ctrl_b1(&$$, &$3, &$6, "if");
+                 ctrl_b1(&$$, &$3, &$6);
             } else {
                   yyerror(cat("invalid type of expression ",$3->code," (expected bool, received ",lookup_type($3),")"));
             }

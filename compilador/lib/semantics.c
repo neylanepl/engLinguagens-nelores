@@ -193,22 +193,21 @@ void declaracaoProcedimento(record **ss, char **s2, record **s4, record **s7)
 
 
 //if_simples : IF '(' expre_logica_iterador ')' '{' bloco '}'
-void ctrl_b1(record **ss, record **exp, record **commands, char *ifId) {
-	char *str1 = cat("if (!(", (*exp)->code, ")){\n", "goto ", cat(ifId,getIfID(), ";", "", ""));
-	char *str2 = cat(str1,"\n}\n",(*commands)->code,"goto ", cat("aaa",";", "", "", ""));
-	char *str3 = cat(str2,"\n\n",cat(ifId,getIfID(), "", "", ""),"\n", "");
-	incIfID();
-	*ss = createRecord(str3, "");
+void ctrl_b1(record **ss, record **exp, record **commands) {
+	char *str1 = cat("if (!(", (*exp)->code, ")) { goto ","else", cat(getIfID(), "; }", "", "", ""));
+	char *str2 = cat(str1,"\n",(*commands)->code,"goto ", cat("endif", getIfID(), ";", "", ""));
+	char *str3 = cat(str2,"\n",cat("else", getIfID(), ":", "", ""),"\n", "");
+	*ss = createRecord(str3, getIfID());
 	freeRecord(*exp);
 	freeRecord(*commands);
 	free(str1);
 	free(str2);
 	free(str3);
+	incIfID();
 }
 
-void else_b(record **ss, record **commands, char *ifId) {
-	char *str = cat("{\n", (*commands)->code, "};\n","", "");
-	incIfID();
+void else_b(record **ss, record **commands) {
+	char *str = cat((*commands)->code, "endif", getIfID() - 1, ":\n", "");
 	*ss = createRecord(str, "");
 	freeRecord(*commands);
 	free(str);
