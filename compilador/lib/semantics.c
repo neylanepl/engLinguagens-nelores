@@ -209,7 +209,7 @@ void ctrl_b1(record **ss, record **exp, record **commands) {
 void ctrl_b2(record **ss, record **exp, record **ifCommands, record **elseCommands) {
 	char *id = getIfID();
 	char *str1 = cat("if (!(", (*exp)->code, ")) { goto else", id,"; }\n");
-	char *str2 = cat(str1, (*ifCommands)->code,"else", id, ":\n");
+	char *str2 = cat(str1, (*ifCommands)->code, "goto endif", id, cat(";\nelse", id, ":\n", "", ""));
 	char *str3 = cat(str2, (*elseCommands)->code, "endif", id, ":\n");
 	*ss = createRecord(str3, id);
 	freeRecord(*exp);
