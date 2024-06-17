@@ -18,6 +18,22 @@ char * incIfID(){
     return outStr;
 };
 
+
+char * getWhileID(){
+    char *outStr = (char *) malloc(sizeof(char) * 30);
+	sprintf(outStr, "%d", whileID);
+
+    return outStr;
+};
+char * incWhileID(){
+    char *outStr = (char *) malloc(sizeof(char) * 30);
+    whileID++;
+	sprintf(outStr, "%d", whileID);
+
+    return outStr;
+};
+
+
 void dec1(record **ss, record **s2, char **s4)
 {
 	char *str;
@@ -179,7 +195,7 @@ void declaracaoProcedimento(record **ss, char **s2, record **s4, record **s7)
 //if_simples : IF '(' expre_logica_iterador ')' '{' bloco '}'
 void ctrl_b1(record **ss, record **exp, record **commands, char *ifId) {
 	char *str1 = cat("if (!(", (*exp)->code, ")){\n", "goto ", cat(ifId,getIfID(), ";", "", ""));
-	char *str2 = cat(str1,"\n}\n",(*commands)->code,"goto ", cat("fimelse",";", "", "", ""));
+	char *str2 = cat(str1,"\n}\n",(*commands)->code,"goto ", cat("aaa",";", "", "", ""));
 	char *str3 = cat(str2,"\n\n",cat(ifId,getIfID(), "", "", ""),"\n", "");
 	incIfID();
 	*ss = createRecord(str3, "");
@@ -191,7 +207,7 @@ void ctrl_b1(record **ss, record **exp, record **commands, char *ifId) {
 }
 
 void else_b(record **ss, record **commands, char *ifId) {
-	char *str = cat("{\n", (*commands)->code, "};\n", cat("fim",ifId,"","",""), ":\n");
+	char *str = cat("{\n", (*commands)->code, "};\n","", "");
 	incIfID();
 	*ss = createRecord(str, "");
 	freeRecord(*commands);
@@ -200,10 +216,10 @@ void else_b(record **ss, record **commands, char *ifId) {
 
 //iteracao : WHILE '(' expre_logica_iterador ')' '{' bloco '}'
 void ctrl_b3(record **ss, record **s3, record **s6, char *whileId) {
-	char *str1 = cat("{\n", cat(whileId,getIfID(),"","",""), ":\n", "if(", (*s3)->code);
-	char *str2 = cat(str1, "){\n", (*s6)->code, "goto ", cat(whileId,getIfID(),";","",""));
-	char *str3 = cat(str2, "\n}\n}\n", cat("fimWhile",getIfID(),":","",""), "\n", "");
-	incIfID();
+	char *str1 = cat(cat(whileId,getWhileID(),"","",""), ":\n", "if(", (*s3)->code,"");
+	char *str2 = cat(str1, "){\n", (*s6)->code, "goto ", cat(whileId,getWhileID(),";","",""));
+	char *str3 = cat(str2, "\n}\n", cat("fimWhile",getWhileID(),":","",""), "\n", "");
+	incWhileID();
 	*ss = createRecord(str3, "");
 	freeRecord(*s3);
 	freeRecord(*s6);

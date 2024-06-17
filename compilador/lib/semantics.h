@@ -4,9 +4,16 @@
 #include "record.h"
 
 static int ifID = 0;
+static int whileID = 0;
+static int condicionalID = 0;
 
 char * getIfID();
 char * incIfID();
+char * getWhileID();
+char * incWhileID();
+char * getCondicionalID();
+char * incCondicionalID();
+
 void dec1(record **, record **, char **);
 char *cat(char *, char *, char *, char *, char *);
 void init1(record **, record **, char **, record **);

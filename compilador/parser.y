@@ -306,7 +306,7 @@ condicional_aux : {$$ = createRecord("","");}
                 ;
 
 else : ELSE '{' bloco '}'  {
-       else_b(&$$, &$3, "else"); 
+       else_b(&$$, &$3, "if"); 
 }
      ;
 
