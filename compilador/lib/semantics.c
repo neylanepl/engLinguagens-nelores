@@ -104,7 +104,7 @@ void printStringLiteral(record **ss, char **s3)
 
 void printLnStringLiteral(record **ss, char **s3, record **s5)
 {
-	char *str = cat("printf(", *s3, ",", (*s5)->code, ");\n");
+	char *str = cat("printf(", *s3, ",", (*s5)->code, ");\nprintf(\"\\n\");");
 	*ss = createRecord(str, "");
 	free(*s3);
 	freeRecord(*s5);
@@ -195,7 +195,7 @@ void declaracaoProcedimento(record **ss, char **s2, record **s4, record **s7)
 //if_simples : IF '(' expre_logica_iterador ')' '{' bloco '}'
 void ctrl_b1(record **ss, record **exp, record **commands) {
 	char *id = getIfID();
-	char *str1 = cat("if (!(", (*exp)->code, ")) { goto endif", id,"; }\n");
+	char *str1 = cat("if (!(", (*exp)->code, ")) goto endif", id,";\n");
 	char *str2 = cat(str1, (*commands)->code,"endif", id, ":\n");
 	*ss = createRecord(str2, "");
 	freeRecord(*exp);
@@ -208,7 +208,7 @@ void ctrl_b1(record **ss, record **exp, record **commands) {
 //if_else : IF '(' expre_logica_iterador ')' '{' bloco '}' ELSE else_aux
 void ctrl_b2(record **ss, record **exp, record **ifCommands, record **elseCommands) {
 	char *id = getIfID();
-	char *str1 = cat("if (!(", (*exp)->code, ")) { goto else", id,"; }\n");
+	char *str1 = cat("if (!(", (*exp)->code, ")) goto else", id,";\n");
 	char *str2 = cat(str1, (*ifCommands)->code, "goto endif", id, cat(";\nelse", id, ":\n", "", ""));
 	char *str3 = cat(str2, (*elseCommands)->code, "endif", id, ":\n");
 	*ss = createRecord(str3, id);
@@ -222,17 +222,16 @@ void ctrl_b2(record **ss, record **exp, record **ifCommands, record **elseComman
 }
 
 //iteracao : WHILE '(' expre_logica_iterador ')' '{' bloco '}'
-void ctrl_b3(record **ss, record **s3, record **s6, char *whileId) {
-	char *str1 = cat(cat(whileId,getWhileID(),"","",""), ":\n", "if(", (*s3)->code,"");
-	char *str2 = cat(str1, "){\n", (*s6)->code, "goto ", cat(whileId,getWhileID(),";","",""));
-	char *str3 = cat(str2, "\n}\n", "", "", "");
+void ctrl_b3(record **ss, record **exp, record **commands) {
+	char *id = getWhileID();
+	char *str1 = cat("while", id, ":\nif (!(", (*exp)->code, cat(")) goto endwhile", id, ";\n", "", ""));
+	char *str2 = cat(str1, (*commands)->code, "goto while", id, cat(";\nendwhile", id, ":\n", "", ""));
 	incWhileID();
-	*ss = createRecord(str3, "");
-	freeRecord(*s3);
-	freeRecord(*s6);
+	*ss = createRecord(str2, "");
+	freeRecord(*exp);
+	freeRecord(*commands);
 	free(str1);
 	free(str2);
-	free(str3);
 };
 
 

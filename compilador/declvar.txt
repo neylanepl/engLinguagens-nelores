@@ -1,6 +1,6 @@
 
 function int analiseDeIntervalos() {
-    int num;
+    int num = 1;
     int count025 = 0;
     int count2650 = 0;
     int count5175 = 0;
@@ -24,10 +24,10 @@ function int analiseDeIntervalos() {
     
 
     print("Quantidade de números nos intervalos:\n");
-    println("[0, 25]:" + count025);
-    println("[26, 50]:" + count2650);
-    println("[51, 75]:" + count5175);
-    println("[76, 100]:" + count76100);
+    println("[0, 25]: %d" + count025);
+    println("[26, 50]: %d" + count2650);
+    println("[51, 75]: %d" + count5175);
+    println("[76, 100]: %d" + count76100);
 }
 void main() {
     analiseDeIntervalos();

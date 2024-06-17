@@ -240,7 +240,7 @@ lista_campos : decl_vars {}
 iteracao : WHILE '(' expre_logica_iterador ')' '{' bloco '}' {
             printf("---- %s ----", lookup_type($3));
             if (strcmp(lookup_type($3), "bool") == 0){
-                  ctrl_b3(&$$, &$3, &$6, "while");
+                  ctrl_b3(&$$, &$3, &$6);
             } else {
                   yyerror(cat("invalid type of expression ",$3->code," (expected bool, received ",lookup_type($3),")"));
             }
