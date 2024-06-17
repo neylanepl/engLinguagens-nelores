@@ -11,24 +11,24 @@ WHILE_0:
 if (!(num>0)) goto endWHILE_0;
 printf("Digite um número: ");
 scanf("%d",&num);
-if (!(num>=0&&num<=25)) goto else3;
+if (!(num>=0&&num<=25)) goto elseIF_0;
 count025=count025+1;
-goto endif3;
-else3:
-if (!(num>=26&&num<=50)) goto else2;
+goto endifIF_0;
+elseIF_0:
+if (!(num>=26&&num<=50)) goto elseIF_1;
 count2650=count2650+1;
-goto endif2;
-else2:
-if (!(num>=51&&num<=75)) goto else1;
+goto endifIF_1;
+elseIF_1:
+if (!(num>=51&&num<=75)) goto elseIF_2;
 count5175=count5175+1;
-goto endif1;
-else1:
-if (!(num>=76&&num<=100)) goto endif0;
+goto endifIF_2;
+elseIF_2:
+if (!(num>=76&&num<=100)) goto endifIF_3;
 count76100=count76100+1;
-endif0:
-endif1:
-endif2:
-endif3:
+endifIF_3:
+endifIF_2:
+endifIF_1:
+endifIF_0:
 goto WHILE_0;
 endWHILE_0:
 printf("Quantidade de números nos intervalos:");
