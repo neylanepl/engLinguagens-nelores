@@ -194,30 +194,38 @@ void declaracaoProcedimento(record **ss, char **s2, record **s4, record **s7)
 
 //if_simples : IF '(' expre_logica_iterador ')' '{' bloco '}'
 void ctrl_b1(record **ss, record **exp, record **commands) {
-	char *str1 = cat("if (!(", (*exp)->code, ")) { goto ","else", cat(getIfID(), "; }", "", "", ""));
-	char *str2 = cat(str1,"\n",(*commands)->code,"goto ", cat("endif", getIfID(), ";", "", ""));
-	char *str3 = cat(str2,"\n",cat("else", getIfID(), ":", "", ""),"\n", "");
-	*ss = createRecord(str3, getIfID());
+	char *id = getIfID();
+	char *str1 = cat("if (!(", (*exp)->code, ")) { goto endif", id,"; }\n");
+	char *str2 = cat(str1, (*commands)->code,"endif", id, ":\n");
+	*ss = createRecord(str2, "");
 	freeRecord(*exp);
 	freeRecord(*commands);
+	free(str1);
+	free(str2);
+	incIfID();
+}
+
+//if_else : IF '(' expre_logica_iterador ')' '{' bloco '}' ELSE else_aux
+void ctrl_b2(record **ss, record **exp, record **ifCommands, record **elseCommands) {
+	char *id = getIfID();
+	char *str1 = cat("if (!(", (*exp)->code, ")) { goto else", id,"; }\n");
+	char *str2 = cat(str1, (*ifCommands)->code,"else", id, ":\n");
+	char *str3 = cat(str2, (*elseCommands)->code, "endif", id, ":\n");
+	*ss = createRecord(str3, id);
+	freeRecord(*exp);
+	freeRecord(*ifCommands);
+	freeRecord(*elseCommands);
 	free(str1);
 	free(str2);
 	free(str3);
 	incIfID();
 }
 
-void else_b(record **ss, record **commands) {
-	char *str = cat((*commands)->code, "endif", getIfID() - 1, ":\n", "");
-	*ss = createRecord(str, "");
-	freeRecord(*commands);
-	free(str);
-}
-
 //iteracao : WHILE '(' expre_logica_iterador ')' '{' bloco '}'
 void ctrl_b3(record **ss, record **s3, record **s6, char *whileId) {
 	char *str1 = cat(cat(whileId,getWhileID(),"","",""), ":\n", "if(", (*s3)->code,"");
 	char *str2 = cat(str1, "){\n", (*s6)->code, "goto ", cat(whileId,getWhileID(),";","",""));
-	char *str3 = cat(str2, "\n}\n", cat("fimWhile",getWhileID(),":","",""), "\n", "");
+	char *str3 = cat(str2, "\n}\n", "", "", "");
 	incWhileID();
 	*ss = createRecord(str3, "");
 	freeRecord(*s3);

@@ -57,7 +57,7 @@ char* lookup_variable_type(SymbolTable *table, char *key);
 
 %type <rec> decl_vars decl_variavel expre_logica expre_arit termo fator chamada_funcao 
 %type <rec> ops main args subprogs subprog decl_funcao decl_procedimento bloco comando args_com_vazio alocacao_memoria liberacao_memoria
-%type <rec> condicional if_simples retorno iteracao selecao casos caso elementos_array base casoDefault listaCasos condicional_aux  else elseif
+%type <rec> condicional if_simples if_else else_aux retorno iteracao selecao casos caso elementos_array base casoDefault listaCasos
 %type <rec> decl_array tamanho_array definicao_struct lista_campos atribuicao_struct expressao_tamanho_array elemento_matriz definicao_enum lista_enum decl_array_atr_tipada decl_array_atr
 %type <rec> entrada expre_logica_iterador saida comentario_selecao comentario decl_var_atr_tipada decl_var_atr decl_var_ponteiro decl_var_const decl_var saida_atribuicao
 %type <rec> endereco tipo_ponteiro stmts base_case_array expressao_for_inicial parametros_rec parametro acesso_array parametro_com_vazio tipo tipo_array
@@ -285,48 +285,31 @@ retorno : RETURN PV  {}
         | RETURN expre_logica  PV  {}
         ;
 
-condicional : if_simples condicional_aux {
-       char *sCondicional = cat($1->code,$2->code,"", "","");
-                  freeRecord($1);
-                  freeRecord($2);
-                  $$ = createRecord(sCondicional, "");
-                  free(sCondicional);
-}
-            ;
-
-condicional_aux : {$$ = createRecord("","");}
-                | elseif condicional_aux {
-                  char *sCondicionalAux = cat($1->code,$2->code,"", "","");
-                  freeRecord($1);
-                  freeRecord($2);
-                  $$ = createRecord(sCondicionalAux, "");
-                  free(sCondicionalAux);
-                }
-                | else {$$ = $1;}
-                ;
-
-else : ELSE '{' bloco '}'  {
-       else_b(&$$, &$3); 
-}
-     ;
-
-elseif : ELSE IF '(' expre_logica_iterador ')' '{' bloco '}' {
-      if (strcmp(lookup_type($4), "bool") == 0){
-                  ctrl_b1(&$$, &$4, &$7);
-            } else {
-                  yyerror(cat("invalid type of expression ",$4->code," (expected bool, received ",lookup_type($4),")"));
-            }
-}
-       ;
+condicional : if_simples {$$ = $1;}
+            | if_else {$$ = $1;}
+;
 
 if_simples : IF '(' expre_logica_iterador ')' '{' bloco '}' {
-       if (strcmp(lookup_type($3), "bool") == 0){
-                 ctrl_b1(&$$, &$3, &$6);
+            if (strcmp(lookup_type($3), "bool") == 0){
+                  ctrl_b1(&$$, &$3, &$6);
             } else {
                   yyerror(cat("invalid type of expression ",$3->code," (expected bool, received ",lookup_type($3),")"));
             }
-}
-            ;
+      }
+;
+
+if_else : IF '(' expre_logica_iterador ')' '{' bloco '}' ELSE else_aux {
+            if (strcmp(lookup_type($3), "bool") == 0){
+                  ctrl_b2(&$$, &$3, &$6, &$9);
+            } else {
+                  yyerror(cat("invalid type of expression ",$3->code," (expected bool, received ",lookup_type($3),")"));
+            }
+      }
+;
+
+else_aux : '{' bloco '}' {$$ = $2;}
+      | condicional {$$ = $1;}
+;
 
 chamada_funcao : ID '(' parametro_com_vazio ')' {
             SymbolInfos *foundFuncReturn = lookup(functionsTable, $1);
