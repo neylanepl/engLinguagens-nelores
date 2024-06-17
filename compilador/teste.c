@@ -31,12 +31,21 @@ endif2:
 endif3:
 goto while0;
 endwhile0:
-printf("Quantidade de números nos intervalos:\n");
-printf("[0, 25]: %d",count025);
-printf("\n");printf("[26, 50]: %d",count2650);
-printf("\n");printf("[51, 75]: %d",count5175);
-printf("\n");printf("[76, 100]: %d",count76100);
-printf("\n");}
+int t = 1;
+printf("Quantidade de números nos intervalos:");
+printf("\n");
+printf("[0, 25]: ");
+printf((1) ? "true" : "false");
+printf("[26, 50]: ");
+printf("%d", count2650);
+printf("\n");
+printf("[51, 75]: ");
+printf("%d", count5175);
+printf("\n");
+printf("[76, 100]: ");
+printf("%d", count76100);
+printf("\n");
+}
 int main(){
 analiseDeIntervalos();
 }

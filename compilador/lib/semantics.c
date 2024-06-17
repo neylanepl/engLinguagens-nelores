@@ -94,23 +94,6 @@ void baseFalse(record **ss)
 	*ss = createRecord("0", "bool");
 }
 
-void printStringLiteral(record **ss, char **s3)
-{
-	char *str = cat("printf(", *s3, ")", ";\n", "");
-	*ss = createRecord(str, "");
-	free(*s3);
-	free(str);
-};
-
-void printLnStringLiteral(record **ss, char **s3, record **s5)
-{
-	char *str = cat("printf(", *s3, ",", (*s5)->code, ");\nprintf(\"\\n\");");
-	*ss = createRecord(str, "");
-	free(*s3);
-	freeRecord(*s5);
-	free(str);
-};
-
 // STRING LITERAL
 void baseStringLiteral(record **ss, char **s1)
 {

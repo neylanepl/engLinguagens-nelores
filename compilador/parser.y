@@ -59,7 +59,7 @@ char* lookup_variable_type(SymbolTable *table, char *key);
 %type <rec> ops main args subprogs subprog decl_funcao decl_procedimento bloco comando args_com_vazio alocacao_memoria liberacao_memoria
 %type <rec> condicional if_simples if_else else_aux retorno iteracao selecao casos caso elementos_array base casoDefault listaCasos
 %type <rec> decl_array tamanho_array definicao_struct lista_campos atribuicao_struct expressao_tamanho_array elemento_matriz definicao_enum lista_enum decl_array_atr_tipada decl_array_atr
-%type <rec> entrada expre_logica_iterador saida comentario_selecao comentario decl_var_atr_tipada decl_var_atr decl_var_ponteiro decl_var_const decl_var saida_atribuicao
+%type <rec> entrada expre_logica_iterador saida saida_args saida_args_aux comentario_selecao comentario decl_var_atr_tipada decl_var_atr decl_var_ponteiro decl_var_const decl_var entrada_atribuicao
 %type <rec> endereco tipo_ponteiro stmts base_case_array expressao_for_inicial parametros_rec parametro acesso_array parametro_com_vazio tipo tipo_array
 
 %start prog
@@ -335,15 +335,7 @@ alocacao_memoria_parametros : expre_arit  {}
 liberacao_memoria : FREE '(' ID ')' PV {}
                ;
 
-entrada : PRINTLN '(' WORD '+' expre_logica ')' PV {
-            printLnStringLiteral(&$$, &$3, &$5); 
-        } 
-        | PRINT '(' WORD ')' PV {
-            printStringLiteral(&$$, &$3); 
-        } 
-        ;
-
-saida : SCANF '(' WORD ',' ID ')' PV {
+entrada : SCANF '(' WORD ',' ID ')' PV {
             scanfPalavraIdeEndereco(&$$, &$3, &$5);
       }
       | SCANF '(' WORD ',' ID acesso_array ')' PV {}
@@ -351,13 +343,50 @@ saida : SCANF '(' WORD ',' ID ')' PV {
             scanfPalavraIdeEndereco(&$$, &$3, &$5->code);
       }
       | SCANF '(' WORD ',' endereco acesso_array ')' PV {}
-      | saida_atribuicao {}
+      | entrada_atribuicao {}
       ;
 
-saida_atribuicao: TYPE ID '=' saida {}
-      | FINAL TYPE ID '=' saida {}
-      | CONST TYPE ID '=' saida {}
-      | ID '=' saida {}
+saida : PRINT '(' saida_args ')' PV {
+            printf("%s", $3->code);
+            $$ = $3;
+      }
+      | PRINTLN '(' saida_args ')' PV {
+            printf("%s", $3->code);
+            char *str = cat($3->code, "printf(\"\\n\");\n", "", "", "");
+            $$ = createRecord(str, "");
+            free(str);
+      }
+      ;
+
+saida_args : expre_arit saida_args_aux {
+            char *type = lookup_type($1);
+            char *str1;
+
+            if (!strcmp(type, "int")) {
+                  str1 = cat("printf(\"%d\", ", $1->code, ");\n", "", "");
+            } else if (!strcmp(type, "float")) {
+                  str1 = cat("printf(\"%f\", ", $1->code, ");\n", "", "");
+            } else if (!strcmp(type, "bool")) {
+                  str1 = cat("printf((", $1->code, ") ? \"true\" : \"false\");\n", "", "");
+            } else if (!strcmp(type, "string")) {
+                  str1 = cat("printf(", $1->code,");\n", "", "");
+            }
+
+            char *str2 = cat(str1, $2->code, "", "", "");
+            $$ = createRecord(str2, "");
+            free(str1);
+            free(str2);
+      }
+      ;
+
+saida_args_aux : {$$ = createRecord("", "");}
+      | ',' saida_args {$$ = $2;}
+      ;
+
+entrada_atribuicao: TYPE ID '=' entrada {}
+      | FINAL TYPE ID '=' entrada {}
+      | CONST TYPE ID '=' entrada {}
+      | ID '=' entrada {}
       ;
 
 decl_vars : decl_variavel  {$$ = $1;}
