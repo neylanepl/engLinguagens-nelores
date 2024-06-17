@@ -205,11 +205,9 @@ void ctrl_b2(record **ss, record **exp, record **ifCommands, record **elseComman
 }
 
 //iteracao : WHILE '(' expre_logica_iterador ')' '{' bloco '}'
-void ctrl_b3(record **ss, record **exp, record **commands) {
-	char *id = getWhileID();
-	char *str1 = cat("while", id, ":\nif (!(", (*exp)->code, cat(")) goto endwhile", id, ";\n", "", ""));
-	char *str2 = cat(str1, (*commands)->code, "goto while", id, cat(";\nendwhile", id, ":\n", "", ""));
-	incWhileID();
+void ctrl_b3(record **ss, record **exp, record **commands, char *id) {
+	char *str1 = cat(id, ":\nif (!(", (*exp)->code, cat(")) goto end", id, ";\n", "", ""), "");
+	char *str2 = cat(str1, (*commands)->code, "goto ", id, cat(";\nend", id, ":\n", "", ""));
 	*ss = createRecord(str2, "");
 	freeRecord(*exp);
 	freeRecord(*commands);
@@ -270,7 +268,6 @@ void ex2(record **ss, record **s1, char *s2, record **s3, char *type)
 		str = cat((*s1)->code, s2, (*s3)->code, "", "");
 	}
 
-	printf("---- %s %s %s ----\n", (*s1)->code, s2, (*s3)->code);
 	freeRecord(*s1);
 	freeRecord(*s3);
 	*ss = createRecord(str, type);

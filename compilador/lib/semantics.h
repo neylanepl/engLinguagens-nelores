@@ -30,7 +30,7 @@ void argumentoTipoId(record **ss, char **s1, record **s3);
 void scanfPalavraIdeEndereco(record **ss, char **s3, char **s5);
 void ctrl_b1(record **ss, record **exp, record **commands);
 void ctrl_b2(record **ss, record **exp, record **ifCommands, record **elseCommands);
-void ctrl_b3(record **ss, record **exp, record **commands);
+void ctrl_b3(record **ss, record **exp, record **commands, char *id);
 void ex2(record **ss, record **s1, char *s2, record **s3, char *type);
 void atribuicaoVariavel(record **ss, record **s1, record **s2);
 void atribuicaoVariavelMaisIgual(record **ss, record **s1, record **s2);

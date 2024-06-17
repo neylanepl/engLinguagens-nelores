@@ -7,8 +7,8 @@ int count025 = 0;
 int count2650 = 0;
 int count5175 = 0;
 int count76100 = 0;
-while0:
-if (!(num>0)) goto endwhile0;
+WHILE_0:
+if (!(num>0)) goto endWHILE_0;
 printf("Digite um número: ");
 scanf("%d",&num);
 if (!(num>=0&&num<=25)) goto else3;
@@ -29,13 +29,13 @@ endif0:
 endif1:
 endif2:
 endif3:
-goto while0;
-endwhile0:
-int t = 1;
+goto WHILE_0;
+endWHILE_0:
 printf("Quantidade de números nos intervalos:");
 printf("\n");
 printf("[0, 25]: ");
-printf((1) ? "true" : "false");
+printf("%d", count025);
+printf("\n");
 printf("[26, 50]: ");
 printf("%d", count2650);
 printf("\n");

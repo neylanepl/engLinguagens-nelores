@@ -5,6 +5,7 @@
 #include "./lib/record.h"
 #include "./lib/semantics.h"
 #include "./lib/hashTable.h"
+#include "./lib/stack.h"
 
 int yylex(void);
 int yyerror(char *s);
@@ -16,6 +17,8 @@ char * cat(char *, char *, char *, char *, char *);
 SymbolTable *variablesTable;
 SymbolTable *functionsTable;
 SymbolTable *typedTable;
+stack *scopeStack;
+stack *stkFixElse;
 int countFuncCallParams;
 void insertFunctionParam(char *, char *);
 char* lookup_type(record *);
@@ -65,11 +68,13 @@ char* lookup_variable_type(SymbolTable *table, char *key);
 %start prog
 
 %%
-prog : stmts subprogs main {fprintf(yyout, "#include <stdio.h>\n#include <math.h>\n%s\n%s\n%s", $1->code, $2->code, $3->code);
-                           freeRecord($1);
-                           freeRecord($2);
-                           freeRecord($3);
-                           }
+prog : {pushS(scopeStack, "global", "");} stmts subprogs main {
+            popS(scopeStack);
+            fprintf(yyout, "#include <stdio.h>\n#include <math.h>\n%s\n%s\n%s", $2->code, $3->code, $4->code);
+            freeRecord($2);
+            freeRecord($3);
+            freeRecord($4);
+      }
       ;
 
 stmts: {$$ = createRecord("","");}
@@ -85,10 +90,10 @@ stmts: {$$ = createRecord("","");}
       | definicao_struct stmts {}
       ;
 
-main : VOID MAIN '(' args_com_vazio ')' '{' bloco '}' {
-      char *s = cat("int main(", $4->code, "){\n", $7->code,"}");
+main : VOID MAIN '(' args_com_vazio ')' '{' {pushS(scopeStack, "main", "");} bloco '}' {popS(scopeStack);}{
+      char *s = cat("int main(", $4->code, "){\n", $8->code,"}");
       freeRecord($4);
-      freeRecord($7);
+      freeRecord($8);
       $$ = createRecord(s, "");
       free(s);
 };
@@ -158,22 +163,24 @@ subprog : decl_funcao           {$$ = $1;}
       | decl_procedimento        {$$ = $1;}                                           
       ;
 
-decl_funcao : FUNCTION tipo ID '(' args_com_vazio ')' '{' bloco '}'       {
+decl_funcao : FUNCTION tipo ID {pushS(scopeStack, $3, "");} '(' args_com_vazio ')' '{' bloco '}'       {
                         if (lookup(variablesTable, $3)) {
                               yyerror(cat("error: redeclaration of function ", $3, "", "", ""));
                         } else {
                               insert(functionsTable, cat($3,"","","",""),"return",$2->code);
-                              declaracaoFuncao(&$$, &$3, &$5, &$2->code, &$8);
+                              declaracaoFuncao(&$$, &$3, &$6, &$2->code, &$9);
+                              popS(scopeStack);
                         }  
 }           
             ;
 
-decl_procedimento : PROCEDURE ID '(' args_com_vazio ')' '{' bloco '}'  {
+decl_procedimento : PROCEDURE ID {pushS(scopeStack, $2, "");} '(' args_com_vazio ')' '{' bloco '}'  {
                         if (lookup(variablesTable, $2)) {
                               yyerror(cat("error: redeclaration of procedure ", $2, "", "", ""));
                         } else {
                               insert(functionsTable, cat($2,"","","",""),"r","void");
-                              declaracaoProcedimento(&$$, &$2, &$4, &$7);
+                              declaracaoProcedimento(&$$, &$2, &$5, &$8);
+                              popS(scopeStack);
                         }  
 }                   
                   ;
@@ -237,10 +244,11 @@ lista_campos : decl_vars {}
              | decl_vars lista_campos {}
              ;
 
-iteracao : WHILE '(' expre_logica_iterador ')' '{' bloco '}' {
-            printf("---- %s ----", lookup_type($3));
+iteracao : WHILE '(' expre_logica_iterador ')' '{' {pushS(scopeStack, cat("WHILE_",getWhileID(),"","",""), ""); incWhileID();} bloco '}' {
             if (strcmp(lookup_type($3), "bool") == 0){
-                  ctrl_b3(&$$, &$3, &$6);
+                  vatt *tmp = peekS(scopeStack);
+                  ctrl_b3(&$$, &$3, &$7, cat(tmp->subp,"","","",""));
+                  popS(scopeStack);
             } else {
                   yyerror(cat("invalid type of expression ",$3->code," (expected bool, received ",lookup_type($3),")"));
             }
@@ -311,13 +319,14 @@ else_aux : '{' bloco '}' {$$ = $2;}
       | condicional {$$ = $1;}
 ;
 
-chamada_funcao : ID '(' parametro_com_vazio ')' {
+chamada_funcao : ID {pushS(scopeStack, $1, "");} '(' parametro_com_vazio ')' {
             SymbolInfos *foundFuncReturn = lookup(functionsTable, $1);
             if(foundFuncReturn){
                   char funcType[100];
                   strcpy(funcType, foundFuncReturn->type);
-                  record *rcdParam = createRecord($3->code, "");
+                  record *rcdParam = createRecord($4->code, "");
                   chamadaParamFuncao(&$$, &$1, &rcdParam, funcType);
+                  popS(scopeStack);
                   countFuncCallParams = 0;
             } else {
                   yyerror(cat("undefined function ",$1,"","",""));
@@ -529,7 +538,6 @@ decl_var: TYPE ID PV {
     insert(variablesTable, $2, $2, $1);
     record *rcdIdDeclVar = createRecord($2, ""); 
     dec1(&$$, &rcdIdDeclVar, &$1);
-    printf("Record declaração variavel freed\n");
 };
       
 decl_var_const: CONST TYPE ID  '=' expre_logica PV {}
@@ -797,6 +805,8 @@ int main (int argc, char ** argv) {
 	functionsTable = createSymbolTable(TABLE_SIZE);
 	typedTable = createSymbolTable(TABLE_SIZE);
 	countFuncCallParams = 0;
+      scopeStack = newStack();
+      stkFixElse = newStack();
     
       codigo = yyparse();
 
