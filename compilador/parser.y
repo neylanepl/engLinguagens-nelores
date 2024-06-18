@@ -21,7 +21,7 @@ stack *scopeStack;
 stack *stkFixElse;
 int countFuncCallParams;
 void insertFunctionParam(char *, char *);
-char* lookup_type(record *);
+char* lookup_type(record *, vatt *temp);
 char* lookup_variable_type(SymbolTable *table, char *key);
 
 
@@ -109,9 +109,10 @@ ponteiro: '*' ID {}
           ;
 
 endereco: '&' ID {
-       SymbolInfos *info = lookup(variablesTable, $2);
+      vatt *tmp = peekS(scopeStack);
+      SymbolInfos *info = lookup(variablesTable, cat(tmp->subp,"#",$2,"",""));
       if (info == NULL) {
-        yyerror(cat("Cannot use variable ", $2, " before initialization!", "", ""));
+        yyerror(cat("Cannot use variable ", cat(tmp->subp,"#",$2,"",""), " before initialization!", "", ""));
       } else {
         char address[100];
         snprintf(address, sizeof(address), "&%s", $2);
@@ -164,7 +165,8 @@ subprog : decl_funcao           {$$ = $1;}
       ;
 
 decl_funcao : FUNCTION tipo ID {pushS(scopeStack, $3, "");} '(' args_com_vazio ')' '{' bloco '}'       {
-                        if (lookup(variablesTable, $3)) {
+                        vatt *tmp = peekS(scopeStack);
+                        if (lookup(variablesTable, cat(tmp->subp,"#",$3,"","") )) {
                               yyerror(cat("error: redeclaration of function ", $3, "", "", ""));
                         } else {
                               insert(functionsTable, cat($3,"","","",""),"return",$2->code);
@@ -175,7 +177,8 @@ decl_funcao : FUNCTION tipo ID {pushS(scopeStack, $3, "");} '(' args_com_vazio '
             ;
 
 decl_procedimento : PROCEDURE ID {pushS(scopeStack, $2, "");} '(' args_com_vazio ')' '{' bloco '}'  {
-                        if (lookup(variablesTable, $2)) {
+                        vatt *tmp = peekS(scopeStack);
+                        if (lookup(variablesTable, cat(tmp->subp,"#",$2,"",""))) {
                               yyerror(cat("error: redeclaration of procedure ", $2, "", "", ""));
                         } else {
                               insert(functionsTable, cat($2,"","","",""),"r","void");
@@ -245,12 +248,13 @@ lista_campos : decl_vars {}
              ;
 
 iteracao : WHILE '(' expre_logica_iterador ')' '{' {pushS(scopeStack, cat("WHILE_",getWhileID(),"","",""), ""); incWhileID();} bloco '}' {
-            if (strcmp(lookup_type($3), "bool") == 0){
+            vatt *tmp = peekS(scopeStack);
+            if (strcmp(lookup_type($3, tmp), "bool") == 0){
                   vatt *tmp = peekS(scopeStack);
                   ctrl_b3(&$$, &$3, &$7, cat(tmp->subp,"","","",""));
                   popS(scopeStack);
             } else {
-                  yyerror(cat("invalid type of expression ",$3->code," (expected bool, received ",lookup_type($3),")"));
+                  yyerror(cat("invalid type of expression ",$3->code," (expected bool, received ",lookup_type($3, tmp),")"));
             }
       }
 	     | FOR '(' expressao_for_inicial expre_logica_iterador PV expressao_for_final ')' '{' bloco '}' {}
@@ -305,7 +309,7 @@ condicional : IF '(' expre_logica_iterador ')' '{' {
                         ifElseBlock(&$$, &$3, &$7, &$9, tmp->subp);
                   }
             } else {
-                  yyerror(cat("invalid type of expression ",$3->code," (expected bool, received ",lookup_type($3),")"));
+                  yyerror(cat("invalid type of expression ",$3->code," (expected bool, received ",lookup_type($3, tmp),")"));
             }
             popS(scopeStack);
       }
@@ -365,7 +369,8 @@ saida : PRINT '(' saida_args ')' PV {
       ;
 
 saida_args : expre_arit saida_args_aux {
-            char *type = lookup_type($1);
+            vatt *tmp = peekS(scopeStack);
+            char *type = lookup_type($1, tmp);
             char *str1;
 
             if (!strcmp(type, "int")) {
@@ -450,19 +455,20 @@ decl_variavel : decl_var_atr_tipada {$$ = $1;}
               ;
 
 decl_var_atr_tipada:  TYPE ID '=' expre_logica PV{
-                        if (lookup(variablesTable, $2)) {
+                        vatt *tmp = peekS(scopeStack);
+                        if (lookup(variablesTable, cat(tmp->subp,"#",$2,"",""))) {
                               yyerror(cat("error: redeclaration of variable ", $2, "", "", ""));
                         } else {
-                              insert(variablesTable, $2, $2, $1);
+                              insert(variablesTable, cat(tmp->subp, "#", $2,"",""), $2, $1);
 
-                              int intfloat = !strcmp($1, "int") && !strcmp(lookup_type($4), "float");
-                              int floatint = !strcmp($1, "float") && !strcmp(lookup_type($4), "int");
+                              int intfloat = !strcmp($1, "int") && !strcmp(lookup_type($4, tmp), "float");
+                              int floatint = !strcmp($1, "float") && !strcmp(lookup_type($4, tmp), "int");
 
-                              if (strcmp($1, lookup_type($4)) == 0 || intfloat || floatint) {
+                              if (strcmp($1, lookup_type($4, tmp)) == 0 || intfloat || floatint) {
                                     record *rcdIdDeclTipada = createRecord($2, "");
                                     init1(&$$, &rcdIdDeclTipada, &$1, &$4);
                               } else {
-                                    yyerror(cat("Initialization of ", $1, " from type ", lookup_type($4), " is incompatible!"));
+                                    yyerror(cat("Initialization of ", $1, " from type ", lookup_type($4, tmp), " is incompatible!"));
                               }
                         }  
                   }
@@ -472,55 +478,58 @@ decl_var_atr_tipada:  TYPE ID '=' expre_logica PV{
                   ;
 
 decl_var_atr: ID '=' expre_logica PV {
-                        if (!lookup(variablesTable, $1)) {
+                        vatt *tmp = peekS(scopeStack);
+                        if (!lookup(variablesTable, cat(tmp->subp,"#",$1,"",""))) {
                               yyerror(cat("error: nondeclaration of variable ", $1, "", "", ""));
                         } else {
                               char *typeVariable = lookup_variable_type(variablesTable, $1);
                               record *rcdAtribuicao = createRecord($1, "");
-                              int intfloat = !strcmp(typeVariable, "int") && !strcmp(lookup_type($3), "float");
-                              int floatint = !strcmp(typeVariable, "float") && !strcmp(lookup_type($3), "int");
+                              int intfloat = !strcmp(typeVariable, "int") && !strcmp(lookup_type($3, tmp), "float");
+                              int floatint = !strcmp(typeVariable, "float") && !strcmp(lookup_type($3, tmp), "int");
                               
-                              if (strcmp(typeVariable, lookup_type($3)) == 0 || intfloat || floatint) {
+                              if (strcmp(typeVariable, lookup_type($3, tmp)) == 0 || intfloat || floatint) {
                                     atribuicaoVariavel(&$$, &rcdAtribuicao, &$3);
                               } else {
-                                    yyerror(cat("Initialization of ", $1, " from type ", lookup_type($3), " is incompatible!"));
+                                    yyerror(cat("Initialization of ", $1, " from type ", lookup_type($3, tmp), " is incompatible!"));
                               }
                               free(typeVariable);
                         }  
             }
             | ID '=' ponteiro PV {}
             | ID MOREISEQUAL expre_logica PV {
-                        if (!lookup(variablesTable, $1)) {
+                        vatt *tmp = peekS(scopeStack);
+                        if (!lookup(variablesTable, cat(tmp->subp,"#",$1,"",""))) {
                               yyerror(cat("error: nondeclaration of variable ", $1, "", "", ""));
                         } else {
                               char *typeVariable = lookup_variable_type(variablesTable, $1);
                               record *rcdAtribuicao = createRecord($1, "");
 
-                              int intfloat = !strcmp(typeVariable, "int") && !strcmp(lookup_type($3), "float");
-                              int floatint = !strcmp(typeVariable, "float") && !strcmp(lookup_type($3), "int");
+                              int intfloat = !strcmp(typeVariable, "int") && !strcmp(lookup_type($3, tmp), "float");
+                              int floatint = !strcmp(typeVariable, "float") && !strcmp(lookup_type($3, tmp), "int");
                               
-                              if (strcmp(typeVariable, lookup_type($3)) == 0 || intfloat || floatint) {
+                              if (strcmp(typeVariable, lookup_type($3, tmp)) == 0 || intfloat || floatint) {
                                     atribuicaoVariavelMaisIgual(&$$, &rcdAtribuicao, &$3);
                               } else {
-                                    yyerror(cat("Initialization of ", $1, " from type ", lookup_type($3), " is incompatible!"));
+                                    yyerror(cat("Initialization of ", $1, " from type ", lookup_type($3, tmp), " is incompatible!"));
                               }
                               free(typeVariable);
                         }  
             }
             | ID LESSISEQUAL expre_logica PV {
-                  if (!lookup(variablesTable, $1)) {
+                  vatt *tmp = peekS(scopeStack);
+                  if (!lookup(variablesTable, cat(tmp->subp,"#",$1,"",""))) {
                               yyerror(cat("error: nondeclaration of variable ", $1, "", "", ""));
                         } else {
                               char *typeVariable = lookup_variable_type(variablesTable, $1);
                               record *rcdAtribuicao = createRecord($1, "");
 
-                              int intfloat = !strcmp(typeVariable, "int") && !strcmp(lookup_type($3), "float");
-                              int floatint = !strcmp(typeVariable, "float") && !strcmp(lookup_type($3), "int");
+                              int intfloat = !strcmp(typeVariable, "int") && !strcmp(lookup_type($3, tmp), "float");
+                              int floatint = !strcmp(typeVariable, "float") && !strcmp(lookup_type($3, tmp), "int");
                               
-                              if (strcmp(typeVariable, lookup_type($3)) == 0 || intfloat || floatint) {
+                              if (strcmp(typeVariable, lookup_type($3, tmp)) == 0 || intfloat || floatint) {
                                     atribuicaoVariavelMenosIgual(&$$, &rcdAtribuicao, &$3);
                               } else {
-                                    yyerror(cat("Initialization of ", $1, " from type ", lookup_type($3), " is incompatible!"));
+                                    yyerror(cat("Initialization of ", $1, " from type ", lookup_type($3, tmp), " is incompatible!"));
                               }
                               free(typeVariable);
                         }  
@@ -529,12 +538,13 @@ decl_var_atr: ID '=' expre_logica PV {
             ;
 
 decl_var: TYPE ID PV {
-    if (lookup(variablesTable, $2)) {
-        yyerror(cat("error: redeclaration of variable ", $2, "", "", ""));
-    }
-    insert(variablesTable, $2, $2, $1);
-    record *rcdIdDeclVar = createRecord($2, ""); 
-    dec1(&$$, &rcdIdDeclVar, &$1);
+      vatt *tmp = peekS(scopeStack);
+      if (lookup(variablesTable, cat(tmp->subp,"#",$2,"",""))) {
+            yyerror(cat("error: redeclaration of variable ", $2, "", "", ""));
+      }
+      insert(variablesTable, cat(tmp->subp,"#",$2,"",""), $2, $1);
+      record *rcdIdDeclVar = createRecord($2, ""); 
+      dec1(&$$, &rcdIdDeclVar, &$1);
 };
       
 decl_var_const: CONST TYPE ID  '=' expre_logica PV {}
@@ -564,83 +574,91 @@ parametro_com_vazio: {$$ = createRecord("","");}
 expre_logica : expre_logica ANDCIRCUIT expre_logica {} 
              | expre_logica ORCIRCUIT expre_logica {} 
              | expre_logica AND expre_logica {
-                  int intfloat = !(strcmp(lookup_type($1), "int") || strcmp(lookup_type($3), "float"));
-                  int floatint = !(strcmp(lookup_type($1), "float") || strcmp(lookup_type($3), "int"));
+                  vatt *tmp = peekS(scopeStack);
+                  int intfloat = !(strcmp(lookup_type($1, tmp), "int") || strcmp(lookup_type($3, tmp), "float"));
+                  int floatint = !(strcmp(lookup_type($1, tmp), "float") || strcmp(lookup_type($3, tmp), "int"));
 
-                  if((0 == strcmp(lookup_type($1), lookup_type($3))) || intfloat || floatint){
+                  if((0 == strcmp(lookup_type($1, tmp), lookup_type($3, tmp))) || intfloat || floatint){
                         ex2(&$$, &$1, "&&", &$3, "bool");
                   } else {
-                        yyerror(cat("Types ", lookup_type($1), " and ", lookup_type($3), " are incompatible!"));
+                        yyerror(cat("Types ", lookup_type($1, tmp), " and ", lookup_type($3, tmp), " are incompatible!"));
                   }
              }
              | expre_logica OR expre_logica {
-                  int intfloat = !(strcmp(lookup_type($1), "int") || strcmp(lookup_type($3), "float"));
-                  int floatint = !(strcmp(lookup_type($1), "float") || strcmp(lookup_type($3), "int"));
+                  vatt *tmp = peekS(scopeStack);
+                  int intfloat = !(strcmp(lookup_type($1, tmp), "int") || strcmp(lookup_type($3, tmp), "float"));
+                  int floatint = !(strcmp(lookup_type($1, tmp), "float") || strcmp(lookup_type($3, tmp), "int"));
 
-                  if((0 == strcmp(lookup_type($1), lookup_type($3))) || intfloat || floatint){
+                  if((0 == strcmp(lookup_type($1, tmp), lookup_type($3, tmp))) || intfloat || floatint){
                         ex2(&$$, &$1, "||", &$3, "bool");
                   } else {
-                        yyerror(cat("Types ", lookup_type($1), " and ", lookup_type($3), " are incompatible!"));
+                        yyerror(cat("Types ", lookup_type($1, tmp), " and ", lookup_type($3, tmp), " are incompatible!"));
                   }
              }
              | expre_logica LESSTHENEQ expre_logica {
-                  int intfloat = !(strcmp(lookup_type($1), "int") || strcmp(lookup_type($3), "float"));
-                  int floatint = !(strcmp(lookup_type($1), "float") || strcmp(lookup_type($3), "int"));
+                  vatt *tmp = peekS(scopeStack);
+                  int intfloat = !(strcmp(lookup_type($1, tmp), "int") || strcmp(lookup_type($3, tmp), "float"));
+                  int floatint = !(strcmp(lookup_type($1, tmp), "float") || strcmp(lookup_type($3, tmp), "int"));
 
-                  if((0 == strcmp(lookup_type($1), lookup_type($3))) || intfloat || floatint){
+                  if((0 == strcmp(lookup_type($1, tmp), lookup_type($3, tmp))) || intfloat || floatint){
                         ex2(&$$, &$1, "<=", &$3, "bool");
                   } else {
-                        yyerror(cat("Types ", lookup_type($1), " and ", lookup_type($3), " are incompatible!"));
+                        yyerror(cat("Types ", lookup_type($1, tmp), " and ", lookup_type($3, tmp), " are incompatible!"));
                   }
              }
              | expre_logica MORETHENEQ expre_logica {
-                  int intfloat = !(strcmp(lookup_type($1), "int") || strcmp(lookup_type($3), "float"));
-                  int floatint = !(strcmp(lookup_type($1), "float") || strcmp(lookup_type($3), "int"));
+                  vatt *tmp = peekS(scopeStack);
+                  int intfloat = !(strcmp(lookup_type($1, tmp), "int") || strcmp(lookup_type($3, tmp), "float"));
+                  int floatint = !(strcmp(lookup_type($1, tmp), "float") || strcmp(lookup_type($3, tmp), "int"));
 
-                  if((0 == strcmp(lookup_type($1), lookup_type($3))) || intfloat || floatint){
+                  if((0 == strcmp(lookup_type($1, tmp), lookup_type($3, tmp))) || intfloat || floatint){
                         ex2(&$$, &$1, ">=", &$3, "bool");
                   } else {
-                        yyerror(cat("Types ", lookup_type($1), " and ", lookup_type($3), " are incompatible!"));
+                        yyerror(cat("Types ", lookup_type($1, tmp), " and ", lookup_type($3, tmp), " are incompatible!"));
                   }
              }
              | expre_logica '<' expre_logica {
-                  int intfloat = !(strcmp(lookup_type($1), "int") || strcmp(lookup_type($3), "float"));
-                  int floatint = !(strcmp(lookup_type($1), "float") || strcmp(lookup_type($3), "int"));
+                  vatt *tmp = peekS(scopeStack);
+                  int intfloat = !(strcmp(lookup_type($1, tmp), "int") || strcmp(lookup_type($3, tmp), "float"));
+                  int floatint = !(strcmp(lookup_type($1, tmp), "float") || strcmp(lookup_type($3, tmp), "int"));
 
-                  if((0 == strcmp(lookup_type($1), lookup_type($3))) || intfloat || floatint){
+                  if((0 == strcmp(lookup_type($1, tmp), lookup_type($3, tmp))) || intfloat || floatint){
                         ex2(&$$, &$1, "<", &$3, "bool");
                   } else {
-                        yyerror(cat("Types ", lookup_type($1), " and ", lookup_type($3), " are incompatible!"));
+                        yyerror(cat("Types ", lookup_type($1, tmp), " and ", lookup_type($3, tmp), " are incompatible!"));
                   }
              }
              | expre_logica '>' expre_logica {
-                  int intfloat = !(strcmp(lookup_type($1), "int") || strcmp(lookup_type($3), "float"));
-                  int floatint = !(strcmp(lookup_type($1), "float") || strcmp(lookup_type($3), "int"));
+                  vatt *tmp = peekS(scopeStack);
+                  int intfloat = !(strcmp(lookup_type($1, tmp), "int") || strcmp(lookup_type($3, tmp), "float"));
+                  int floatint = !(strcmp(lookup_type($1, tmp), "float") || strcmp(lookup_type($3, tmp), "int"));
 
-                  if((0 == strcmp(lookup_type($1), lookup_type($3))) || intfloat || floatint){
+                  if((0 == strcmp(lookup_type($1, tmp), lookup_type($3, tmp))) || intfloat || floatint){
                         ex2(&$$, &$1, ">", &$3, "bool");
                   } else {
-                        yyerror(cat("Types ", lookup_type($1), " and ", lookup_type($3), " are incompatible!"));
+                        yyerror(cat("Types ", lookup_type($1, tmp), " and ", lookup_type($3, tmp), " are incompatible!"));
                   }
              }
              | expre_logica ISEQUAL expre_logica {
-                  int intfloat = !(strcmp(lookup_type($1), "int") || strcmp(lookup_type($3), "float"));
-                  int floatint = !(strcmp(lookup_type($1), "float") || strcmp(lookup_type($3), "int"));
+                  vatt *tmp = peekS(scopeStack);
+                  int intfloat = !(strcmp(lookup_type($1, tmp), "int") || strcmp(lookup_type($3, tmp), "float"));
+                  int floatint = !(strcmp(lookup_type($1, tmp), "float") || strcmp(lookup_type($3, tmp), "int"));
 
-                  if((0 == strcmp(lookup_type($1), lookup_type($3))) || intfloat || floatint){
+                  if((0 == strcmp(lookup_type($1, tmp), lookup_type($3, tmp))) || intfloat || floatint){
                         ex2(&$$, &$1, "==", &$3, "bool");
                   } else {
-                        yyerror(cat("Types ", lookup_type($1), " and ", lookup_type($3), " are incompatible!"));
+                        yyerror(cat("Types ", lookup_type($1, tmp), " and ", lookup_type($3, tmp), " are incompatible!"));
                   }
              }
              | expre_logica ISDIFFERENT expre_logica {
-                  int intfloat = !(strcmp(lookup_type($1), "int") || strcmp(lookup_type($3), "float"));
-                  int floatint = !(strcmp(lookup_type($1), "float") || strcmp(lookup_type($3), "int"));
+                  vatt *tmp = peekS(scopeStack);
+                  int intfloat = !(strcmp(lookup_type($1, tmp), "int") || strcmp(lookup_type($3, tmp), "float"));
+                  int floatint = !(strcmp(lookup_type($1, tmp), "float") || strcmp(lookup_type($3, tmp), "int"));
 
-                  if((0 == strcmp(lookup_type($1), lookup_type($3))) || intfloat || floatint){
+                  if((0 == strcmp(lookup_type($1, tmp), lookup_type($3, tmp))) || intfloat || floatint){
                         ex2(&$$, &$1, "!=", &$3, "bool");
                   } else {
-                        yyerror(cat("Types ", lookup_type($1), " and ", lookup_type($3), " are incompatible!"));
+                        yyerror(cat("Types ", lookup_type($1, tmp), " and ", lookup_type($3, tmp), " are incompatible!"));
                   }
              }
              | '!'  expre_logica {}
@@ -649,49 +667,53 @@ expre_logica : expre_logica ANDCIRCUIT expre_logica {}
              ;
                
 expre_arit : expre_arit '+' termo {
-                  int intfloat = !(strcmp(lookup_type($1), "int") || strcmp(lookup_type($3), "float"));
-                  int floatint = !(strcmp(lookup_type($1), "float") || strcmp(lookup_type($3), "int"));
+                  vatt *tmp = peekS(scopeStack);
+                  int intfloat = !(strcmp(lookup_type($1, tmp), "int") || strcmp(lookup_type($3, tmp), "float"));
+                  int floatint = !(strcmp(lookup_type($1, tmp), "float") || strcmp(lookup_type($3, tmp), "int"));
 
-                  if((0 == strcmp(lookup_type($1), lookup_type($3))) || intfloat || floatint){
+                  if((0 == strcmp(lookup_type($1, tmp), lookup_type($3, tmp))) || intfloat || floatint){
                         char inType[100];
                         if (intfloat || floatint) {
                               strcpy(inType, "float"); // Resultante de int + float ou float + int deve ser float
                         } else {
-                              strcpy(inType, lookup_type($1)); // Se ambos os tipos são iguais
+                              strcpy(inType, lookup_type($1, tmp)); // Se ambos os tipos são iguais
                         }
                         ex2(&$$, &$1, "+", &$3, inType);
                   } else {
-                        yyerror(cat("Types ", lookup_type($1), " and ", lookup_type($3), " are incompatible!"));
+                        yyerror(cat("Types ", lookup_type($1, tmp), " and ", lookup_type($3, tmp), " are incompatible!"));
                   }
             }
             | expre_arit '-' termo {
-                  int intfloat = !(strcmp(lookup_type($1), "int") || strcmp(lookup_type($3), "float"));
-                  int floatint = !(strcmp(lookup_type($1), "float") || strcmp(lookup_type($3), "int"));
+                  vatt *tmp = peekS(scopeStack);
+                  int intfloat = !(strcmp(lookup_type($1, tmp), "int") || strcmp(lookup_type($3, tmp), "float"));
+                  int floatint = !(strcmp(lookup_type($1, tmp), "float") || strcmp(lookup_type($3, tmp), "int"));
 
-                  if((0 == strcmp(lookup_type($1), lookup_type($3))) || intfloat || floatint){
+                  if((0 == strcmp(lookup_type($1, tmp), lookup_type($3, tmp))) || intfloat || floatint){
                         char inType[100];
                         if (intfloat || floatint) {
                               strcpy(inType, "float"); // Resultante de int + float ou float + int deve ser float
                         } else {
-                              strcpy(inType, lookup_type($1)); // Se ambos os tipos são iguais
+                              strcpy(inType, lookup_type($1, tmp)); // Se ambos os tipos são iguais
                         }
                         ex2(&$$, &$1, "-", &$3, inType);
                   } else {
-                        yyerror(cat("Types ", lookup_type($1), " and ", lookup_type($3), " are incompatible!"));
+                        yyerror(cat("Types ", lookup_type($1, tmp), " and ", lookup_type($3, tmp), " are incompatible!"));
                   }
             }
             | ops termo {
-                        if(strcmp(lookup_type($2), "int") == 0 || strcmp(lookup_type($2), "float") == 0 ){
+                        vatt *tmp = peekS(scopeStack);
+                        if(strcmp(lookup_type($2, tmp), "int") == 0 || strcmp(lookup_type($2, tmp), "float") == 0 ){
                               atribuicaoIncreDecre(&$$, &$1->code, &$2->code);
                         } else {
-                              yyerror(cat("Types ", lookup_type($2), "", "", " is not incompatible!"));
+                              yyerror(cat("Types ", lookup_type($2, tmp), "", "", " is not incompatible!"));
                         }                  
             }
             | termo ops { 
-                        if(strcmp(lookup_type($1), "int") == 0 || strcmp(lookup_type($1), "float") == 0 ){
+                        vatt *tmp = peekS(scopeStack);
+                        if(strcmp(lookup_type($1, tmp), "int") == 0 || strcmp(lookup_type($1, tmp), "float") == 0 ){
                               atribuicaoIncreDecre(&$$, &$1->code, &$2->code);
                         } else {
-                              yyerror(cat("Types ", lookup_type($1), "", "", " is not incompatible!"));
+                              yyerror(cat("Types ", lookup_type($1, tmp), "", "", " is not incompatible!"));
                         } 
             }
             | termo {$$ = $1;}
@@ -702,29 +724,31 @@ ops: INCREMENT {$$ = createRecord("++", "");}
      ;
 
 termo: termo '*' fator {
-            int intfloat = !(strcmp(lookup_type($1), "int") || strcmp(lookup_type($3), "float"));
-            int floatint = !(strcmp(lookup_type($1), "float") || strcmp(lookup_type($3), "int"));
+            vatt *tmp = peekS(scopeStack);
+            int intfloat = !(strcmp(lookup_type($1, tmp), "int") || strcmp(lookup_type($3, tmp), "float"));
+            int floatint = !(strcmp(lookup_type($1, tmp), "float") || strcmp(lookup_type($3, tmp), "int"));
 
-            if((0 == strcmp(lookup_type($1), lookup_type($3))) || intfloat || floatint){
+            if((0 == strcmp(lookup_type($1, tmp), lookup_type($3, tmp))) || intfloat || floatint){
                   char inType[100];
                   if (intfloat || floatint) {
                         strcpy(inType, "float"); // Resultante de int + float ou float + int deve ser float
                   } else {
-                        strcpy(inType, lookup_type($1)); // Se ambos os tipos são iguais
+                        strcpy(inType, lookup_type($1, tmp)); // Se ambos os tipos são iguais
                   }
                   ex2(&$$, &$1, "*", &$3, inType);
             } else {
-                  yyerror(cat("Types ", lookup_type($1), " and ", lookup_type($3), " are incompatible!"));
+                  yyerror(cat("Types ", lookup_type($1, tmp), " and ", lookup_type($3, tmp), " are incompatible!"));
             }
       }
 	| termo '/' fator {
-            int number1 = !(strcmp(lookup_type($1), "int") || !strcmp(lookup_type($1), "float"));
-            int number3 = !(strcmp(lookup_type($3), "int") || !strcmp(lookup_type($3), "float"));
+            vatt *tmp = peekS(scopeStack);
+            int number1 = !(strcmp(lookup_type($1, tmp), "int") || !strcmp(lookup_type($1, tmp), "float"));
+            int number3 = !(strcmp(lookup_type($3, tmp), "int") || !strcmp(lookup_type($3, tmp), "float"));
 
             if(number1 && number3){
                   ex2(&$$, &$1, "/", &$3, "float");
             } else {
-                  yyerror(cat("Types ", lookup_type($1), " and ", lookup_type($3), " are incompatible!"));
+                  yyerror(cat("Types ", lookup_type($1, tmp), " and ", lookup_type($3, tmp), " are incompatible!"));
             }
       }
 	| termo '%' fator {}
@@ -732,10 +756,11 @@ termo: termo '*' fator {
 	;
 
 fator : fator '^' base {
-            int baseInt = !strcmp(lookup_type($1), "int");
-            int baseFloat = !strcmp(lookup_type($1), "float");
-            int expInt = !strcmp(lookup_type($3), "int");
-            int expFloat = !strcmp(lookup_type($3), "float");
+            vatt *tmp = peekS(scopeStack);
+            int baseInt = !strcmp(lookup_type($1, tmp), "int");
+            int baseFloat = !strcmp(lookup_type($1, tmp), "float");
+            int expInt = !strcmp(lookup_type($3, tmp), "int");
+            int expFloat = !strcmp(lookup_type($3, tmp), "float");
 
             if((baseInt || baseFloat) && (expInt || expFloat)){
                   char resultType[100];
@@ -746,7 +771,7 @@ fator : fator '^' base {
                   }
                   ex2(&$$, &$1, "^", &$3, resultType);
             } else {
-                  yyerror(cat("Types ", lookup_type($1), " and ", lookup_type($3), " are incompatible for exponentiation!"));
+                  yyerror(cat("Types ", lookup_type($1, tmp), " and ", lookup_type($3, tmp), " are incompatible for exponentiation!"));
             }
 
 }
@@ -842,12 +867,12 @@ void insertFunctionParam( char *paramName, char *paramType){
 	insert(functionsTable, cat(strNum,"","","",""), paramName, paramType);
 }
 
-char* lookup_type(record *r) {
+char* lookup_type(record *r, vatt *tmp) {
 	char* type = r->opt1;
 	if (!strcmp(type, "id")) {
-		SymbolInfos *info = lookup(variablesTable, r->code);
+		SymbolInfos *info = lookup(variablesTable, cat(tmp->subp,"#",r->code,"",""));
 		if (info == NULL) {
-                  yyerror(cat("Cannot use variable ", r->code, " before initialization!", "", ""));
+                  yyerror(cat("Cannot use variable ", cat(tmp->subp,"#",r->code,"",""), " before initialization!", "", ""));
 		} else {
                   return info->type;
             }
