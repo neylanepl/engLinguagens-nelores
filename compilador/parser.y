@@ -139,7 +139,6 @@ tipo: TYPE {$$ = createRecord($1,"");}
 args : tipo ID   {
             vatt *tmp = peekS(scopeStack);
             insert(variablesTable, cat(tmp->subp, "#", $2,"",""), $2, $1->code);
-            yyerror(cat(tmp->subp,$2,"","",""));
 	      insertFunctionParam(tmp, $2, $1->code);
             argumentoTipoId(&$$, &$2, &$1); 
       }
@@ -459,8 +458,8 @@ decl_var_atr_tipada:  TYPE ID '=' expre_logica PV{
                         } else {
                               insert(variablesTable, cat(tmp->subp, "#", $2,"",""), $2, $1);
 
-                              int intfloat = !strcmp($1, "int") && !strcmp(lookup_type($4, tmp), "float");
-                              int floatint = !strcmp($1, "float") && !strcmp(lookup_type($4, tmp), "int");
+                              int intfloat = !strcmp($1, "int") && !strcmp(lookup_type($4, tmp), "int");
+                              int floatint = !strcmp($1, "float") && !strcmp(lookup_type($4, tmp), "float");
 
                               if (strcmp($1, lookup_type($4, tmp)) == 0 || intfloat || floatint) {
                                     record *rcdIdDeclTipada = createRecord($2, "");
@@ -482,8 +481,8 @@ decl_var_atr: ID '=' expre_logica PV {
                         } else {
                               char *typeVariable = lookup_variable_type(variablesTable, tmp, $1);
                               record *rcdAtribuicao = createRecord($1, "");
-                              int intfloat = !strcmp(typeVariable, "int") && !strcmp(lookup_type($3, tmp), "float");
-                              int floatint = !strcmp(typeVariable, "float") && !strcmp(lookup_type($3, tmp), "int");
+                              int intfloat = !strcmp(typeVariable, "int") && !strcmp(lookup_type($3, tmp), "int");
+                              int floatint = !strcmp(typeVariable, "float") && !strcmp(lookup_type($3, tmp), "float");
                               
                               if (strcmp(typeVariable, lookup_type($3, tmp)) == 0 || intfloat || floatint) {
                                     atribuicaoVariavel(&$$, &rcdAtribuicao, &$3);
@@ -558,7 +557,23 @@ parametros_rec : parametro {$$ = $1;}
                | parametro ',' parametros_rec {}
                ;
 
-parametro : expre_logica {$$ = $1;}
+parametro : expre_logica {
+            char strP[30];
+		sprintf(strP, "%d", countFuncCallParams);
+		vatt *tmp = peekS(scopeStack);
+            char *typeParametro = lookup_variable_type(functionsTable, tmp, cat("p",strP,"","", ""));
+		
+		int intfloat = !strcmp(typeParametro, "int") && !strcmp(lookup_type($1, tmp), "int");
+		int floatint = !strcmp(typeParametro, "float") && !strcmp(lookup_type($1, tmp), "float");
+
+		if((0 == strcmp(typeParametro, lookup_type($1, tmp))) || intfloat || floatint ){
+			$$ = $1;
+		} else {
+			yyerror(cat("Expected type ", typeParametro, " and actual ", lookup_type($1, tmp), " are incompatible!"));
+		}
+            
+		countFuncCallParams++;
+}
            | tipo '.' ID {}
            ;
 
