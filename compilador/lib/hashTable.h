@@ -1,6 +1,9 @@
 #ifndef HASHTABLE
 #define HASHTABLE
 
+#include "stack.h"
+#include "semantics.h"
+
 #define TABLE_SIZE 109
 
 typedef struct SymbolInfos
@@ -27,9 +30,9 @@ SymbolInfos *createSymbol(char *key, char *name, char *type);
 listNode *createListNode(SymbolInfos *symbol);
 SymbolTable *createSymbolTable(int size);
 void insert(SymbolTable *table, char *key, char *name, char *type);
-SymbolInfos *lookup(SymbolTable *table, char *key);
+SymbolInfos *lookup(SymbolTable *table, vatt *currentScope, char *key);
 void printTable(SymbolTable *table);
 void freeSymbolTable(SymbolTable *table);
-char *lookup_variable_type(SymbolTable *table, char *key);
+char *lookup_variable_type(SymbolTable *table, vatt *currentScope, char *key);
 
 #endif

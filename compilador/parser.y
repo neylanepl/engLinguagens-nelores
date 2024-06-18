@@ -18,12 +18,9 @@ SymbolTable *variablesTable;
 SymbolTable *functionsTable;
 SymbolTable *typedTable;
 stack *scopeStack;
-stack *stkFixElse;
 int countFuncCallParams;
 void insertFunctionParam(char *, char *);
 char* lookup_type(record *, vatt *temp);
-char* lookup_variable_type(SymbolTable *table, char *key);
-
 
 %}
 
@@ -110,9 +107,9 @@ ponteiro: '*' ID {}
 
 endereco: '&' ID {
       vatt *tmp = peekS(scopeStack);
-      SymbolInfos *info = lookup(variablesTable, cat(tmp->subp,"#",$2,"",""));
+      SymbolInfos *info = lookup(variablesTable, tmp, $2);
       if (info == NULL) {
-        yyerror(cat("Cannot use variable ", cat(tmp->subp,"#",$2,"",""), " before initialization!", "", ""));
+        yyerror(cat("Cannot use variable ", $2, " before initialization!", "", ""));
       } else {
         char address[100];
         snprintf(address, sizeof(address), "&%s", $2);
@@ -131,7 +128,8 @@ tipo: TYPE {$$ = createRecord($1,"");}
       | tipo_ponteiro {$$ = $1;}
       | tipo_array {$$ = $1;}
       | ID {
-            if(lookup(typedTable, $1) == NULL){
+            vatt *tmp = peekS(scopeStack);
+            if(lookup(typedTable, tmp, $1) == NULL){
                   yyerror(cat("unknown type ",$1,"","",""));
 	      } 
 		$$ = createRecord($1,""); 
@@ -139,7 +137,8 @@ tipo: TYPE {$$ = createRecord($1,"");}
       ;
  
 args : tipo ID   {
-            insert(variablesTable, $2, $2, $1->code);
+            vatt *tmp = peekS(scopeStack);
+            insert(variablesTable, cat(tmp->subp, "#", $2,"",""), $2, $1->code);
 	      insertFunctionParam($2, $1->code);
             argumentoTipoId(&$$, &$2, &$1); 
       }
@@ -166,10 +165,10 @@ subprog : decl_funcao           {$$ = $1;}
 
 decl_funcao : FUNCTION tipo ID {pushS(scopeStack, $3, "");} '(' args_com_vazio ')' '{' bloco '}'       {
                         vatt *tmp = peekS(scopeStack);
-                        if (lookup(variablesTable, cat(tmp->subp,"#",$3,"","") )) {
+                        if (lookup(variablesTable, tmp, $3 )) {
                               yyerror(cat("error: redeclaration of function ", $3, "", "", ""));
                         } else {
-                              insert(functionsTable, cat($3,"","","",""),"return",$2->code);
+                              insert(functionsTable, cat(tmp->subp, "#", $3,"",""),"return",$2->code);
                               declaracaoFuncao(&$$, &$3, &$6, &$2->code, &$9);
                               popS(scopeStack);
                         }  
@@ -178,10 +177,10 @@ decl_funcao : FUNCTION tipo ID {pushS(scopeStack, $3, "");} '(' args_com_vazio '
 
 decl_procedimento : PROCEDURE ID {pushS(scopeStack, $2, "");} '(' args_com_vazio ')' '{' bloco '}'  {
                         vatt *tmp = peekS(scopeStack);
-                        if (lookup(variablesTable, cat(tmp->subp,"#",$2,"",""))) {
+                        if (lookup(variablesTable, tmp, $2)) {
                               yyerror(cat("error: redeclaration of procedure ", $2, "", "", ""));
                         } else {
-                              insert(functionsTable, cat($2,"","","",""),"r","void");
+                              insert(functionsTable, cat(tmp->subp, "#", $2,"",""),"r","void");
                               declaracaoProcedimento(&$$, &$2, &$5, &$8);
                               popS(scopeStack);
                         }  
@@ -302,7 +301,8 @@ condicional : IF '(' expre_logica_iterador ')' '{' {
             incIfID();
       } bloco '}' else_block {
             vatt *tmp = peekS(scopeStack);
-            if (strcmp(lookup_type($3), "bool") == 0) {
+
+            if (strcmp(lookup_type($3, tmp), "bool") == 0) {
                   if (!strcmp($9->code, "")) {
                         ifBlock(&$$, &$3, &$7, tmp->subp);
                   } else {
@@ -321,7 +321,8 @@ else_block : {$$ = createRecord("", "");}
       ;
 
 chamada_funcao : ID {pushS(scopeStack, $1, "");} '(' parametro_com_vazio ')' {
-            SymbolInfos *foundFuncReturn = lookup(functionsTable, $1);
+            vatt *tmp = peekS(scopeStack);
+            SymbolInfos *foundFuncReturn = lookup(functionsTable, tmp, $1);
             if(foundFuncReturn){
                   char funcType[100];
                   strcpy(funcType, foundFuncReturn->type);
@@ -356,12 +357,8 @@ entrada : SCANF '(' WORD ',' ID ')' PV {
       | entrada_atribuicao {}
       ;
 
-saida : PRINT '(' saida_args ')' PV {
-            printf("%s", $3->code);
-            $$ = $3;
-      }
+saida : PRINT '(' saida_args ')' PV {$$ = $3;}
       | PRINTLN '(' saida_args ')' PV {
-            printf("%s", $3->code);
             char *str = cat($3->code, "printf(\"\\n\");\n", "", "", "");
             $$ = createRecord(str, "");
             free(str);
@@ -456,7 +453,7 @@ decl_variavel : decl_var_atr_tipada {$$ = $1;}
 
 decl_var_atr_tipada:  TYPE ID '=' expre_logica PV{
                         vatt *tmp = peekS(scopeStack);
-                        if (lookup(variablesTable, cat(tmp->subp,"#",$2,"",""))) {
+                        if (lookup(variablesTable, tmp, $2)) {
                               yyerror(cat("error: redeclaration of variable ", $2, "", "", ""));
                         } else {
                               insert(variablesTable, cat(tmp->subp, "#", $2,"",""), $2, $1);
@@ -479,10 +476,10 @@ decl_var_atr_tipada:  TYPE ID '=' expre_logica PV{
 
 decl_var_atr: ID '=' expre_logica PV {
                         vatt *tmp = peekS(scopeStack);
-                        if (!lookup(variablesTable, cat(tmp->subp,"#",$1,"",""))) {
+                        if (!lookup(variablesTable, tmp, $1)) {
                               yyerror(cat("error: nondeclaration of variable ", $1, "", "", ""));
                         } else {
-                              char *typeVariable = lookup_variable_type(variablesTable, $1);
+                              char *typeVariable = lookup_variable_type(variablesTable, tmp, $1);
                               record *rcdAtribuicao = createRecord($1, "");
                               int intfloat = !strcmp(typeVariable, "int") && !strcmp(lookup_type($3, tmp), "float");
                               int floatint = !strcmp(typeVariable, "float") && !strcmp(lookup_type($3, tmp), "int");
@@ -492,16 +489,15 @@ decl_var_atr: ID '=' expre_logica PV {
                               } else {
                                     yyerror(cat("Initialization of ", $1, " from type ", lookup_type($3, tmp), " is incompatible!"));
                               }
-                              free(typeVariable);
                         }  
             }
             | ID '=' ponteiro PV {}
             | ID MOREISEQUAL expre_logica PV {
                         vatt *tmp = peekS(scopeStack);
-                        if (!lookup(variablesTable, cat(tmp->subp,"#",$1,"",""))) {
+                        if (!lookup(variablesTable, tmp, $1)) {
                               yyerror(cat("error: nondeclaration of variable ", $1, "", "", ""));
                         } else {
-                              char *typeVariable = lookup_variable_type(variablesTable, $1);
+                              char *typeVariable = lookup_variable_type(variablesTable, tmp, $1);
                               record *rcdAtribuicao = createRecord($1, "");
 
                               int intfloat = !strcmp(typeVariable, "int") && !strcmp(lookup_type($3, tmp), "float");
@@ -512,15 +508,14 @@ decl_var_atr: ID '=' expre_logica PV {
                               } else {
                                     yyerror(cat("Initialization of ", $1, " from type ", lookup_type($3, tmp), " is incompatible!"));
                               }
-                              free(typeVariable);
                         }  
             }
             | ID LESSISEQUAL expre_logica PV {
                   vatt *tmp = peekS(scopeStack);
-                  if (!lookup(variablesTable, cat(tmp->subp,"#",$1,"",""))) {
+                  if (!lookup(variablesTable, tmp, $1)) {
                               yyerror(cat("error: nondeclaration of variable ", $1, "", "", ""));
                         } else {
-                              char *typeVariable = lookup_variable_type(variablesTable, $1);
+                              char *typeVariable = lookup_variable_type(variablesTable, tmp, $1);
                               record *rcdAtribuicao = createRecord($1, "");
 
                               int intfloat = !strcmp(typeVariable, "int") && !strcmp(lookup_type($3, tmp), "float");
@@ -531,7 +526,6 @@ decl_var_atr: ID '=' expre_logica PV {
                               } else {
                                     yyerror(cat("Initialization of ", $1, " from type ", lookup_type($3, tmp), " is incompatible!"));
                               }
-                              free(typeVariable);
                         }  
             }
             | ID '=' chamada_funcao PV {}
@@ -539,10 +533,10 @@ decl_var_atr: ID '=' expre_logica PV {
 
 decl_var: TYPE ID PV {
       vatt *tmp = peekS(scopeStack);
-      if (lookup(variablesTable, cat(tmp->subp,"#",$2,"",""))) {
+      if (lookup(variablesTable, tmp, $2)) {
             yyerror(cat("error: redeclaration of variable ", $2, "", "", ""));
       }
-      insert(variablesTable, cat(tmp->subp,"#",$2,"",""), $2, $1);
+      insert(variablesTable, cat(tmp->subp, "#", $2,"",""), $2, $1);
       record *rcdIdDeclVar = createRecord($2, ""); 
       dec1(&$$, &rcdIdDeclVar, &$1);
 };
@@ -828,7 +822,6 @@ int main (int argc, char ** argv) {
 	typedTable = createSymbolTable(TABLE_SIZE);
 	countFuncCallParams = 0;
       scopeStack = newStack();
-      stkFixElse = newStack();
     
       codigo = yyparse();
 
@@ -856,23 +849,24 @@ int yyerror (char *msg) {
 
 
 void insertFunctionParam( char *paramName, char *paramType){
+      vatt *tmp = peekS(scopeStack);
 	int paramId = 0; 
 	char strNum[30];
 
 	do {
 		sprintf(strNum, "%d", paramId);
 		paramId++;
-	} while(lookup(functionsTable, cat(strNum,"","","","")));
+	} while(lookup(functionsTable, tmp, cat(strNum,"","","","")));
 
-	insert(functionsTable, cat(strNum,"","","",""), paramName, paramType);
+	insert(functionsTable, cat(tmp->subp, "#", strNum,"",""), paramName, paramType);
 }
 
 char* lookup_type(record *r, vatt *tmp) {
 	char* type = r->opt1;
 	if (!strcmp(type, "id")) {
-		SymbolInfos *info = lookup(variablesTable, cat(tmp->subp,"#",r->code,"",""));
+		SymbolInfos *info = lookup(variablesTable, tmp, r->code);
 		if (info == NULL) {
-                  yyerror(cat("Cannot use variable ", cat(tmp->subp,"#",r->code,"",""), " before initialization!", "", ""));
+                  yyerror(cat("Cannot use variable ", r->code, " before initialization!", "", ""));
 		} else {
                   return info->type;
             }

@@ -69,20 +69,27 @@ void insert(SymbolTable *table, char *key, char *name, char *type)
     }
 }
 
-SymbolInfos *lookup(SymbolTable *table, char *key)
+SymbolInfos *lookup(SymbolTable *table, vatt *currentScope, char *name)
 {
-    unsigned int index = hash((unsigned char *)key, table->size);
+    while (currentScope->next != NULL) {
+        char *key = cat(currentScope->subp, "#", name, "", "");
+        unsigned int index = hash(key, table->size);
 
-    listNode *current = table->symbols[index];
+        listNode *current = table->symbols[index];
 
-    while (current != NULL)
-    {
-        if (strcmp(current->symbol->key, key) == 0)
+        while (current != NULL)
         {
-            return current->symbol;
+            if (strcmp(current->symbol->key, key) == 0)
+            {
+                free(key);
+                return current->symbol;
+            }
+
+            current = current->nextNode;
         }
 
-        current = current->nextNode;
+        free(key);
+        currentScope = currentScope->next;
     }
 
     return NULL;
@@ -128,20 +135,27 @@ void freeSymbolTable(SymbolTable *table)
     free(table);
 }
 
-char *lookup_variable_type(SymbolTable *table, char *key)
+char *lookup_variable_type(SymbolTable *table, vatt *currentScope, char *name)
 {
-    unsigned int index = hash((unsigned char *)key, table->size);
+    while (currentScope->next != NULL) {
+        char *key = cat(currentScope->subp, "#", name, "", "");
+        unsigned int index = hash(key, table->size);
 
-    listNode *current = table->symbols[index];
+        listNode *current = table->symbols[index];
 
-    while (current != NULL)
-    {
-        if (strcmp(current->symbol->key, key) == 0)
+        while (current != NULL)
         {
-            return strdup(current->symbol->type);
+            if (strcmp(current->symbol->key, key) == 0)
+            {
+                free(key);
+                return current->symbol->type;
+            }
+
+            current = current->nextNode;
         }
 
-        current = current->nextNode;
+        free(key);
+        currentScope = currentScope->next;
     }
 
     return NULL;
