@@ -19,7 +19,7 @@ SymbolTable *functionsTable;
 SymbolTable *typedTable;
 stack *scopeStack;
 int countFuncCallParams;
-void insertFunctionParam(char *, char *);
+void insertFunctionParam(vatt *, char *, char *);
 char* lookup_type(record *, vatt *temp);
 
 %}
@@ -139,7 +139,8 @@ tipo: TYPE {$$ = createRecord($1,"");}
 args : tipo ID   {
             vatt *tmp = peekS(scopeStack);
             insert(variablesTable, cat(tmp->subp, "#", $2,"",""), $2, $1->code);
-	      insertFunctionParam($2, $1->code);
+            yyerror(cat(tmp->subp,$2,"","",""));
+	      insertFunctionParam(tmp, $2, $1->code);
             argumentoTipoId(&$$, &$2, &$1); 
       }
       | tipo ID ',' args  {}
@@ -848,17 +849,16 @@ int yyerror (char *msg) {
 }
 
 
-void insertFunctionParam( char *paramName, char *paramType){
-      vatt *tmp = peekS(scopeStack);
+void insertFunctionParam(vatt *tmp, char *paramName, char *paramType){
 	int paramId = 0; 
 	char strNum[30];
 
 	do {
 		sprintf(strNum, "%d", paramId);
 		paramId++;
-	} while(lookup(functionsTable, tmp, cat(strNum,"","","","")));
+	} while(lookup(functionsTable, tmp, cat(tmp->subp,"#p",strNum,"","")));
 
-	insert(functionsTable, cat(tmp->subp, "#", strNum,"",""), paramName, paramType);
+	insert(functionsTable, cat(tmp->subp,"#p",strNum,"",""), paramName, paramType);
 }
 
 char* lookup_type(record *r, vatt *tmp) {
