@@ -13,7 +13,18 @@ void main() {
     prinln("Digite o número de colunas da primeira matriz: ");
     scanf("%d", &colunas1);
     println("Digite os elementos da primeira matriz:\n");
-    lerMatriz(matriz1, linhas1, colunas1);
+    
+    int i = 0;
+    int j = 0;
+    while (i < linhas1) {
+        j = 0;
+        while (j < colunas1) {
+            printf("Elemento [%d][%d]: ", i, j);
+            scanf("%d", &matriz1[i][j]);
+            j++;
+        }
+        i++;
+    }
 
     println("Digite o número de linhas da segunda matriz: ");
     scanf("%d", &linhas2);
@@ -22,58 +33,71 @@ void main() {
     println("Digite os elementos da segunda matriz:\n");
     lerMatriz(matriz2, linhas2, colunas2);
 
-    if (linhas1 == linhas2 ) {
-        if(colunas1 == colunas2){
-        somarMatrizes(matriz1, matriz2, soma, linhas1, colunas1);
-        print("Soma das matrizes:\n");
-        imprimirMatriz(soma, linhas1, colunas1);
+    i = 0;
+    while (i < linhas2) {
+        j = 0;
+        while (j < colunas2) {
+            printf("Elemento [%d][%d]: ", i, j);
+            scanf("%d", &matriz2[i][j]);
+            j++;
+        }
+        i++;
+    }
+
+    if (linhas1 == linhas2 && colunas1 == colunas2) {
+        i = 0;
+        while (i < linhas1) {
+            j = 0;
+            while (j < colunas1) {
+                soma[i][j] = matriz1[i][j] + matriz2[i][j];
+                j++;
+            }
+            i++;
+        }
+
+        printf("Soma das matrizes:\n");
+        
+        i = 0;
+        while (i < linhas1) {
+            j = 0;
+            while (j < colunas1) {
+                printf("%d ", soma[i][j]);
+                j++;
+            }
+            printf("\n");
+            i++;
         }
     } else {
-        print("A soma das matrizes não é possível (dimensões incompatíveis).\n");
+        printf("A soma das matrizes não é possível (dimensões incompatíveis).\n");
     }
 
     if (colunas1 == linhas2) {
-        multiplicarMatrizes(matriz1, matriz2, produto, linhas1, colunas1, colunas2);
-        print("Produto das matrizes:\n");
-        imprimirMatriz(produto, linhas1, colunas2);
-    } else {
-        print("O produto das matrizes não é possível (dimensões incompatíveis).\n");
-    }
-}
-
-void lerMatriz(int [][100] matriz, int linhas, int colunas) {
-    for (int i = 0; i < linhas; i++) {
-        for (int j = 0; j < colunas; j++) {
-            println("Elemento [" + i + "]" + "[" + j + "]");
-            scanf("%d", &matriz[i][j]);
-        }
-    }
-}
-
-void imprimirMatriz(int [][100] matriz, int linhas, int colunas) {
-    for (int i = 0; i < linhas; i++) {
-        for (int j = 0; j < colunas; j++) {
-            print(matriz[i][j]);
-        }
-        print("\n");
-    }
-}
-
-void somarMatrizes(int [][100] matriz1, int [][100] matriz2, int [][100]resultado, int linhas, int colunas) {
-    for (int i = 0; i < linhas; i++) {
-        for (int j = 0; j < colunas; j++) {
-          resultado[i][j] = matriz1[i][j] + matriz2[i][j];
-        }
-    }
-}
-
-void multiplicarMatrizes(int [][100] matriz1, int [][100] matriz2, int [][100] resultado, int linhas1, int colunas1, int colunas2) {
-    for (int i = 0; i < linhas1; i++) {
-        for (int j = 0; j < colunas2; j++) {
-            resultado[i][j] = 0;
-            for (int k = 0; k < colunas1; k++) {
-                resultado[i][j] += matriz1[i][k] * matriz2[k][j];
+        i = 0;
+        while (i < linhas1) {
+            j = 0;
+            while (j < colunas2) {
+                produto[i][j] = 0;
+                int k = 0;
+                while (k < colunas1) {
+                    produto[i][j] += matriz1[i][k] * matriz2[k][j];
+                    k++;
+                }
+                j++;
             }
+            i++;
         }
+        printf("Produto das matrizes:\n");
+        i = 0;
+        while (i < linhas1) {
+            j = 0;
+            while (j < colunas2) {
+                printf("%d ", produto[i][j]);
+                j++;
+            }
+            printf("\n");
+            i++;
+        }
+    } else {
+        printf("O produto das matrizes não é possível (dimensões incompatíveis).\n");
     }
 }
