@@ -234,6 +234,24 @@ void argumentoTipoId(record **ss, char **s1, record **s3) {
 	free(str);
 };
 
+//args : tipo ID ',' args
+void argumentoTipoIdRecusao(record **ss, char **s1, record **s3, record **s5) {
+	char *str;
+
+	if(0 == strcmp((*s3)->code, "string")){
+		str = cat("char *", " ", (*s1), ", ", (*s5)->code);
+	} else if (0 == strcmp((*s3)->code, "boolean")){
+		str = cat("int", " ", (*s1), ", ", (*s5)->code);
+	} else {
+		str = cat((*s3)->code, " ", (*s1), ", ", (*s5)->code);
+	}
+	*ss = createRecord(str, "");
+	freeRecord(*s3);
+	freeRecord(*s5);
+	free(*s1);
+	free(str);
+};
+
 // saida : SCANF '(' WORD ',' ID ')' PV
 void scanfPalavraIdeEndereco(record **ss, char **s3, char **s5)
 {

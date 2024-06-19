@@ -142,7 +142,12 @@ args : tipo ID   {
 	      insertFunctionParam(tmp, $2, $1->code);
             argumentoTipoId(&$$, &$2, &$1); 
       }
-      | tipo ID ',' args  {}
+      | tipo ID ',' args  {
+            vatt *tmp = peekS(scopeStack);
+            insert(variablesTable, cat(tmp->subp, "#", $2,"",""), $2, $1->code);
+	      insertFunctionParam(tmp, $2, $1->code);
+            argumentoTipoIdRecusao(&$$, &$2, &$1, &$4); 
+      }
       ;
 
 args_com_vazio : {$$ = createRecord("","");}
@@ -554,12 +559,33 @@ decl_var_ponteiro : ponteiro '=' ID PV {}
                   ;
       
 parametros_rec : parametro {$$ = $1;}
-               | parametro ',' parametros_rec {}
+               | parametro ',' parametros_rec {
+                  char strP[30];
+                  sprintf(strP, "%d", countFuncCallParams);
+                  vatt *tmp = peekS(scopeStack);
+                  char *typeParametro = lookup_variable_type(functionsTable, tmp, cat("p",strP,"","", ""));
+                  
+                  int intfloat = !strcmp(typeParametro, "int") && !strcmp(lookup_type($1, tmp), "int");
+                  int floatint = !strcmp(typeParametro, "float") && !strcmp(lookup_type($1, tmp), "float");
+
+                  if((0 == strcmp(typeParametro, lookup_type($1, tmp))) || intfloat || floatint ){
+                        char *str = cat($1->code, ", ", $3->code, "", "");
+                        $$ = createRecord(str, "");
+                        freeRecord($1);
+                        freeRecord($3);
+                        free(str);
+                  } else {
+                        yyerror(cat("Expected type ", typeParametro, " and actual ", lookup_type($1, tmp), " are incompatible!"));
+                  }
+
+                  countFuncCallParams++;
+                  
+               }
                ;
 
 parametro : expre_logica {
             char strP[30];
-		sprintf(strP, "%d", countFuncCallParams);
+		sprintf(strP, "%d", countFuncCallParams--);
 		vatt *tmp = peekS(scopeStack);
             char *typeParametro = lookup_variable_type(functionsTable, tmp, cat("p",strP,"","", ""));
 		
@@ -571,7 +597,7 @@ parametro : expre_logica {
 		} else {
 			yyerror(cat("Expected type ", typeParametro, " and actual ", lookup_type($1, tmp), " are incompatible!"));
 		}
-            
+
 		countFuncCallParams++;
 }
            | tipo '.' ID {}
@@ -836,8 +862,8 @@ int main (int argc, char ** argv) {
       variablesTable = createSymbolTable(TABLE_SIZE);
 	functionsTable = createSymbolTable(TABLE_SIZE);
 	typedTable = createSymbolTable(TABLE_SIZE);
-	countFuncCallParams = 0;
       scopeStack = newStack();
+      countFuncCallParams = 0;
     
       codigo = yyparse();
 
