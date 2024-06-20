@@ -43,6 +43,6 @@ void scanfPalavraAcessoArray(record **ss, char **s3, char **s5, char **s6);
 void atribuicaoArrayVariavel(record **ss, record **s1, record **s2, record **s4);
 void atribuicaoArrayMoreEqualVariavel(record **ss, record **s1, record **s2, record **s4);
 void atribuicaoArrayMinusEqualVariavel(record **ss, record **s1, record **s2, record **s4);
-void acessoArrayID(record **ss, char **s1, char **s2);
+void acessoArrayID(record **ss, char **s1, char **s2, char * type);
 
 #endif

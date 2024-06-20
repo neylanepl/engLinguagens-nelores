@@ -954,7 +954,8 @@ fator : fator '^' base {
 
 }
       | ID acesso_array {
-            acessoArrayID(&$$, &$1, &$2->code);
+            vatt *tmp = peekS(scopeStack);
+            acessoArrayID(&$$, &$1, &$2->code,lookup_variable_type(variablesTable,tmp, $1));
       }
       | endereco acesso_array {
             char *enderecoAcessoArray = cat($1->code,$2->code,"","","");

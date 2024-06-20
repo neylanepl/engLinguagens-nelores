@@ -412,11 +412,11 @@ void atribuicaoArrayMinusEqualVariavel(record **ss, record **s1, record **s2, re
 	free(str);
 }
 
-// saida : SCANF '(' WORD ',' ID ')' PV
-void acessoArrayID(record **ss, char **s1, char **s2)
+void acessoArrayID(record **ss, char **s1, char **s2, char * type )
 {
 	char *str = cat(*s1, (*s2), "", "", "");
-	*ss = createRecord(str, "");
+	char * token1 = strtok(strdup(type), " ");
+	*ss = createRecord(str, token1);
 	free(str);
 	free(*s1);
 	free(*s2);
