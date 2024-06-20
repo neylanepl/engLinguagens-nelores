@@ -1,5 +1,5 @@
 
-function int analiseDeIntervalos() {
+function int analiseDeIntervalos(int a, int b) {
     int num = 1;
     int count025 = 0;
     int count2650 = 0;
@@ -30,5 +30,5 @@ function int analiseDeIntervalos() {
     println("[76, 100]: ", count76100);
 }
 void main() {
-    analiseDeIntervalos();
+    analiseDeIntervalos(10,10);
 }

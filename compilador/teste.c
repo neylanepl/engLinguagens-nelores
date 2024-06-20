@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <math.h>
 
-int analiseDeIntervalos(){
+int analiseDeIntervalos(int a, int b){
 int num = 1;
 int count025 = 0;
 int count2650 = 0;
@@ -47,5 +47,5 @@ printf("%d", count76100);
 printf("\n");
 }
 int main(){
-analiseDeIntervalos();
+analiseDeIntervalos(10, 10);
 }

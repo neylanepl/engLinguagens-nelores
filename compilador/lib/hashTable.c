@@ -27,10 +27,21 @@ SymbolInfos *createSymbol(char *key, char *name, char *type)
     return symbol;
 }
 
-listNode *createListNode(SymbolInfos *symbol)
+FunctionInfos *createFunction(char *key, char *name, char *returnType, int numParams)
 {
-    listNode *node = malloc(sizeof(listNode));
+    FunctionInfos *function = (FunctionInfos *)malloc(sizeof(FunctionInfos));
+    function->key = strdup(key);
+    function->name = strdup(name);
+    function->returnType = strdup(returnType);
+    function->numParams = numParams;
+    return function;
+}
+
+listNode *createListNode(SymbolInfos *symbol, FunctionInfos *function)
+{
+    listNode *node = (listNode *)malloc(sizeof(listNode));
     node->symbol = symbol;
+    node->function = function;
     node->nextNode = NULL;
     return node;
 }
@@ -48,26 +59,19 @@ SymbolTable *createSymbolTable(int size)
 void insert(SymbolTable *table, char *key, char *name, char *type)
 {
     unsigned int index = hash((unsigned char *)key, table->size);
-
-    SymbolInfos *symbol = createSymbol(key, name, type);
-    listNode *node = createListNode(symbol);
-
-    if (table->symbols[index] == NULL)
-    {
-        table->symbols[index] = node;
-    }
-    else
-    {
-        listNode *current = table->symbols[index];
-
-        while (current->nextNode != NULL)
-        {
-            current = current->nextNode;
-        }
-
-        current->nextNode = node;
-    }
+    listNode *newNode = createListNode(createSymbol(key, name, type), NULL);
+    newNode->nextNode = table->symbols[index];
+    table->symbols[index] = newNode;
 }
+
+void insertFunction(SymbolTable *table, char *key, char *name, char *returnType, int numParams)
+{
+    unsigned int index = hash((unsigned char *)key, table->size);
+    listNode *newNode = createListNode(NULL, createFunction(key, name, returnType, numParams));
+    newNode->nextNode = table->symbols[index];
+    table->symbols[index] = newNode;
+}
+
 
 SymbolInfos *lookup(SymbolTable *table, vatt *currentScope, char *name)
 {
@@ -95,23 +99,48 @@ SymbolInfos *lookup(SymbolTable *table, vatt *currentScope, char *name)
     return NULL;
 }
 
+FunctionInfos *lookupFunction(SymbolTable *table, char *key)
+{
+    unsigned int index = hash((unsigned char *)key, table->size);
+
+    listNode *current = table->symbols[index];
+    while (current != NULL)
+    {
+        if (current->function && strcmp(current->function->key, key) == 0)
+        {
+            return current->function;
+        }
+        current = current->nextNode;
+    }
+
+    return NULL;
+}
+
 void printTable(SymbolTable *table)
 {
     for (int i = 0; i < table->size; i++)
     {
         listNode *current = table->symbols[i];
-
         while (current != NULL)
         {
-            printf("--------------------------\n");
-            printf("Chave:  | %s\n", current->symbol->key);
-            printf("Nome:   | %s\n", current->symbol->name);
-            printf("Tipo:   | %s\n", current->symbol->type);
-
+            if (current->symbol)
+            {
+                printf("--------------------------\n");
+                printf("Chave:  | %s\n", current->symbol->key);
+                printf("Nome:   | %s\n", current->symbol->name);
+                printf("Tipo:   | %s\n", current->symbol->type);
+            }
+            if (current->function)
+            {   
+                                printf("--------------------------\n");
+                printf("Chave:  | %s\n", current->function->key);
+                printf("Nome:   | %s\n", current->function->name);
+                printf("Tipo de retorno:   | %s\n", current->function->returnType);
+                printf("Número de Parâmetros:   | %d\n", current->function->numParams);
+                }
             current = current->nextNode;
         }
     }
-    printf("--------------------------\n");
 }
 
 void freeSymbolTable(SymbolTable *table)
@@ -123,14 +152,23 @@ void freeSymbolTable(SymbolTable *table)
         {
             listNode *temp = current;
             current = current->nextNode;
-            free(temp->symbol->key);
-            free(temp->symbol->name);
-            free(temp->symbol->type);
-            free(temp->symbol);
+            if (temp->symbol)
+            {
+                free(temp->symbol->key);
+                free(temp->symbol->name);
+                free(temp->symbol->type);
+                free(temp->symbol);
+            }
+            if (temp->function)
+            {
+                free(temp->function->key);
+                free(temp->function->name);
+                free(temp->function->returnType);
+                free(temp->function);
+            }
             free(temp);
         }
     }
-
     free(table->symbols);
     free(table);
 }
