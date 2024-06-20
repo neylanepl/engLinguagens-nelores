@@ -4,35 +4,37 @@
 #include <string.h>
 #include "record.h"
 
-char * getIfID(){
-    char *outStr = (char *) malloc(sizeof(char) * 30);
+char *getIfID()
+{
+	char *outStr = (char *)malloc(sizeof(char) * 30);
 	sprintf(outStr, "%d", ifID);
 
-    return outStr;
+	return outStr;
 };
-char * incIfID(){
-    char *outStr = (char *) malloc(sizeof(char) * 30);
-    ifID++;
+char *incIfID()
+{
+	char *outStr = (char *)malloc(sizeof(char) * 30);
+	ifID++;
 	sprintf(outStr, "%d", ifID);
 
-    return outStr;
+	return outStr;
 };
 
-
-char * getWhileID(){
-    char *outStr = (char *) malloc(sizeof(char) * 30);
+char *getWhileID()
+{
+	char *outStr = (char *)malloc(sizeof(char) * 30);
 	sprintf(outStr, "%d", whileID);
 
-    return outStr;
+	return outStr;
 };
-char * incWhileID(){
-    char *outStr = (char *) malloc(sizeof(char) * 30);
-    whileID++;
+char *incWhileID()
+{
+	char *outStr = (char *)malloc(sizeof(char) * 30);
+	whileID++;
 	sprintf(outStr, "%d", whileID);
 
-    return outStr;
+	return outStr;
 };
-
 
 void dec1(record **ss, record **s2, char **s4)
 {
@@ -173,12 +175,11 @@ void declaracaoProcedimento(record **ss, char **s2, record **s4, record **s7)
 	free(str2);
 };
 
-
-
-//if_simples : IF '(' expre_logica_iterador ')' '{' bloco '}'
-void ifBlock(record **ss, record **exp, record **commands, char *id) {
-	char *str1 = cat("if (!(", (*exp)->code, ")) goto endif", id,";\n");
-	char *str2 = cat(str1, (*commands)->code,"endif", id, ":\n");
+// if_simples : IF '(' expre_logica_iterador ')' '{' bloco '}'
+void ifBlock(record **ss, record **exp, record **commands, char *id)
+{
+	char *str1 = cat("if (!(", (*exp)->code, ")) goto endif", id, ";\n");
+	char *str2 = cat(str1, (*commands)->code, "endif", id, ":\n");
 	*ss = createRecord(str2, "");
 	freeRecord(*exp);
 	freeRecord(*commands);
@@ -186,9 +187,10 @@ void ifBlock(record **ss, record **exp, record **commands, char *id) {
 	free(str2);
 }
 
-//if_else : IF '(' expre_logica_iterador ')' '{' bloco '}' ELSE else_aux
-void ifElseBlock(record **ss, record **exp, record **ifCommands, record **elseCommands, char *id) {
-	char *str1 = cat("if (!(", (*exp)->code, ")) goto else", id,";\n");
+// if_else : IF '(' expre_logica_iterador ')' '{' bloco '}' ELSE else_aux
+void ifElseBlock(record **ss, record **exp, record **ifCommands, record **elseCommands, char *id)
+{
+	char *str1 = cat("if (!(", (*exp)->code, ")) goto else", id, ";\n");
 	char *str2 = cat(str1, (*ifCommands)->code, "goto endif", id, cat(";\nelse", id, ":\n", "", ""));
 	char *str3 = cat(str2, (*elseCommands)->code, "endif", id, ":\n");
 	*ss = createRecord(str3, id);
@@ -200,8 +202,9 @@ void ifElseBlock(record **ss, record **exp, record **ifCommands, record **elseCo
 	free(str3);
 }
 
-//iteracao : WHILE '(' expre_logica_iterador ')' '{' bloco '}'
-void ctrl_b3(record **ss, record **exp, record **commands, char *id) {
+// iteracao : WHILE '(' expre_logica_iterador ')' '{' bloco '}'
+void ctrl_b3(record **ss, record **exp, record **commands, char *id)
+{
 	char *str1 = cat(id, ":\nif (!(", (*exp)->code, cat(")) goto end", id, ";\n", "", ""), "");
 	char *str2 = cat(str1, (*commands)->code, "goto ", id, cat(";\nend", id, ":\n", "", ""));
 	*ss = createRecord(str2, "");
@@ -211,9 +214,9 @@ void ctrl_b3(record **ss, record **exp, record **commands, char *id) {
 	free(str2);
 };
 
-
-//args : tipo ID 
-void argumentoTipoId(record **ss, char **s1, record **s3) {
+// args : tipo ID
+void argumentoTipoId(record **ss, char **s1, record **s3)
+{
 	char *str;
 
 	if (0 == strcmp((*s3)->code, "string"))
@@ -234,15 +237,21 @@ void argumentoTipoId(record **ss, char **s1, record **s3) {
 	free(str);
 };
 
-//args : tipo ID ',' args
-void argumentoTipoIdRecusao(record **ss, char **s1, record **s3, record **s5) {
+// args : tipo ID ',' args
+void argumentoTipoIdRecusao(record **ss, char **s1, record **s3, record **s5)
+{
 	char *str;
 
-	if(0 == strcmp((*s3)->code, "string")){
+	if (0 == strcmp((*s3)->code, "string"))
+	{
 		str = cat("char *", " ", (*s1), ", ", (*s5)->code);
-	} else if (0 == strcmp((*s3)->code, "boolean")){
+	}
+	else if (0 == strcmp((*s3)->code, "boolean"))
+	{
 		str = cat("int", " ", (*s1), ", ", (*s5)->code);
-	} else {
+	}
+	else
+	{
 		str = cat((*s3)->code, " ", (*s1), ", ", (*s5)->code);
 	}
 	*ss = createRecord(str, "");
@@ -326,4 +335,89 @@ void atribuicaoIncreDecre(record **ss, char **s1, char **s2)
 	free(*s1);
 	free(*s2);
 	free(str);
+}
+// int[23][45] a;
+void arraySemAtribuicao(record **ss, record **s2, record **s3, char *type)
+{
+	char *str;
+	char *token1;
+	char *token2;
+	token1 = strtok(strdup(type), " ");
+	token2 = strtok(NULL, " ");
+
+	if (0 == strcmp(token1, "string"))
+	{
+		str = cat("char * ", (*s3)->code, token2, ";\n", "");
+	}
+	else if (0 == strcmp(token1, "bool"))
+	{
+		str = cat("int ", (*s3)->code, token2, ";\n", "");
+	}
+	else
+	{
+		str = cat(token1, " ", (*s3)->code, token2, ";\n");
+	}
+	*ss = createRecord(str, "");
+	freeRecord(*s3);
+	free(str);
+}
+// saida : SCANF '(' WORD ',' ID ')' PV
+void scanfPalavraEnderecoAcessoArray(record **ss, char **s3, char **s4, char **s5)
+{
+	char *str = cat("scanf(", *s3, ",", (*s4), (*s5));
+	str = cat(str, ");\n", "", "", "");
+	*ss = createRecord(str, "");
+	free(str);
+	free(*s3);
+	free(*s5);
+	free(*s4);
+}
+// saida : SCANF '(' WORD ',' ID ')' PV
+void scanfPalavraAcessoArray(record **ss, char **s3, char **s5, char **s6)
+{
+	char *str = cat("scanf(", *s3, ",", (*s5), (*s6));
+	str = cat(str, ");\n", "", "", "");
+	*ss = createRecord(str, "");
+	free(str);
+	free(*s3);
+	free(*s5);
+}
+
+// b[5][1] = expressao;
+void atribuicaoArrayVariavel(record **ss, record **s1, record **s2, record **s4)
+{
+	char *str = cat((*s1)->code, (*s2)->code, "=", (*s4)->code, ";\n");
+	*ss = createRecord(str, "");
+	freeRecord(*s1);
+	freeRecord(*s2);
+	free(str);
+}
+
+// b[5][1] += expressao;
+void atribuicaoArrayMoreEqualVariavel(record **ss, record **s1, record **s2, record **s4)
+{
+	char *str = cat((*s1)->code, (*s2)->code, "+=", (*s4)->code, ";\n");
+	*ss = createRecord(str, "");
+	freeRecord(*s1);
+	freeRecord(*s2);
+	free(str);
+}
+// b[5][1] += expressao;
+void atribuicaoArrayMinusEqualVariavel(record **ss, record **s1, record **s2, record **s4)
+{
+	char *str = cat((*s1)->code, (*s2)->code, "-=", (*s4)->code, ";\n");
+	*ss = createRecord(str, "");
+	freeRecord(*s1);
+	freeRecord(*s2);
+	free(str);
+}
+
+// saida : SCANF '(' WORD ',' ID ')' PV
+void acessoArrayID(record **ss, char **s1, char **s2)
+{
+	char *str = cat(*s1, (*s2), "", "", "");
+	*ss = createRecord(str, "");
+	free(str);
+	free(*s1);
+	free(*s2);
 }

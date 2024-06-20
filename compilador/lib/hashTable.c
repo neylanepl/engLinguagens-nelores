@@ -72,10 +72,10 @@ void insertFunction(SymbolTable *table, char *key, char *name, char *returnType,
     table->symbols[index] = newNode;
 }
 
-
 SymbolInfos *lookup(SymbolTable *table, vatt *currentScope, char *name)
 {
-    while (currentScope->next != NULL) {
+    while (currentScope->next != NULL)
+    {
         char *key = cat(currentScope->subp, "#", name, "", "");
         unsigned int index = hash(key, table->size);
 
@@ -131,13 +131,13 @@ void printTable(SymbolTable *table)
                 printf("Tipo:   | %s\n", current->symbol->type);
             }
             if (current->function)
-            {   
-                                printf("--------------------------\n");
+            {
+                printf("--------------------------\n");
                 printf("Chave:  | %s\n", current->function->key);
                 printf("Nome:   | %s\n", current->function->name);
                 printf("Tipo de retorno:   | %s\n", current->function->returnType);
                 printf("Número de Parâmetros:   | %d\n", current->function->numParams);
-                }
+            }
             current = current->nextNode;
         }
     }
@@ -175,7 +175,8 @@ void freeSymbolTable(SymbolTable *table)
 
 char *lookup_variable_type(SymbolTable *table, vatt *currentScope, char *name)
 {
-    while (currentScope->next != NULL) {
+    while (currentScope->next != NULL)
+    {
         char *key = cat(currentScope->subp, "#", name, "", "");
         unsigned int index = hash(key, table->size);
 
@@ -186,7 +187,7 @@ char *lookup_variable_type(SymbolTable *table, vatt *currentScope, char *name)
             if (strcmp(current->symbol->key, key) == 0)
             {
                 free(key);
-                return current->symbol->type;
+                return strdup(current->symbol->type);
             }
 
             current = current->nextNode;

@@ -7,12 +7,12 @@ static int ifID = 0;
 static int whileID = 0;
 static int condicionalID = 0;
 
-char * getIfID();
-char * incIfID();
-char * getWhileID();
-char * incWhileID();
-char * getCondicionalID();
-char * incCondicionalID();
+char *getIfID();
+char *incIfID();
+char *getWhileID();
+char *incWhileID();
+char *getCondicionalID();
+char *incCondicionalID();
 
 void dec1(record **, record **, char **);
 char *cat(char *, char *, char *, char *, char *);
@@ -37,5 +37,12 @@ void atribuicaoVariavel(record **ss, record **s1, record **s2);
 void atribuicaoVariavelMaisIgual(record **ss, record **s1, record **s2);
 void atribuicaoVariavelMenosIgual(record **ss, record **s1, record **s2);
 void atribuicaoIncreDecre(record **ss, char **s1, char **s2);
+void arraySemAtribuicao(record **ss, record **s2, record **s3, char *type);
+void scanfPalavraEnderecoAcessoArray(record **ss, char **s3, char **s4, char **s5);
+void scanfPalavraAcessoArray(record **ss, char **s3, char **s5, char **s6);
+void atribuicaoArrayVariavel(record **ss, record **s1, record **s2, record **s4);
+void atribuicaoArrayMoreEqualVariavel(record **ss, record **s1, record **s2, record **s4);
+void atribuicaoArrayMinusEqualVariavel(record **ss, record **s1, record **s2, record **s4);
+void acessoArrayID(record **ss, char **s1, char **s2);
 
 #endif

@@ -1,3 +1,4 @@
+
 %{
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,10 +18,8 @@ char * cat(char *, char *, char *, char *, char *);
 SymbolTable *variablesTable;
 SymbolTable *functionsTable;
 SymbolTable *typedTable;
-SymbolTable *funcInfo;
 stack *scopeStack;
 int countFuncCallParams;
-int countFuncArgs;
 void insertFunctionParam(vatt *, char *, char *);
 char* lookup_type(record *, vatt *temp);
 
@@ -123,7 +122,12 @@ endereco: '&' ID {
 }
           ;
 
-tipo_array: TYPE tamanho_array {}
+tipo_array: TYPE tamanho_array {
+                  char tamanhoArray[100];
+                  snprintf(tamanhoArray, sizeof(tamanhoArray), "%s %s", $1, $2->code);
+                  freeRecord($2);
+                  $$ = createRecord(tamanhoArray,"");    
+            }
             ;
 
 tipo: TYPE {$$ = createRecord($1,"");}
@@ -143,14 +147,12 @@ args : tipo ID   {
             insert(variablesTable, cat(tmp->subp, "#", $2,"",""), $2, $1->code);
 	      insertFunctionParam(tmp, $2, $1->code);
             argumentoTipoId(&$$, &$2, &$1); 
-            countFuncArgs++;
       }
       | tipo ID ',' args  {
             vatt *tmp = peekS(scopeStack);
             insert(variablesTable, cat(tmp->subp, "#", $2,"",""), $2, $1->code);
 	      insertFunctionParam(tmp, $2, $1->code);
             argumentoTipoIdRecusao(&$$, &$2, &$1, &$4); 
-            countFuncArgs++;
       }
       ;
 
@@ -178,10 +180,8 @@ decl_funcao : FUNCTION tipo ID {pushS(scopeStack, $3, "");} '(' args_com_vazio '
                               yyerror(cat("error: redeclaration of function ", $3, "", "", ""));
                         } else {
                               insert(functionsTable, cat(tmp->subp, "#", $3,"",""),"return",$2->code);
-                              insertFunction(funcInfo, cat(tmp->subp, "#", $3,"",""), "return", $2->code, countFuncArgs);
                               declaracaoFuncao(&$$, &$3, &$6, &$2->code, &$9);
                               popS(scopeStack);
-                              countFuncArgs = 0;
                         }  
 }           
             ;
@@ -206,7 +206,13 @@ bloco : {$$ = createRecord("","");}
             $$ = createRecord(s, "");
             free(s);
       }
-      | decl_array bloco  {}
+      | decl_array bloco  {
+            char *declArray = cat($1->code,$2->code,"","","");
+            freeRecord($1);
+            freeRecord($2);
+            $$ = createRecord(declArray, "");
+            free(declArray);
+      }
       | comando bloco {
             char *declComando = cat($1->code,$2->code,"","","");
             freeRecord($1);
@@ -214,7 +220,25 @@ bloco : {$$ = createRecord("","");}
             $$ = createRecord(declComando, "");
             free(declComando);
       } 
-      | ID ops PV bloco {}
+      | ID ops PV bloco {
+            vatt *tmp = peekS(scopeStack);
+             if (!lookup(variablesTable, tmp, $1)) {
+                  yyerror(cat("error: nondeclaration of variable ", $1, "", "", ""));
+            } else {
+                  record *rcdAtribuicao = createRecord($1, "");    
+                  char *typeVariable = lookup_variable_type(variablesTable, tmp, $1);  
+                              
+                  if(strcmp(typeVariable, "int") == 0 || strcmp(typeVariable, "float") == 0 ){       
+                        char *declIncremento = cat(rcdAtribuicao->code,$2->code,";",$4->code,"\n");
+                        freeRecord($2);
+                        $$ = createRecord(declIncremento, "");
+                        free(declIncremento);
+                  } else {
+                        yyerror(cat("Initialization of ", $1, " from type ", typeVariable, " is incompatible!"));
+                  }
+                  free(typeVariable);
+            }  
+      }
       | ops ID PV bloco {}   
       | comentario bloco {}
       | liberacao_memoria {}            
@@ -334,22 +358,13 @@ else_block : {$$ = createRecord("", "");}
 chamada_funcao : ID {pushS(scopeStack, $1, "");} '(' parametro_com_vazio ')' {
             vatt *tmp = peekS(scopeStack);
             SymbolInfos *foundFuncReturn = lookup(functionsTable, tmp, $1);
-            
             if(foundFuncReturn){
-                  FunctionInfos *funcInfoaux = lookupFunction(funcInfo, cat(tmp->subp, "#", $1, "", ""));
-                  if (funcInfoaux->numParams == countFuncCallParams) {
-                        char funcType[100];
-                        strcpy(funcType, foundFuncReturn->type);
-                        record *rcdParam = createRecord($4->code, "");
-                        chamadaParamFuncao(&$$, &$1, &rcdParam, funcType);
-                        popS(scopeStack);
-                        countFuncCallParams = 0;
-                  }
-                  else{
-                        char str[20];
-                        fprintf(stderr, "Erro: Função '%s' esperava %d argumentos, mas %d foram passados.\n", $1, funcInfoaux->numParams, countFuncCallParams);
-                        exit(1);
-                  }
+                  char funcType[100];
+                  strcpy(funcType, foundFuncReturn->type);
+                  record *rcdParam = createRecord($4->code, "");
+                  chamadaParamFuncao(&$$, &$1, &rcdParam, funcType);
+                  popS(scopeStack);
+                  countFuncCallParams = 0;
             } else {
                   yyerror(cat("undefined function ",$1,"","",""));
             }
@@ -369,11 +384,15 @@ liberacao_memoria : FREE '(' ID ')' PV {}
 entrada : SCANF '(' WORD ',' ID ')' PV {
             scanfPalavraIdeEndereco(&$$, &$3, &$5);
       }
-      | SCANF '(' WORD ',' ID acesso_array ')' PV {}
+      | SCANF '(' WORD ',' ID acesso_array ')' PV {
+            scanfPalavraEnderecoAcessoArray(&$$, &$3, &$5, &$6->code);
+      }
       | SCANF '(' WORD ',' endereco ')' PV {
             scanfPalavraIdeEndereco(&$$, &$3, &$5->code);
       }
-      | SCANF '(' WORD ',' endereco acesso_array ')' PV {}
+      | SCANF '(' WORD ',' endereco acesso_array ')' PV {
+            scanfPalavraEnderecoAcessoArray(&$$, &$3,  &$5->code, &$6->code);
+      }
       | entrada_atribuicao {}
       ;
 
@@ -418,17 +437,31 @@ entrada_atribuicao: TYPE ID '=' entrada {}
       ;
 
 decl_vars : decl_variavel  {$$ = $1;}
-            | decl_array {}
+            | decl_array {$$ = $1;}
             ;
 
-decl_array : tipo_array ID '=' '[' elementos_array ']' PV {}
+decl_array : tipo_array ID '=' '[' elementos_array ']' PV {
+            }
             | tipo_array ID '='  expre_logica  PV {}
-            | ID '=' '['  elementos_array  ']' PV {}
+            | ID '=' '['  elementos_array  ']' PV {
+                 
+            }
             | CONST tipo_array ID '=' '[' elementos_array ']' PV {}
             | FINAL tipo_array ID '=' '[' elementos_array ']' PV {}
-            | tipo_array ID PV {} 
-            | decl_array_atr_tipada
-            | decl_array_atr
+            | tipo_array ID PV {
+                 vatt *tmp = peekS(scopeStack);
+                  if (lookup(variablesTable, tmp, $2)) {
+                        yyerror(cat("error: redeclaration of variable ", $2, "", "", ""));
+                  }
+                  char *arrayType = $1->code;
+                  insert(variablesTable, cat(tmp->subp, "#", $2,"",""), $2, arrayType);
+
+                  record *rcdArrayAtribuicao = createRecord($2, "");
+                  arraySemAtribuicao(&$$, &$1, &rcdArrayAtribuicao, arrayType);
+                   
+            } 
+            | decl_array_atr_tipada {$$ = $1;}
+            | decl_array_atr {$$ = $1;}
             ;
 
 decl_array_atr_tipada: tipo_array ID MOREISEQUAL expre_logica PV{}
@@ -436,19 +469,92 @@ decl_array_atr_tipada: tipo_array ID MOREISEQUAL expre_logica PV{}
                   | tipo_array ID '=' chamada_funcao PV {}
                   ;
 
-decl_array_atr: ID tamanho_array '=' expre_logica PV {}
+decl_array_atr: ID tamanho_array '=' expre_logica PV {
+                  vatt *tmp = peekS(scopeStack);
+                  if (!lookup(variablesTable, tmp, $1)) {
+                        yyerror(cat("error: nondeclaration of variable ", $1, "", "", ""));
+                  } else {
+                        char *typeVariable = lookup_variable_type(variablesTable, tmp, $1);
+                        char *typeSplited = strtok(typeVariable, " ");
+                        record *rcdArrayAtribuicao = createRecord($1, "");
+                        int intfloat = !strcmp(typeSplited, "int") && !strcmp(lookup_type($4, tmp), "int");
+                        int floatint = !strcmp(typeSplited, "float") && !strcmp(lookup_type($4, tmp), "float");
+                        printf("TIPO DO ID----%s----\n", typeSplited);    
+                        printf("TIPO DO ID----%s----\n", lookup_type($4, tmp));      
+                        if (strcmp(typeSplited, lookup_type($4, tmp)) == 0 || intfloat || floatint) {
+                              atribuicaoArrayVariavel(&$$, &rcdArrayAtribuicao, &$2, &$4);
+                        } else {
+                              yyerror(cat("Initialization of ", $1, " from type ", lookup_type($4, tmp), " is incompatible!"));
+                        }
+                       
+                  }  
+            
+            }
             | ID tamanho_array '=' ponteiro PV {}
-            | ID tamanho_array MOREISEQUAL expre_logica PV {}
-            | ID tamanho_array LESSISEQUAL expre_logica PV {}
+            | ID tamanho_array MOREISEQUAL expre_logica PV {
+                  /*vatt *tmp = peekS(scopeStack);
+                  if (!lookup(variablesTable, tmp, $1)) {
+                        yyerror(cat("error: nondeclaration of variable ", $1, "", "", ""));
+                  } else {
+                        char *typeVariable = lookup_variable_type(variablesTable, tmp, $1);
+                        char *typeSplited = strtok(typeVariable, " ");
+                        record *rcdArrayAtribuicao = createRecord($1, "");
+                        int intfloat = !strcmp(typeSplited, "int") && !strcmp(lookup_type($4, tmp), "int");
+                        int floatint = !strcmp(typeSplited, "float") && !strcmp(lookup_type($4, tmp), "float");
+                              
+                        if (strcmp(typeSplited, lookup_type($4, tmp)) == 0 || intfloat || floatint) {
+                              atribuicaoArrayMoreEqualVariavel(&$$, &rcdArrayAtribuicao, &$2, &$4);
+                        } else {
+                              yyerror(cat("Initialization of ", $1, " from type ", lookup_type($4, tmp), " is incompatible!"));
+                        }
+                       
+                  }  */
+            }
+            | ID tamanho_array LESSISEQUAL expre_logica PV {
+                   /* vatt *tmp = peekS(scopeStack);
+                  if (!lookup(variablesTable, tmp, $1)) {
+                        yyerror(cat("error: nondeclaration of variable ", $1, "", "", ""));
+                  } else {
+                        char *typeVariable = lookup_variable_type(variablesTable, tmp, $1);
+                        char *typeSplited = strtok(typeVariable, " ");
+                        record *rcdArrayAtribuicao = createRecord($1, "");
+                        int intfloat = !strcmp(typeSplited, "int") && !strcmp(lookup_type($4, tmp), "int");
+                        int floatint = !strcmp(typeSplited, "float") && !strcmp(lookup_type($4, tmp), "float");
+                              
+                        if (strcmp(typeSplited, lookup_type($4, tmp)) == 0 || intfloat || floatint) {
+                              atribuicaoArrayMinusEqualVariavel(&$$, &rcdArrayAtribuicao, &$2, &$4);
+                        } else {
+                              yyerror(cat("Initialization of ", $1, " from type ", lookup_type($4, tmp), " is incompatible!"));
+                        }
+                       
+                  }  */
+            }
             | ID tamanho_array '=' chamada_funcao PV {}
             ;
             
-tamanho_array: '[' expressao_tamanho_array ']'  {}
-             | '[' expressao_tamanho_array ']' tamanho_array {}
+tamanho_array: '[' expressao_tamanho_array ']'  {
+                  vatt *tmp = peekS(scopeStack);
+                  if(0 == strcmp(lookup_type($2, tmp), "int")){
+                        char *tamanhoArray = cat("[",$2->code,"]","","");
+                        $$ = createRecord(tamanhoArray, "");
+                        free(tamanhoArray);
+                        freeRecord($2);
+                  } else {
+                        yyerror(cat("Types ", lookup_type($2, tmp), " are not incompatible!", "", ""));
+                  }
+                 
+             }
+             | '[' expressao_tamanho_array ']' tamanho_array {
+                  char *tamanhoArray = cat("[", $2->code, "]", $4->code, "");
+                  freeRecord($2);
+                  freeRecord($4);
+                  $$ = createRecord(tamanhoArray, "");
+                  free(tamanhoArray);
+             }
              ;
 
-expressao_tamanho_array:  ID {}
-                         | NUMBER {}
+expressao_tamanho_array:  ID {baseID(&$$, &$1);}
+                         | NUMBER {baseIntNumber(&$$, &$1);}
                          ;
 
 elemento_matriz:  '[' elementos_array ']' {}
@@ -460,8 +566,24 @@ elementos_array :  base_case_array {}
                   | elemento_matriz {}
                   ;
 
-acesso_array: '[' expre_arit ']'  {}
-            | '[' expre_arit ']' acesso_array {}
+acesso_array: '[' expre_arit ']'  {
+                  vatt *tmp = peekS(scopeStack);
+                  if(0 == strcmp(lookup_type($2, tmp), "int")){
+                        char *tamanhoArray = cat("[",$2->code,"]","","");
+                        $$ = createRecord(tamanhoArray, "");
+                        free(tamanhoArray);
+                        freeRecord($2);
+                  } else {
+                        yyerror(cat("Types ", lookup_type($2, tmp), " are not incompatible!", "", ""));
+                  }
+            }
+            | '[' expre_arit ']' acesso_array {
+                  char *tamanhoArray = cat("[", $2->code, "]", $4->code, "");
+                  freeRecord($2);
+                  freeRecord($4);
+                  $$ = createRecord(tamanhoArray, "");
+                  free(tamanhoArray);
+            }
             ;
 
 decl_variavel : decl_var_atr_tipada {$$ = $1;}
@@ -509,6 +631,7 @@ decl_var_atr: ID '=' expre_logica PV {
                               } else {
                                     yyerror(cat("Initialization of ", $1, " from type ", lookup_type($3, tmp), " is incompatible!"));
                               }
+                              free(typeVariable);
                         }  
             }
             | ID '=' ponteiro PV {}
@@ -528,6 +651,7 @@ decl_var_atr: ID '=' expre_logica PV {
                               } else {
                                     yyerror(cat("Initialization of ", $1, " from type ", lookup_type($3, tmp), " is incompatible!"));
                               }
+                              free(typeVariable);
                         }  
             }
             | ID LESSISEQUAL expre_logica PV {
@@ -546,6 +670,7 @@ decl_var_atr: ID '=' expre_logica PV {
                               } else {
                                     yyerror(cat("Initialization of ", $1, " from type ", lookup_type($3, tmp), " is incompatible!"));
                               }
+                              free(typeVariable);
                         }  
             }
             | ID '=' chamada_funcao PV {}
@@ -565,7 +690,9 @@ decl_var_const: CONST TYPE ID  '=' expre_logica PV {}
               | FINAL TYPE ID  '=' expre_logica PV {}
               ;
 
-decl_var_ponteiro : ponteiro '=' ID PV {}
+decl_var_ponteiro : ponteiro '=' ID PV {
+      
+}
                   | ponteiro '=' ponteiro PV {}
                   | ponteiro '=' endereco PV {}
                   | tipo_ponteiro ID '=' alocacao_memoria PV{}
@@ -575,31 +702,45 @@ decl_var_ponteiro : ponteiro '=' ID PV {}
       
 parametros_rec : parametro {$$ = $1;}
                | parametro ',' parametros_rec {
+                  char strP[30];
+                  sprintf(strP, "%d", countFuncCallParams);
+                  vatt *tmp = peekS(scopeStack);
+                  char *typeParametro = lookup_variable_type(functionsTable, tmp, cat("p",strP,"","", ""));
+                  
+                  int intfloat = !strcmp(typeParametro, "int") && !strcmp(lookup_type($1, tmp), "int");
+                  int floatint = !strcmp(typeParametro, "float") && !strcmp(lookup_type($1, tmp), "float");
+
+                  if((0 == strcmp(typeParametro, lookup_type($1, tmp))) || intfloat || floatint ){
                         char *str = cat($1->code, ", ", $3->code, "", "");
                         $$ = createRecord(str, "");
                         freeRecord($1);
                         freeRecord($3);
-                        free(str); 
+                        free(str);
+                  } else {
+                        yyerror(cat("Expected type ", typeParametro, " and actual ", lookup_type($1, tmp), " are incompatible!"));
+                  }
+
+                  countFuncCallParams++;
+                  
                }
                ;
 
 parametro : expre_logica {
             char strP[30];
-		sprintf(strP, "%d", countFuncCallParams);
+		sprintf(strP, "%d", countFuncCallParams--);
 		vatt *tmp = peekS(scopeStack);
             char *typeParametro = lookup_variable_type(functionsTable, tmp, cat("p",strP,"","", ""));
-
+		
 		int intfloat = !strcmp(typeParametro, "int") && !strcmp(lookup_type($1, tmp), "int");
 		int floatint = !strcmp(typeParametro, "float") && !strcmp(lookup_type($1, tmp), "float");
 
-            
 		if((0 == strcmp(typeParametro, lookup_type($1, tmp))) || intfloat || floatint ){
 			$$ = $1;
 		} else {
 			yyerror(cat("Expected type ", typeParametro, " and actual ", lookup_type($1, tmp), " are incompatible!"));
 		}
-            
-		countFuncCallParams++;            
+
+		countFuncCallParams++;
 }
            | tipo '.' ID {}
            ;
@@ -812,8 +953,16 @@ fator : fator '^' base {
             }
 
 }
-      | ID acesso_array {}
-      | endereco acesso_array {}
+      | ID acesso_array {
+            acessoArrayID(&$$, &$1, &$2->code);
+      }
+      | endereco acesso_array {
+            char *enderecoAcessoArray = cat($1->code,$2->code,"","","");
+            freeRecord($1);
+            freeRecord($2);
+            $$ = createRecord(enderecoAcessoArray, "");
+            free(enderecoAcessoArray);
+      }
       | endereco {$$ = $1;}
       | base {$$ = $1;}
       ;
@@ -863,10 +1012,8 @@ int main (int argc, char ** argv) {
       variablesTable = createSymbolTable(TABLE_SIZE);
 	functionsTable = createSymbolTable(TABLE_SIZE);
 	typedTable = createSymbolTable(TABLE_SIZE);
-      funcInfo = createSymbolTable(TABLE_SIZE);
       scopeStack = newStack();
       countFuncCallParams = 0;
-      countFuncArgs = 0;
     
       codigo = yyparse();
 
@@ -882,10 +1029,6 @@ int main (int argc, char ** argv) {
 		printf("Mostrando tabela de funcoes: \n");
 		printf("*******************************\n");
 		printTable(functionsTable);
-            printf("*******************************\n");
-		printf("Mostrando tabela de funcoes com argumentos: \n");
-		printf("*******************************\n");
-		printTable(funcInfo);
 	}
 
       return codigo;
@@ -900,22 +1043,13 @@ int yyerror (char *msg) {
 void insertFunctionParam(vatt *tmp, char *paramName, char *paramType){
 	int paramId = 0; 
 	char strNum[30];
-      char *paramKey;
 
-      sprintf(strNum, "%d", paramId);
-      paramKey = cat("p", strNum, "", "", "");
-    
-      while (lookup(functionsTable, tmp, paramKey)) {
-            free(paramKey); 
-            paramId++;
-            sprintf(strNum, "%d", paramId);
-            paramKey = cat("p", strNum, "", "", "");
-      }
+	do {
+		sprintf(strNum, "%d", paramId);
+		paramId++;
+	} while(lookup(functionsTable, tmp, cat(tmp->subp,"#p",strNum,"","")));
 
-      char *newParamKey = cat(tmp->subp, "#p" , strNum, "", "");
-      insert(functionsTable, newParamKey, paramName, paramType);
-      free(paramKey);  
-      free(newParamKey);
+	insert(functionsTable, cat(tmp->subp,"#p",strNum,"",""), paramName, paramType);
 }
 
 char* lookup_type(record *r, vatt *tmp) {
@@ -931,3 +1065,5 @@ char* lookup_type(record *r, vatt *tmp) {
             return r->opt1;
       }
 }
+
+
