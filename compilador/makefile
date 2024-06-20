@@ -16,7 +16,7 @@ compile:
 	./compiler declvar.txt teste.c -t
 
 generatec:
-	gcc -o test teste.c
+	gcc -o test teste.c -lm
 	./test
 
 recompile: clean all compile
