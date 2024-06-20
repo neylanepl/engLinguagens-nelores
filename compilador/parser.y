@@ -18,8 +18,10 @@ char * cat(char *, char *, char *, char *, char *);
 SymbolTable *variablesTable;
 SymbolTable *functionsTable;
 SymbolTable *typedTable;
+SymbolTable *funcInfo;
 stack *scopeStack;
 int countFuncCallParams;
+int countFuncArgs;
 void insertFunctionParam(vatt *, char *, char *);
 char* lookup_type(record *, vatt *temp);
 
@@ -146,13 +148,15 @@ args : tipo ID   {
             vatt *tmp = peekS(scopeStack);
             insert(variablesTable, cat(tmp->subp, "#", $2,"",""), $2, $1->code);
 	      insertFunctionParam(tmp, $2, $1->code);
-            argumentoTipoId(&$$, &$2, &$1); 
+            argumentoTipoId(&$$, &$2, &$1);
+            countFuncArgs++;
       }
       | tipo ID ',' args  {
             vatt *tmp = peekS(scopeStack);
             insert(variablesTable, cat(tmp->subp, "#", $2,"",""), $2, $1->code);
 	      insertFunctionParam(tmp, $2, $1->code);
-            argumentoTipoIdRecusao(&$$, &$2, &$1, &$4); 
+            argumentoTipoIdRecusao(&$$, &$2, &$1, &$4);
+            countFuncArgs++; 
       }
       ;
 
@@ -180,8 +184,10 @@ decl_funcao : FUNCTION tipo ID {pushS(scopeStack, $3, "");} '(' args_com_vazio '
                               yyerror(cat("error: redeclaration of function ", $3, "", "", ""));
                         } else {
                               insert(functionsTable, cat(tmp->subp, "#", $3,"",""),"return",$2->code);
+                              insertFunction(funcInfo, cat(tmp->subp, "#", $3,"",""), "return", $2->code, countFuncArgs);
                               declaracaoFuncao(&$$, &$3, &$6, &$2->code, &$9);
                               popS(scopeStack);
+                              countFuncArgs = 0;
                         }  
 }           
             ;
@@ -359,12 +365,20 @@ chamada_funcao : ID {pushS(scopeStack, $1, "");} '(' parametro_com_vazio ')' {
             vatt *tmp = peekS(scopeStack);
             SymbolInfos *foundFuncReturn = lookup(functionsTable, tmp, $1);
             if(foundFuncReturn){
-                  char funcType[100];
-                  strcpy(funcType, foundFuncReturn->type);
-                  record *rcdParam = createRecord($4->code, "");
-                  chamadaParamFuncao(&$$, &$1, &rcdParam, funcType);
-                  popS(scopeStack);
-                  countFuncCallParams = 0;
+                  FunctionInfos *funcInfoaux = lookupFunction(funcInfo, cat(tmp->subp, "#", $1, "", ""));
+                  if (funcInfoaux->numParams == countFuncCallParams) {
+                        char funcType[100];
+                        strcpy(funcType, foundFuncReturn->type);
+                        record *rcdParam = createRecord($4->code, "");
+                        chamadaParamFuncao(&$$, &$1, &rcdParam, funcType);
+                        popS(scopeStack);
+                        countFuncCallParams = 0;
+                  }
+                  else{
+                        char str[20];
+                        fprintf(stderr, "Erro: Função '%s' esperava %d argumentos, mas %d foram passados.\n", $1, funcInfoaux->numParams, countFuncCallParams);
+                        exit(1);
+                  }
             } else {
                   yyerror(cat("undefined function ",$1,"","",""));
             }
@@ -702,45 +716,45 @@ decl_var_ponteiro : ponteiro '=' ID PV {
       
 parametros_rec : parametro {$$ = $1;}
                | parametro ',' parametros_rec {
-                  char strP[30];
-                  sprintf(strP, "%d", countFuncCallParams);
-                  vatt *tmp = peekS(scopeStack);
-                  char *typeParametro = lookup_variable_type(functionsTable, tmp, cat("p",strP,"","", ""));
-                  
-                  int intfloat = !strcmp(typeParametro, "int") && !strcmp(lookup_type($1, tmp), "int");
-                  int floatint = !strcmp(typeParametro, "float") && !strcmp(lookup_type($1, tmp), "float");
-
-                  if((0 == strcmp(typeParametro, lookup_type($1, tmp))) || intfloat || floatint ){
                         char *str = cat($1->code, ", ", $3->code, "", "");
                         $$ = createRecord(str, "");
                         freeRecord($1);
                         freeRecord($3);
                         free(str);
-                  } else {
-                        yyerror(cat("Expected type ", typeParametro, " and actual ", lookup_type($1, tmp), " are incompatible!"));
-                  }
-
-                  countFuncCallParams++;
+                  
                   
                }
                ;
 
 parametro : expre_logica {
             char strP[30];
-		sprintf(strP, "%d", countFuncCallParams--);
+		sprintf(strP, "%d", countFuncCallParams);
 		vatt *tmp = peekS(scopeStack);
-            char *typeParametro = lookup_variable_type(functionsTable, tmp, cat("p",strP,"","", ""));
+            SymbolInfos *foundFuncReturn = lookup(functionsTable, tmp, tmp->subp);
+            
+            if(foundFuncReturn){
+                  char *typeParametro = lookup_variable_type(functionsTable, tmp, cat("p",strP,"","", ""));
+                  if(typeParametro){
+                        int intfloat = !strcmp(typeParametro, "int") && !strcmp(lookup_type($1, tmp), "int");
+                        int floatint = !strcmp(typeParametro, "float") && !strcmp(lookup_type($1, tmp), "float");
+
+                        if((0 == strcmp(typeParametro, lookup_type($1, tmp))) || intfloat || floatint ){
+                              $$ = $1;
+                        } else {
+                              yyerror(cat("Expected type ", typeParametro, " and actual ", lookup_type($1, tmp), " are incompatible!"));
+                        }
+
+                        countFuncCallParams++;
+                   }else {
+                        yyerror(cat("Não existe função ",tmp->subp," definida com esses parâmetros","",""));
+                        exit(1);
+                  }
+            }else {
+                  yyerror(cat("Não existe função ",tmp->subp," definida.","",""));
+                  exit(1);
+            }
+            
 		
-		int intfloat = !strcmp(typeParametro, "int") && !strcmp(lookup_type($1, tmp), "int");
-		int floatint = !strcmp(typeParametro, "float") && !strcmp(lookup_type($1, tmp), "float");
-
-		if((0 == strcmp(typeParametro, lookup_type($1, tmp))) || intfloat || floatint ){
-			$$ = $1;
-		} else {
-			yyerror(cat("Expected type ", typeParametro, " and actual ", lookup_type($1, tmp), " are incompatible!"));
-		}
-
-		countFuncCallParams++;
 }
            | tipo '.' ID {}
            ;
@@ -1013,8 +1027,10 @@ int main (int argc, char ** argv) {
       variablesTable = createSymbolTable(TABLE_SIZE);
 	functionsTable = createSymbolTable(TABLE_SIZE);
 	typedTable = createSymbolTable(TABLE_SIZE);
+      funcInfo = createSymbolTable(TABLE_SIZE);
       scopeStack = newStack();
       countFuncCallParams = 0;
+      countFuncArgs = 0;
     
       codigo = yyparse();
 
@@ -1030,6 +1046,10 @@ int main (int argc, char ** argv) {
 		printf("Mostrando tabela de funcoes: \n");
 		printf("*******************************\n");
 		printTable(functionsTable);
+            printf("*******************************\n");
+		printf("Mostrando tabela de funcoes com argumentos: \n");
+		printf("*******************************\n");
+		printTable(funcInfo);
 	}
 
       return codigo;
@@ -1044,13 +1064,21 @@ int yyerror (char *msg) {
 void insertFunctionParam(vatt *tmp, char *paramName, char *paramType){
 	int paramId = 0; 
 	char strNum[30];
+      char *paramKey;
 
-	do {
-		sprintf(strNum, "%d", paramId);
-		paramId++;
-	} while(lookup(functionsTable, tmp, cat(tmp->subp,"#p",strNum,"","")));
+	sprintf(strNum, "%d", paramId);
+      paramKey = cat("p", strNum, "", "", "");
 
-	insert(functionsTable, cat(tmp->subp,"#p",strNum,"",""), paramName, paramType);
+      while (lookup(functionsTable, tmp, paramKey)) {
+            free(paramKey); 
+            paramId++;
+            sprintf(strNum, "%d", paramId);
+            paramKey = cat("p", strNum, "", "", "");
+      }
+	char *newParamKey = cat(tmp->subp, "#p" , strNum, "", "");
+      insert(functionsTable, newParamKey, paramName, paramType);
+      free(paramKey);  
+      free(newParamKey);
 }
 
 char* lookup_type(record *r, vatt *tmp) {
