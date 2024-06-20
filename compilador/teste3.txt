@@ -10,7 +10,7 @@ void main() {
     
     println("Digite o número de linhas da primeira matriz: ");
     scanf("%d", &linhas1);
-    prinln("Digite o número de colunas da primeira matriz: ");
+    println("Digite o número de colunas da primeira matriz: ");
     scanf("%d", &colunas1);
     println("Digite os elementos da primeira matriz:\n");
     
@@ -19,7 +19,7 @@ void main() {
     while (i < linhas1) {
         j = 0;
         while (j < colunas1) {
-            printf("Elemento [%d][%d]: ", i, j);
+            println("Insira o elemento", i, j, ":");
             scanf("%d", &matriz1[i][j]);
             j++;
         }
@@ -31,13 +31,12 @@ void main() {
     println("Digite o número de colunas da segunda matriz: ");
     scanf("%d", &colunas2);
     println("Digite os elementos da segunda matriz:\n");
-    lerMatriz(matriz2, linhas2, colunas2);
 
     i = 0;
     while (i < linhas2) {
         j = 0;
         while (j < colunas2) {
-            printf("Elemento [%d][%d]: ", i, j);
+            println("Elemento [%d][%d]: ", i, j);
             scanf("%d", &matriz2[i][j]);
             j++;
         }
@@ -55,20 +54,20 @@ void main() {
             i++;
         }
 
-        printf("Soma das matrizes:\n");
+        println("Soma das matrizes:\n");
         
         i = 0;
         while (i < linhas1) {
             j = 0;
             while (j < colunas1) {
-                printf("%d ", soma[i][j]);
+                println("%d ", soma[i][j]);//ERRO
                 j++;
             }
-            printf("\n");
+            println("\n");
             i++;
         }
     } else {
-        printf("A soma das matrizes não é possível (dimensões incompatíveis).\n");
+        println("A soma das matrizes não é possível (dimensões incompatíveis).\n");
     }
 
     if (colunas1 == linhas2) {
@@ -86,18 +85,18 @@ void main() {
             }
             i++;
         }
-        printf("Produto das matrizes:\n");
+        println("Produto das matrizes:\n");
         i = 0;
         while (i < linhas1) {
             j = 0;
             while (j < colunas2) {
-                printf("%d ", produto[i][j]);
+                println("%d ", produto[i][j]);//ERRO
                 j++;
             }
-            printf("\n");
+            println("\n");
             i++;
         }
     } else {
-        printf("O produto das matrizes não é possível (dimensões incompatíveis).\n");
+        println("O produto das matrizes não é possível (dimensões incompatíveis).\n");
     }
 }

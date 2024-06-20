@@ -492,7 +492,7 @@ decl_array_atr: ID tamanho_array '=' expre_logica PV {
             }
             | ID tamanho_array '=' ponteiro PV {}
             | ID tamanho_array MOREISEQUAL expre_logica PV {
-                  /*vatt *tmp = peekS(scopeStack);
+                  vatt *tmp = peekS(scopeStack);
                   if (!lookup(variablesTable, tmp, $1)) {
                         yyerror(cat("error: nondeclaration of variable ", $1, "", "", ""));
                   } else {
@@ -508,10 +508,10 @@ decl_array_atr: ID tamanho_array '=' expre_logica PV {
                               yyerror(cat("Initialization of ", $1, " from type ", lookup_type($4, tmp), " is incompatible!"));
                         }
                        
-                  }  */
+                  }  
             }
             | ID tamanho_array LESSISEQUAL expre_logica PV {
-                   /* vatt *tmp = peekS(scopeStack);
+                  vatt *tmp = peekS(scopeStack);
                   if (!lookup(variablesTable, tmp, $1)) {
                         yyerror(cat("error: nondeclaration of variable ", $1, "", "", ""));
                   } else {
@@ -527,7 +527,7 @@ decl_array_atr: ID tamanho_array '=' expre_logica PV {
                               yyerror(cat("Initialization of ", $1, " from type ", lookup_type($4, tmp), " is incompatible!"));
                         }
                        
-                  }  */
+                  }  
             }
             | ID tamanho_array '=' chamada_funcao PV {}
             ;
