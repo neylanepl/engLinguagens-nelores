@@ -3,10 +3,10 @@ void main() {
     int linhas2;
     int colunas1;
     int colunas2;
-    int [100][100] matriz1;
-    int [100][100] matriz2; 
-    int [100][100] soma; 
-    int [100][100] produto;
+    float [100][100] matriz1;
+    float [100][100] matriz2; 
+    float [100][100] soma; 
+    float [100][100] produto;
     
     println("Digite o número de linhas da primeira matriz: ");
     scanf("%d", &linhas1);
@@ -19,10 +19,22 @@ void main() {
     while (i < linhas1) {
         j = 0;
         while (j < colunas1) {
-            println("Insira o elemento", i, j, ":");
-            scanf("%d", &matriz1[i][j]);
+            println("Insira o elemento ", i, j, ":");
+            scanf("%f", &matriz1[i][j]);
             j++;
         }
+        i++;
+    }
+
+    println("A matriz 1 lida é:");
+    i = 0;
+    while (i < linhas1) {
+        j = 0;
+        while (j < colunas1) {
+            print(matriz1[i][j], " ");
+            j++;
+        }
+        println(" ");
         i++;
     }
 
@@ -32,18 +44,31 @@ void main() {
     scanf("%d", &colunas2);
     println("Digite os elementos da segunda matriz:\n");
 
-    i = 0;
+   i = 0;
     while (i < linhas2) {
         j = 0;
         while (j < colunas2) {
-            println("Elemento [%d][%d]: ", i, j);
-            scanf("%d", &matriz2[i][j]);
+            println("Elemento: ", i, j, ":");
+            scanf("%f", &matriz2[i][j]);
             j++;
         }
         i++;
     }
 
-    if (linhas1 == linhas2 && colunas1 == colunas2) {
+    
+    println("A matriz 2 lida é:");
+    i = 0;
+    while (i < linhas2) {
+        j = 0;
+        while (j < colunas2) {
+            print(matriz2[i][j], " ");
+            j++;
+        }
+        println(" ");
+        i++;
+    }
+
+if (linhas1 == linhas2 && colunas1 == colunas2) {
         i = 0;
         while (i < linhas1) {
             j = 0;
@@ -55,27 +80,28 @@ void main() {
         }
 
         println("Soma das matrizes:\n");
-        
-        i = 0;
+
+          i = 0;
         while (i < linhas1) {
             j = 0;
             while (j < colunas1) {
-                println("%d ", soma[i][j]);//ERRO
+                print(soma[i][j], " ");
                 j++;
             }
-            println("\n");
+            println(" ");
             i++;
-        }
-    } else {
-        println("A soma das matrizes não é possível (dimensões incompatíveis).\n");
+        } 
+
+} else {
+        println("A soma das matrizes não é possível (dimensões incompatíveis).");
     }
 
-    if (colunas1 == linhas2) {
+if (colunas1 == linhas2) {
         i = 0;
         while (i < linhas1) {
             j = 0;
             while (j < colunas2) {
-                produto[i][j] = 0;
+                produto[i][j] = 0.0;
                 int k = 0;
                 while (k < colunas1) {
                     produto[i][j] += matriz1[i][k] * matriz2[k][j];
@@ -84,19 +110,21 @@ void main() {
                 j++;
             }
             i++;
-        }
+        } 
         println("Produto das matrizes:\n");
         i = 0;
         while (i < linhas1) {
             j = 0;
             while (j < colunas2) {
-                println("%d ", produto[i][j]);//ERRO
+                print(produto[i][j], " ");
                 j++;
             }
-            println("\n");
+            println(" ");
             i++;
         }
-    } else {
-        println("O produto das matrizes não é possível (dimensões incompatíveis).\n");
-    }
+
+}    
+
+
 }
+
