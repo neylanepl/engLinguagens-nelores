@@ -26,14 +26,13 @@
 "switch"            {return(SWITCH);}
 "case"              {return(CASE);}
 "break"             {return(BREAK);}
-"continue"          {return(CONTINUE);}
 "default"          {return(DEFAULT);}
 "if"                {return(IF);}
 "else"              {return(ELSE);}
 "return"            {return(RETURN);}
 "print"             {return(PRINT);}
 "println"           {return(PRINTLN);}
-"scanf"             {return(SCANF);}
+"input"             {return(SCANF);}
 "enum"              {return(ENUM);}
 "struct"            {return(STRUCT);}
 "malloc"            {return(MALLOC);}
