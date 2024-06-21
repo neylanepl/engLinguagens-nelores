@@ -4,6 +4,7 @@
 #include <string.h>
 #include "record.h"
 
+// IF (' expre_logica ')' '{'
 char *getIfID()
 {
 	char *outStr = (char *)malloc(sizeof(char) * 30);
@@ -11,6 +12,8 @@ char *getIfID()
 
 	return outStr;
 };
+
+// IF (' expre_logica ')' '{'
 char *incIfID()
 {
 	char *outStr = (char *)malloc(sizeof(char) * 30);
@@ -20,6 +23,7 @@ char *incIfID()
 	return outStr;
 };
 
+// WHILE (' expre_logica ')' '{'
 char *getWhileID()
 {
 	char *outStr = (char *)malloc(sizeof(char) * 30);
@@ -27,6 +31,8 @@ char *getWhileID()
 
 	return outStr;
 };
+
+// WHILE (' expre_logica ')' '{'
 char *incWhileID()
 {
 	char *outStr = (char *)malloc(sizeof(char) * 30);
@@ -36,7 +42,8 @@ char *incWhileID()
 	return outStr;
 };
 
-void dec1(record **ss, record **s2, char **s4)
+// TYPE ID;
+void declaracaoVariavelTipada(record **ss, record **s2, char **s4)
 {
 	char *str;
 
@@ -57,8 +64,8 @@ void dec1(record **ss, record **s2, char **s4)
 	freeRecord(*s2);
 	free(str);
 }
-
-void init1(record **ss, record **id, char **type, record **expr)
+// TYPE ID = expressao;
+void atribuicaoVariavelTipada(record **ss, record **id, char **type, record **expr)
 {
 	char *str;
 
@@ -203,7 +210,7 @@ void ifElseBlock(record **ss, record **exp, record **ifCommands, record **elseCo
 }
 
 // iteracao : WHILE '(' expre_logica_iterador ')' '{' bloco '}'
-void ctrl_b3(record **ss, record **exp, record **commands, char *id)
+void iteradorWhile(record **ss, record **exp, record **commands, char *id)
 {
 	char *str1 = cat(id, ":\nif (!(", (*exp)->code, cat(")) goto end", id, ";\n", "", ""), "");
 	char *str2 = cat(str1, (*commands)->code, "goto ", id, cat(";\nend", id, ":\n", "", ""));
@@ -271,8 +278,8 @@ void scanfPalavraIdeEndereco(record **ss, char **s3, char **s5)
 	free(*s5);
 }
 
-// | expre_arit X termo
-void ex2(record **ss, record **s1, char *s2, record **s3, char *type)
+//  expre_arit operador expressão aritmetica
+void expressaoAritmetica(record **ss, record **s1, char *s2, record **s3, char *type)
 {
 	char *str;
 	if (strcmp(s2, "^") == 0)
@@ -361,7 +368,7 @@ void arraySemAtribuicao(record **ss, record **s2, record **s3, char *type)
 	freeRecord(*s3);
 	free(str);
 }
-// saida : SCANF '(' WORD ',' ID ')' PV
+// saida : SCANF '(' WORD ',' endereco acesso_array ')' PV
 void scanfPalavraEnderecoAcessoArray(record **ss, char **s3, char **s4, char **s5)
 {
 	char *str = cat("scanf(", *s3, ",", (*s4), (*s5));
@@ -372,7 +379,7 @@ void scanfPalavraEnderecoAcessoArray(record **ss, char **s3, char **s4, char **s
 	free(*s5);
 	free(*s4);
 }
-// saida : SCANF '(' WORD ',' ID ')' PV
+// saida : SCANF '(' WORD ',' ID acesso_array ')' PV
 void scanfPalavraAcessoArray(record **ss, char **s3, char **s5, char **s6)
 {
 	char *str = cat("scanf(", *s3, ",", (*s5), (*s6));
@@ -411,11 +418,11 @@ void atribuicaoArrayMinusEqualVariavel(record **ss, record **s1, record **s2, re
 	freeRecord(*s2);
 	free(str);
 }
-
-void acessoArrayID(record **ss, char **s1, char **s2, char * type )
+// matriz[a][b]
+void acessoArrayID(record **ss, char **s1, char **s2, char *type)
 {
 	char *str = cat(*s1, (*s2), "", "", "");
-	char * token1 = strtok(strdup(type), " ");
+	char *token1 = strtok(strdup(type), " ");
 	*ss = createRecord(str, token1);
 	free(str);
 	free(*s1);
