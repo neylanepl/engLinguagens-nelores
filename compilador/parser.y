@@ -24,8 +24,6 @@ int countFuncCallParams;
 int countFuncArgs;
 void insertFunctionParam(vatt *, char *, char *);
 char* lookup_type(record *, vatt *temp);
-void enterScope(char *name, char *type);
-void leaveScope(record *);
 
 %}
 
@@ -64,7 +62,7 @@ void leaveScope(record *);
 %type <rec> ops main args subprogs subprog decl_funcao decl_procedimento bloco comando args_com_vazio alocacao_memoria liberacao_memoria
 %type <rec> condicional else_block retorno iteracao selecao casos caso elementos_array base casoDefault listaCasos
 %type <rec> decl_array tamanho_array definicao_struct lista_campos atribuicao_struct expressao_tamanho_array elemento_matriz definicao_enum lista_enum decl_array_atr_tipada decl_array_atr
-%type <rec> entrada expre_logica_iterador saida saida_args saida_args_aux comentario_selecao comentario decl_var_atr_tipada decl_var_atr decl_var_ponteiro decl_var_const decl_var
+%type <rec> entrada expre_logica_iterador saida saida_args saida_args_aux comentario_selecao comentario decl_var_atr_tipada decl_var_atr decl_var_ponteiro decl_var_const decl_var entrada_atribuicao
 %type <rec> endereco tipo_ponteiro stmts base_case_array expressao_for_inicial parametros_rec parametro acesso_array parametro_com_vazio tipo tipo_array
 
 %start prog
@@ -72,7 +70,7 @@ void leaveScope(record *);
 %%
 prog : {pushS(scopeStack, "global", "");} stmts subprogs main {
             popS(scopeStack);
-            fprintf(yyout, "#include <stdlib.h>\n#include <stdio.h>\n#include <math.h>\n#include <string.h>\nstatic char INPUT_BUFFER[%s];\nstatic char INPUT_BUFFER_CLEAR;%s\n%s\n%s", intToStr(INPUT_BUFFER_SIZE), $2->code, $3->code, $4->code);
+            fprintf(yyout, "#include <stdio.h>\n#include <math.h>\n%s\n%s\n%s", $2->code, $3->code, $4->code);
             freeRecord($2);
             freeRecord($3);
             freeRecord($4);
@@ -92,12 +90,11 @@ stmts: {$$ = createRecord("","");}
       | definicao_struct stmts {}
       ;
 
-main : VOID MAIN '(' args_com_vazio ')' '{' {enterScope("main", "");} bloco '}' {
+main : VOID MAIN '(' args_com_vazio ')' '{' {pushS(scopeStack, "main", "");} bloco '}' {popS(scopeStack);}{
       char *s = cat("int main(", $4->code, "){\n", $8->code,"}");
       freeRecord($4);
       freeRecord($8);
       $$ = createRecord(s, "");
-      leaveScope($$);
       free(s);
 };
 
@@ -112,23 +109,20 @@ ponteiro: '*' ID {}
           ;
 
 endereco: '&' ID {
-            vatt *tmp = peekS(scopeStack);
-            SymbolInfos *info = lookup(variablesTable, tmp, $2);
-            if (info == NULL) {
-                  yyerror(cat("Cannot use variable ", $2, " before initialization!", "", ""));
-            } else {
-                  char address[100];
-                  snprintf(address, sizeof(address), "&%s", $2);
-                  
-                  char addressType[100];
-                  snprintf(addressType, sizeof(addressType), "%s*", info->type);
-                  $$ = createRecord(address, addressType);
-            }
-      }
-      /* | '&' ID '.' ID {
-            
-      } */
-      ;
+      vatt *tmp = peekS(scopeStack);
+      SymbolInfos *info = lookup(variablesTable, tmp, $2);
+      if (info == NULL) {
+        yyerror(cat("Cannot use variable ", $2, " before initialization!", "", ""));
+      } else {
+        char address[100];
+        snprintf(address, sizeof(address), "&%s", $2);
+        
+        char addressType[100];
+        snprintf(addressType, sizeof(addressType), "%s*", info->type);
+        $$ = createRecord(address, addressType);
+    }
+}
+          ;
 
 tipo_array: TYPE tamanho_array {
                   char tamanhoArray[100];
@@ -184,7 +178,7 @@ subprog : decl_funcao           {$$ = $1;}
       | decl_procedimento        {$$ = $1;}                                           
       ;
 
-decl_funcao : FUNCTION tipo ID {enterScope($3, "");} '(' args_com_vazio ')' '{' bloco '}'       {
+decl_funcao : FUNCTION tipo ID {pushS(scopeStack, $3, "");} '(' args_com_vazio ')' '{' bloco '}'       {
                         vatt *tmp = peekS(scopeStack);
                         if (lookup(variablesTable, tmp, $3 )) {
                               yyerror(cat("error: redeclaration of function ", $3, "", "", ""));
@@ -192,20 +186,20 @@ decl_funcao : FUNCTION tipo ID {enterScope($3, "");} '(' args_com_vazio ')' '{' 
                               insert(functionsTable, cat(tmp->subp, "#", $3,"",""),"return",$2->code);
                               insertFunction(funcInfo, cat(tmp->subp, "#", $3,"",""), "return", $2->code, countFuncArgs);
                               declaracaoFuncao(&$$, &$3, &$6, &$2->code, &$9);
-                              leaveScope($$);
+                              popS(scopeStack);
                               countFuncArgs = 0;
                         }  
 }           
             ;
 
-decl_procedimento : PROCEDURE ID {enterScope($2, "");} '(' args_com_vazio ')' '{' bloco '}'  {
+decl_procedimento : PROCEDURE ID {pushS(scopeStack, $2, "");} '(' args_com_vazio ')' '{' bloco '}'  {
                         vatt *tmp = peekS(scopeStack);
                         if (lookup(variablesTable, tmp, $2)) {
                               yyerror(cat("error: redeclaration of procedure ", $2, "", "", ""));
                         } else {
                               insert(functionsTable, cat(tmp->subp, "#", $2,"",""),"r","void");
                               declaracaoProcedimento(&$$, &$2, &$5, &$8);
-                              leaveScope($$);
+                              popS(scopeStack);
                         }  
 }                   
                   ;
@@ -293,12 +287,12 @@ lista_campos : decl_vars {}
              | decl_vars lista_campos {}
              ;
 
-iteracao : WHILE '(' expre_logica_iterador ')' '{' {enterScope(cat("WHILE_",getWhileID(),"","",""), ""); incWhileID();} bloco '}' {
+iteracao : WHILE '(' expre_logica_iterador ')' '{' {pushS(scopeStack, cat("WHILE_",getWhileID(),"","",""), ""); incWhileID();} bloco '}' {
             vatt *tmp = peekS(scopeStack);
             if (strcmp(lookup_type($3, tmp), "bool") == 0){
                   vatt *tmp = peekS(scopeStack);
                   ctrl_b3(&$$, &$3, &$7, cat(tmp->subp,"","","",""));
-                  leaveScope($$);
+                  popS(scopeStack);
             } else {
                   yyerror(cat("invalid type of expression ",$3->code," (expected bool, received ",lookup_type($3, tmp),")"));
             }
@@ -344,7 +338,7 @@ retorno : RETURN PV  {}
         ;
 
 condicional : IF '(' expre_logica_iterador ')' '{' {
-            enterScope(cat("IF_", getIfID(), "", "", ""), "");
+            pushS(scopeStack, cat("IF_", getIfID(), "", "", ""), "");
             incIfID();
       } bloco '}' else_block {
             vatt *tmp = peekS(scopeStack);
@@ -358,7 +352,7 @@ condicional : IF '(' expre_logica_iterador ')' '{' {
             } else {
                   yyerror(cat("invalid type of expression ",$3->code," (expected bool, received ",lookup_type($3, tmp),")"));
             }
-            leaveScope($$);
+            popS(scopeStack);
       }
 ;
 
@@ -367,7 +361,7 @@ else_block : {$$ = createRecord("", "");}
       | ELSE condicional {$$ = $2;}
       ;
 
-chamada_funcao : ID {enterScope($1, "");} '(' parametro_com_vazio ')' {
+chamada_funcao : ID {pushS(scopeStack, $1, "");} '(' parametro_com_vazio ')' {
             vatt *tmp = peekS(scopeStack);
             SymbolInfos *foundFuncReturn = lookup(functionsTable, tmp, $1);
             if(foundFuncReturn){
@@ -377,7 +371,7 @@ chamada_funcao : ID {enterScope($1, "");} '(' parametro_com_vazio ')' {
                         strcpy(funcType, foundFuncReturn->type);
                         record *rcdParam = createRecord($4->code, "");
                         chamadaParamFuncao(&$$, &$1, &rcdParam, funcType);
-                        leaveScope($$);
+                        popS(scopeStack);
                         countFuncCallParams = 0;
                   }
                   else{
@@ -401,51 +395,19 @@ alocacao_memoria_parametros : expre_arit  {}
 liberacao_memoria : FREE '(' ID ')' PV {}
                ;
 
-entrada : SCANF '(' endereco ')' PV {
-            vatt *tmp = peekS(scopeStack);
-            char *addressType = lookup_type($3, tmp);
-            char *type = strtok(addressType, "*");
-            
-            char *str;
-            if (!strcmp(type, "int")) {
-                  str = cat("scanf(\"%d\", ", $3->code, ");\n", "", "");
-            } else if (!strcmp(type, "float")) {
-                  str = cat("scanf(\"%f\", ", $3->code, ");\n", "", "");
-            } else if (!strcmp(type, "string")) {
-                  str = cat("scanf(\"%", intToStr(INPUT_BUFFER_SIZE - 1), "[^\\n]\", INPUT_BUFFER);\n", "", "");
-                  char *variable = strtok($3->code, "&");
-                  str = cat(str, variable, " = (char *)malloc(strlen(INPUT_BUFFER) + 1);\n", "", "");
-                  str = cat(str, "snprintf(", variable, ", strlen(INPUT_BUFFER) + 1, \"%s\", INPUT_BUFFER);\n", "");
-                  str = cat(str, "while ((INPUT_BUFFER_CLEAR = getchar()) != '\\n' && INPUT_BUFFER_CLEAR != EOF);\n", "", "", "");
-            }
-
-            $$ = createRecord(str, "");
-            free(str);
-            free(addressType);
+entrada : SCANF '(' WORD ',' ID ')' PV {
+            scanfPalavraIdeEndereco(&$$, &$3, &$5);
       }
-      | SCANF '(' endereco acesso_array ')' PV {
-            vatt *tmp = peekS(scopeStack);
-            char *addressType = lookup_type($3, tmp);
-            char *arrayType = strtok(addressType, "*");
-            char *type = strtok(arrayType, " ");
-            
-            char *str;
-            if (!strcmp(type, "int")) {
-                  str = cat("scanf(\"%d\", ", $3->code, $4->code, ");\n", "");
-            } else if (!strcmp(type, "float")) {
-                  str = cat("scanf(\"%f\", ", $3->code, $4->code, ");\n", "");
-            } else if (!strcmp(type, "string")) {
-                  str = cat("scanf(\"%", intToStr(INPUT_BUFFER_SIZE - 1), "[^\\n]\", INPUT_BUFFER);\n", "", "");
-                  char *variable = strtok($3->code, "&");
-                  str = cat(str, variable, $4->code, " = (char *)malloc(strlen(INPUT_BUFFER) + 1);\n", "");
-                  str = cat(str, "snprintf(", variable, $4->code, ", strlen(INPUT_BUFFER) + 1, \"%s\", INPUT_BUFFER);\n");
-                  str = cat(str, "while ((INPUT_BUFFER_CLEAR = getchar()) != '\\n' && INPUT_BUFFER_CLEAR != EOF);\n", "", "", "");
-            }
-
-            $$ = createRecord(str, "");
-            free(str);
-            free(addressType);
+      | SCANF '(' WORD ',' ID acesso_array ')' PV {
+            scanfPalavraEnderecoAcessoArray(&$$, &$3, &$5, &$6->code);
       }
+      | SCANF '(' WORD ',' endereco ')' PV {
+            scanfPalavraIdeEndereco(&$$, &$3, &$5->code);
+      }
+      | SCANF '(' WORD ',' endereco acesso_array ')' PV {
+            scanfPalavraEnderecoAcessoArray(&$$, &$3,  &$5->code, &$6->code);
+      }
+      | entrada_atribuicao {}
       ;
 
 saida : PRINT '(' saida_args ')' PV {$$ = $3;}
@@ -468,7 +430,7 @@ saida_args : expre_arit saida_args_aux {
             } else if (!strcmp(type, "bool")) {
                   str1 = cat("printf((", $1->code, ") ? \"true\" : \"false\");\n", "", "");
             } else if (!strcmp(type, "string")) {
-                  str1 = cat("printf(\"%s\", ", $1->code, ");\n", "", "");
+                  str1 = cat("printf(", $1->code,");\n", "", "");
             }
 
             char *str2 = cat(str1, $2->code, "", "", "");
@@ -480,6 +442,12 @@ saida_args : expre_arit saida_args_aux {
 
 saida_args_aux : {$$ = createRecord("", "");}
       | ',' saida_args {$$ = $2;}
+      ;
+
+entrada_atribuicao: TYPE ID '=' entrada {}
+      | FINAL TYPE ID '=' entrada {}
+      | CONST TYPE ID '=' entrada {}
+      | ID '=' entrada {}
       ;
 
 decl_vars : decl_variavel  {$$ = $1;}
@@ -1127,56 +1095,4 @@ char* lookup_type(record *r, vatt *tmp) {
       }
 }
 
-void enterScope(char *name, char *type) {
-      pushS(scopeStack, name, type);
-}
-
-void leaveScope(record *ss) {
-      vatt *tmp = peekS(scopeStack);
-      char *str = "";
-      
-      for (int i = 0; i < variablesTable->size; i++) {
-            listNode *current = variablesTable->symbols[i];
-            while (current != NULL)
-            {
-                  char *name = strdup(current->symbol->key);
-                  char *showName = strdup(name);
-                  char *subp = strtok(name, "#");
-
-                  if (!strcmp(subp, tmp->subp)) {
-                        char *type = strdup(current->symbol->type);
-                        if (!strcmp(type, "string")) {
-                              str = cat(str, "free(", current->symbol->name, ");\n", ""); 
-                        } else {
-                              char *splittedType = strtok(type, " ");
-                              if (!strcmp(splittedType, "string")) {
-                                    char *arrayType = strtok(NULL, " ");
-                                    for (int i = 0; i < atoi(strtok(arrayType, "[")); i++) {
-                                          str = cat(str, "free(", current->symbol->name, "[", cat(intToStr(i), "]);\n", "", "", ""));
-                                    }
-                              }
-                        }
-                        
-                        free(type);
-                  }
-
-                  free(name); 
-                  current = current->nextNode;
-            }
-      }
-
-      char *oldCode = strdup(ss->code);
-
-      char *last_char = &oldCode[strlen(oldCode) - 1];
-
-      if (*last_char != '}') {
-            ss->code = cat(oldCode, str, "", "", "");
-      } else {
-            *last_char = '\0';
-            ss->code = cat(oldCode, str, "}\n", "", "");
-      }
-      
-      free(oldCode);
-      popS(scopeStack);
-}
 

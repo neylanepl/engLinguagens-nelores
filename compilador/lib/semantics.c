@@ -4,13 +4,6 @@
 #include <string.h>
 #include "record.h"
 
-char *intToStr(int i) {
-	char *outStr = (char *)malloc(sizeof(char) * 30);
-	sprintf(outStr, "%d", i);
-
-	return outStr;
-}
-
 char *getIfID()
 {
 	char *outStr = (char *)malloc(sizeof(char) * 30);
@@ -173,7 +166,7 @@ void declaracaoFuncao(record **ss, char **s2, record **s4, char **s7, record **s
 void declaracaoProcedimento(record **ss, char **s2, record **s4, record **s7)
 {
 	char *str1 = cat("void ", *s2, "(", (*s4)->code, "");
-	char *str2 = cat(str1, "){\n", (*s7)->code, "}", "");
+	char *str2 = cat(str1, "){\n", (*s7)->code, "}\n", "");
 	*ss = createRecord(str2, "void");
 	freeRecord(*s4);
 	freeRecord(*s7);
@@ -268,6 +261,16 @@ void argumentoTipoIdRecusao(record **ss, char **s1, record **s3, record **s5)
 	free(str);
 };
 
+// saida : SCANF '(' WORD ',' ID ')' PV
+void scanfPalavraIdeEndereco(record **ss, char **s3, char **s5)
+{
+	char *str = cat("scanf(", *s3, ",", (*s5), ");\n");
+	*ss = createRecord(str, "");
+	free(str);
+	free(*s3);
+	free(*s5);
+}
+
 // | expre_arit X termo
 void ex2(record **ss, record **s1, char *s2, record **s3, char *type)
 {
@@ -357,6 +360,27 @@ void arraySemAtribuicao(record **ss, record **s2, record **s3, char *type)
 	*ss = createRecord(str, "");
 	freeRecord(*s3);
 	free(str);
+}
+// saida : SCANF '(' WORD ',' ID ')' PV
+void scanfPalavraEnderecoAcessoArray(record **ss, char **s3, char **s4, char **s5)
+{
+	char *str = cat("scanf(", *s3, ",", (*s4), (*s5));
+	str = cat(str, ");\n", "", "", "");
+	*ss = createRecord(str, "");
+	free(str);
+	free(*s3);
+	free(*s5);
+	free(*s4);
+}
+// saida : SCANF '(' WORD ',' ID ')' PV
+void scanfPalavraAcessoArray(record **ss, char **s3, char **s5, char **s6)
+{
+	char *str = cat("scanf(", *s3, ",", (*s5), (*s6));
+	str = cat(str, ");\n", "", "", "");
+	*ss = createRecord(str, "");
+	free(str);
+	free(*s3);
+	free(*s5);
 }
 
 // b[5][1] = expressao;
