@@ -40,8 +40,8 @@ char* lookup_type(record *, vatt *temp);
 %token <fValue> NUMBERFLOAT
 %token <iValue> NUMBER
 %token <sValue> TYPE
-%token WHILE FOR IF ELSE CONST FINAL ENUM  MAIN VOID EXCEPTION
-%token THROWS TRY CATCH FINALLY FUNCTION SWITCH BREAK CASE CONTINUE DEFAULT
+%token WHILE IF ELSE ENUM  MAIN VOID
+%token FUNCTION SWITCH BREAK CASE CONTINUE DEFAULT
 %token RETURN PRINT PRINTLN SCANF STRUCT MALLOC OPENFILE READLINE
 %token WRITEFILE CLOSEFILE FREE SIZEOF CONCAT LENGHT SPLIT INCLUDES
 %token REPLACE PUSH POP INDEXOF REVERSE SLICE AND OR SINGLELINECOMMENT 
@@ -62,8 +62,8 @@ char* lookup_type(record *, vatt *temp);
 %type <rec> ops main args subprogs subprog decl_funcao decl_procedimento bloco comando args_com_vazio alocacao_memoria liberacao_memoria
 %type <rec> condicional else_block retorno iteracao selecao casos caso elementos_array base casoDefault listaCasos
 %type <rec> decl_array tamanho_array definicao_struct lista_campos atribuicao_struct expressao_tamanho_array elemento_matriz definicao_enum lista_enum decl_array_atr_tipada decl_array_atr
-%type <rec> entrada expre_logica_iterador saida saida_args saida_args_aux comentario_selecao comentario decl_var_atr_tipada decl_var_atr decl_var_ponteiro decl_var_const decl_var entrada_atribuicao
-%type <rec> endereco tipo_ponteiro stmts base_case_array expressao_for_inicial parametros_rec parametro acesso_array parametro_com_vazio tipo tipo_array
+%type <rec> entrada expre_logica_iterador saida saida_args saida_args_aux comentario_selecao comentario decl_var_atr_tipada decl_var_atr decl_var_ponteiro decl_var entrada_atribuicao
+%type <rec> endereco tipo_ponteiro stmts base_case_array  parametros_rec parametro acesso_array parametro_com_vazio tipo tipo_array
 
 %start prog
 
@@ -304,18 +304,9 @@ iteracao : WHILE '(' expre_logica_iterador ')' '{' {pushS(scopeStack, cat("WHILE
                   exit(0);
             }
       }
-	     | FOR '(' expressao_for_inicial expre_logica_iterador PV expressao_for_final ')' '{' bloco '}' {}
            ;
 
 expre_logica_iterador: expre_logica {$$ = $1;}
-                     ;
-
-expressao_for_inicial : decl_var_atr_tipada {}
-                      | decl_var_atr {}
-                      | decl_var {}
-                      ;
-
-expressao_for_final : expre_arit {}
                     ;
 
 selecao : SWITCH '(' ID ')' '{' comentario_selecao  casos '}' {}
@@ -454,8 +445,6 @@ saida_args_aux : {$$ = createRecord("", "");}
       ;
 
 entrada_atribuicao: TYPE ID '=' entrada {}
-      | FINAL TYPE ID '=' entrada {}
-      | CONST TYPE ID '=' entrada {}
       | ID '=' entrada {}
       ;
 
@@ -469,8 +458,6 @@ decl_array : tipo_array ID '=' '[' elementos_array ']' PV {
             | ID '=' '['  elementos_array  ']' PV {
                  
             }
-            | CONST tipo_array ID '=' '[' elementos_array ']' PV {}
-            | FINAL tipo_array ID '=' '[' elementos_array ']' PV {}
             | tipo_array ID PV {
                  vatt *tmp = peekS(scopeStack);
                   if (lookup(variablesTable, tmp, $2)) {
@@ -619,7 +606,6 @@ acesso_array: '[' expre_arit ']'  {
 decl_variavel : decl_var_atr_tipada {$$ = $1;}
               | decl_var_atr {$$ = $1;}
               | decl_var_ponteiro {$$ = $1;}
-              | decl_var_const {$$ = $1;}
               | decl_var {$$ = $1;}
               ;
 
@@ -725,9 +711,6 @@ decl_var: TYPE ID PV {
       declaracaoVariavelTipada(&$$, &rcdIdDeclVar, &$1);
 };
       
-decl_var_const: CONST TYPE ID  '=' expre_logica PV {}
-              | FINAL TYPE ID  '=' expre_logica PV {}
-              ;
 
 decl_var_ponteiro : ponteiro '=' ID PV {
       

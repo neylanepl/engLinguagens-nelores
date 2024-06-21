@@ -14,23 +14,15 @@
                     return TYPE;}
 "float"             {yylval.sValue = strdup("float"); 
                     return TYPE;}
-"const"             {return(CONST);}
-"final"             {return(FINAL);}
 "bool"              {yylval.sValue = strdup("bool"); 
                     return TYPE;}
 "string"            {yylval.sValue = strdup("string"); 
                     return TYPE;}
-"exception"         {return(EXCEPTION);}
-"throws"            {return(THROWS);}
 "true"              {return(TRUE);}
 "false"             {return(FALSE);}
-"try"               {return(TRY);}
-"catch"             {return(CATCH);}
-"finally"           {return(FINALLY);}
 "function"          {return(FUNCTION);}
 "procedure"         {return(PROCEDURE);}
 "while"             {return(WHILE);}
-"for"               {return(FOR);}
 "switch"            {return(SWITCH);}
 "case"              {return(CASE);}
 "break"             {return(BREAK);}
