@@ -7,7 +7,7 @@ function int analiseDeIntervalos() {
 
     while (num > 0) {
         print("Digite um número: ");
-        scanf("%d", &num);
+        scanf(&num);
 
         if (num >= 0 && num <= 25) {
             count025 = count025 +1;
