@@ -230,7 +230,7 @@ void argumentoTipoId(record **ss, char **s1, record **s3)
 	{
 		str = cat("char *", " ", (*s1), "", "");
 	}
-	else if (0 == strcmp((*s3)->code, "boolean"))
+	else if (0 == strcmp((*s3)->code, "bool"))
 	{
 		str = cat("int", " ", (*s1), "", "");
 	}
@@ -253,7 +253,7 @@ void argumentoTipoIdRecusao(record **ss, char **s1, record **s3, record **s5)
 	{
 		str = cat("char *", " ", (*s1), ", ", (*s5)->code);
 	}
-	else if (0 == strcmp((*s3)->code, "boolean"))
+	else if (0 == strcmp((*s3)->code, "bool"))
 	{
 		str = cat("int", " ", (*s1), ", ", (*s5)->code);
 	}

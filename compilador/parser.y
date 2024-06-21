@@ -49,7 +49,6 @@ char* lookup_type(record *, vatt *temp);
 %token PROCEDURE TRUE FALSE DECREMENT INCREMENT MOREISEQUAL LESSISEQUAL EQUAL  COMMENT
 %left OR 
 %left AND 
-%left ANDCIRCUIT ORCIRCUIT
 %left LESSTHENEQ MORETHENEQ '<' '>' ISEQUAL ISDIFFERENT
 %left '+' '-'
 %left '*' '/' '%'
@@ -251,7 +250,27 @@ bloco : {$$ = createRecord("","");}
                   free(typeVariable);
             }  
       }
-      | ops ID PV bloco {}   
+      | ops ID PV bloco {
+            vatt *tmp = peekS(scopeStack);
+            if (!lookup(variablesTable, tmp, $2)) {
+                  yyerror(cat("Erro: variavel não declarada ", $2, "", "", ""));
+                  exit(0);
+            } else {
+                  record *rcdAtribuicao = createRecord($2, "");    
+                  char *typeVariable = lookup_variable_type(variablesTable, tmp, $2);  
+                              
+                  if(strcmp(typeVariable, "int") == 0 || strcmp(typeVariable, "float") == 0 ){       
+                        char *declIncremento = cat($1->code, rcdAtribuicao->code, ";",$4->code,"\n");
+                        freeRecord($1);
+                        $$ = createRecord(declIncremento, "");
+                        free(declIncremento);
+                  } else {
+                        yyerror(cat("Erro: Inicialização de ", $2, " from type ", typeVariable, " não é compatível!"));
+                        exit(0);
+                  }
+                  free(typeVariable);
+            }  
+      }   
       | comentario bloco {}
       | liberacao_memoria {}            
       ;
@@ -771,9 +790,7 @@ parametro_com_vazio: {$$ = createRecord("","");}
                     | parametros_rec {$$ = $1;}
             ;
 
-expre_logica : expre_logica ANDCIRCUIT expre_logica {} 
-             | expre_logica ORCIRCUIT expre_logica {} 
-             | expre_logica AND expre_logica {
+expre_logica : expre_logica AND expre_logica {
                   vatt *tmp = peekS(scopeStack);
                   int intfloat = !(strcmp(lookup_type($1, tmp), "int") || strcmp(lookup_type($3, tmp), "float"));
                   int floatint = !(strcmp(lookup_type($1, tmp), "float") || strcmp(lookup_type($3, tmp), "int"));

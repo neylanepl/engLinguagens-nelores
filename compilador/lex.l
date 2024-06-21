@@ -59,8 +59,6 @@
 "--"                {return(DECREMENT);}
 "="                 {return(yytext[0]);}
 ","                 {return(yytext[0]);}
-"&&c"               {return(ANDCIRCUIT);}
-"||c"               {return(ORCIRCUIT);}
 "&"                 {return(yytext[0]);}
 "?"                 {return(yytext[0]);}
 ":"                 {return(yytext[0]);}
