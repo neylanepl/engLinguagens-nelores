@@ -55,6 +55,13 @@ vatt *peekS(struct stack *pt)
     }
 }
 
+vatt *peekBelowTop(struct stack *pt) {
+    if (pt->top < 1) { // Verifica se há pelo menos dois elementos na pilha
+        return NULL;
+    }
+    return pt->items->next; // Retorna o elemento logo abaixo do topo
+}
+
 vatt *popS(struct stack *pt){
     if (isEmpty(pt)){
         return NULL;
