@@ -378,7 +378,6 @@ retorno : RETURN PV  {$$ = createRecord("return;\n", "");}
 condicional : IF '(' expre_logica_iterador ')' '{' {
             pushS(scopeStack, cat("IF_", getIfID(), "", "", ""), "");
             incIfID();
-            popS(scopeStack);
       } bloco '}' else_block {
             vatt *tmp = peekS(scopeStack);
 
@@ -392,6 +391,7 @@ condicional : IF '(' expre_logica_iterador ')' '{' {
                   yyerror(cat("Erro: tipo da expressão inválido ",$3->code," (esperava bool, recebido ",lookup_type($3, tmp),")"));
                   exit(0);
             }
+            popS(scopeStack);
       }
 ;
 
