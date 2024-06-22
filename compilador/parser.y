@@ -179,12 +179,12 @@ subprog : decl_funcao           {$$ = $1;}
       ;
 
 decl_funcao : FUNCTION tipo ID {pushS(scopeStack, $3, "");} '(' args_com_vazio ')' {
-      vatt *tmp = peekS(scopeStack);
+      vatt *tmp = peekBelowTop(scopeStack);
        if (lookup(functionsTable, tmp, $3 )) {
             yyerror(cat("error: redeclaration of function ", $3, "", "", ""));
       } else {
             insert(functionsTable, cat(tmp->subp, "#", $3,"",""),"return",$2->code);
-            insertFunction(funcInfo, cat(tmp->subp, "#", $3,"",""), "return", $2->code, countFuncArgs);
+            insertFunction(funcInfo, cat(peekS(scopeStack)->subp, "#", $3,"",""), "return", $2->code, countFuncArgs);
       }
 } '{' bloco '}'       {                       
       declaracaoFuncao(&$$, &$3, &$6, &$2->code, &$10);
@@ -362,6 +362,7 @@ retorno : RETURN PV  {$$ = createRecord("return;\n", "");}
 condicional : IF '(' expre_logica_iterador ')' '{' {
             pushS(scopeStack, cat("IF_", getIfID(), "", "", ""), "");
             incIfID();
+            popS(scopeStack);
       } bloco '}' else_block {
             vatt *tmp = peekS(scopeStack);
 
@@ -374,7 +375,6 @@ condicional : IF '(' expre_logica_iterador ')' '{' {
             } else {
                   yyerror(cat("invalid type of expression ",$3->code," (expected bool, received ",lookup_type($3, tmp),")"));
             }
-            popS(scopeStack);
       }
 ;
 
@@ -397,7 +397,6 @@ chamada_funcao : ID {pushS(scopeStack, $1, "");} '(' parametro_com_vazio ')' {
                         countFuncCallParams = 0;
                   }
                   else{
-                        char str[20];
                         fprintf(stderr, "Erro: Função '%s' esperava %d argumentos, mas %d foram passados.\n", $1, funcInfoaux->numParams, countFuncCallParams);
                         exit(1);
                   }

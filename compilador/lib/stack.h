@@ -18,6 +18,7 @@ int size(struct stack *pt);
 int isEmpty(struct stack *pt);
 vatt *pushS(struct stack *pt, char *, char *);
 vatt *peekS(struct stack *pt);
+vatt* peekBelowTop(struct stack *pt);
 vatt *popS(struct stack *pt);
 
 #endif
