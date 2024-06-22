@@ -12,11 +12,11 @@ y.tab.c: parser.y
 clean:
 	rm -rf lex.yy.c y.tab.* compiler output.txt y.output teste.c
 
-run_example: compiler
-	./compiler prob teste.c -t
+run: compiler
+	./compiler $(prob) teste.c -t
 
-generatec: run_example
+generatec: run
 	gcc -o test teste.c -lm
 	./test
 
-recompile: clean compiler run_example generatec
+all: clean compiler run generatec
