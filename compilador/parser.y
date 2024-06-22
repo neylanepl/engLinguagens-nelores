@@ -41,9 +41,8 @@ char* lookup_type(record *, vatt *temp);
 %token <iValue> NUMBER
 %token <sValue> TYPE
 %token WHILE IF ELSE MAIN VOID
-%token FUNCTION BREAK
-%token RETURN PRINT PRINTLN SCANF STRUCT MALLOC
-%token FREE
+%token FUNCTION
+%token RETURN PRINT PRINTLN SCANF
 %token AND OR  
 %token LESSTHENEQ MORETHENEQ ISEQUAL ISDIFFERENT PV
 %token PROCEDURE TRUE FALSE DECREMENT INCREMENT MOREISEQUAL LESSISEQUAL
@@ -53,16 +52,15 @@ char* lookup_type(record *, vatt *temp);
 %left '+' '-'
 %left '*' '/' '%'
 %right '^'
-%right '!'
 %nonassoc UMINUS
 
 
 %type <rec> decl_vars decl_variavel expre_logica expre_arit termo fator chamada_funcao 
-%type <rec> ops main args subprogs subprog decl_funcao decl_procedimento bloco comando args_com_vazio alocacao_memoria liberacao_memoria
+%type <rec> ops main args subprogs subprog decl_funcao decl_procedimento bloco comando args_com_vazio 
 %type <rec> condicional else_block retorno iteracao elementos_array base
-%type <rec> decl_array tamanho_array definicao_struct lista_campos atribuicao_struct expressao_tamanho_array elemento_matriz decl_array_atr_tipada decl_array_atr
-%type <rec> entrada expre_logica_iterador saida saida_args saida_args_aux decl_var_atr_tipada decl_var_atr decl_var_ponteiro decl_var entrada_atribuicao
-%type <rec> endereco tipo_ponteiro stmts base_case_array  parametros_rec parametro acesso_array parametro_com_vazio tipo tipo_array
+%type <rec> decl_array tamanho_array expressao_tamanho_array elemento_matriz decl_array_atr_tipada decl_array_atr
+%type <rec> entrada expre_logica_iterador saida saida_args saida_args_aux decl_var_atr_tipada decl_var_atr decl_var
+%type <rec> endereco stmts base_case_array  parametros_rec parametro acesso_array parametro_com_vazio tipo tipo_array
 
 %start prog
 
@@ -84,7 +82,6 @@ stmts: {$$ = createRecord("","");}
             $$ = createRecord(s, "");
             free(s);
       }
-      | definicao_struct stmts {}
       ;
 
 main : VOID MAIN '(' args_com_vazio ')' '{' {pushS(scopeStack, "main", "");} bloco '}' {popS(scopeStack);}{
@@ -94,16 +91,6 @@ main : VOID MAIN '(' args_com_vazio ')' '{' {pushS(scopeStack, "main", "");} blo
       $$ = createRecord(s, "");
       free(s);
 };
-
-tipo_ponteiro: TYPE '*' {
-    char pointerType[100];
-    snprintf(pointerType, sizeof(pointerType), "%s*", $1);
-    $$ = createRecord(pointerType,"");
-}
-;
-
-ponteiro: '*' ID {}
-          ;
 
 endereco: '&' ID {
       vatt *tmp = peekS(scopeStack);
@@ -131,7 +118,6 @@ tipo_array: TYPE tamanho_array {
             ;
 
 tipo: TYPE {$$ = createRecord($1,"");}
-      | tipo_ponteiro {$$ = $1;}
       | tipo_array {$$ = $1;}
       | ID {
             vatt *tmp = peekS(scopeStack);
@@ -269,14 +255,10 @@ bloco : {$$ = createRecord("","");}
                   free(typeVariable);
             }  
       }   
-      | liberacao_memoria {}            
       ;
 
 comando : condicional {$$ = $1;}
       | iteracao {$$ = $1;} 
-      | BREAK PV {
-            $$ = createRecord("break;\n", "");
-      }
       | chamada_funcao PV {
             char *s = cat($1->code,";\n","","","");
             freeRecord($1);
@@ -285,21 +267,8 @@ comando : condicional {$$ = $1;}
       } 
       | entrada {$$ = $1;}
       | saida {$$ = $1;}
-      | atribuicao_struct {$$ = $1;}
-      | definicao_struct {$$ = $1;}
       | retorno {$$ = $1;}
       ;
-
-definicao_struct : STRUCT ID '{' lista_campos '}' {}
-                 | STRUCT tipo ID PV {}
-                 ;
-
-atribuicao_struct : ID '.' ID '=' termo PV {} 
-                 ;
-
-lista_campos : decl_vars {}
-             | decl_vars lista_campos {}
-             ;
 
 iteracao : WHILE '(' expre_logica_iterador ')' '{' {pushS(scopeStack, cat("WHILE_",getWhileID(),"","",""), ""); incWhileID();} bloco '}' {
             vatt *tmp = peekS(scopeStack);
@@ -390,16 +359,6 @@ chamada_funcao : ID {pushS(scopeStack, $1, "");} '(' parametro_com_vazio ')' {
       }
                ;
 
-alocacao_memoria : '(' tipo_ponteiro ')' MALLOC '(' alocacao_memoria_parametros ')'  {}
-               ;
-
-alocacao_memoria_parametros : expre_arit  {}
-                              |chamada_funcao {} 
-                              ;
-
-liberacao_memoria : FREE '(' ID ')' PV {}
-               ;
-
 entrada : SCANF '(' WORD ',' ID ')' PV {
             scanfPalavraIdeEndereco(&$$, &$3, &$5);
       }
@@ -412,7 +371,6 @@ entrada : SCANF '(' WORD ',' ID ')' PV {
       | SCANF '(' WORD ',' endereco acesso_array ')' PV {
             scanfPalavraEnderecoAcessoArray(&$$, &$3,  &$5->code, &$6->code);
       }
-      | entrada_atribuicao {}
       ;
 
 saida : PRINT '(' saida_args ')' PV {$$ = $3;}
@@ -449,16 +407,11 @@ saida_args_aux : {$$ = createRecord("", "");}
       | ',' saida_args {$$ = $2;}
       ;
 
-entrada_atribuicao: TYPE ID '=' entrada {}
-      | ID '=' entrada {}
-      ;
-
 decl_vars : decl_variavel  {$$ = $1;}
             | decl_array {$$ = $1;}
             ;
 
-decl_array : tipo_array ID '=' '[' elementos_array ']' PV {
-            }
+decl_array : tipo_array ID '=' '[' elementos_array ']' PV {}
             | tipo_array ID '='  expre_logica  PV {}
             | ID '=' '['  elementos_array  ']' PV {
                  
@@ -506,7 +459,6 @@ decl_array_atr: ID tamanho_array '=' expre_logica PV {
                   }  
             
             }
-            | ID tamanho_array '=' ponteiro PV {}
             | ID tamanho_array MOREISEQUAL expre_logica PV {
                   vatt *tmp = peekS(scopeStack);
                   if (!lookup(variablesTable, tmp, $1)) {
@@ -610,7 +562,6 @@ acesso_array: '[' expre_arit ']'  {
 
 decl_variavel : decl_var_atr_tipada {$$ = $1;}
               | decl_var_atr {$$ = $1;}
-              | decl_var_ponteiro {$$ = $1;}
               | decl_var {$$ = $1;}
               ;
 
@@ -659,7 +610,6 @@ decl_var_atr: ID '=' expre_logica PV {
                               free(typeVariable);
                         }  
             }
-            | ID '=' ponteiro PV {}
             | ID MOREISEQUAL expre_logica PV {
                         vatt *tmp = peekS(scopeStack);
                         if (!lookup(variablesTable, tmp, $1)) {
@@ -716,17 +666,6 @@ decl_var: TYPE ID PV {
       declaracaoVariavelTipada(&$$, &rcdIdDeclVar, &$1);
 };
       
-
-decl_var_ponteiro : ponteiro '=' ID PV {
-      
-}
-                  | ponteiro '=' ponteiro PV {}
-                  | ponteiro '=' endereco PV {}
-                  | tipo_ponteiro ID '=' alocacao_memoria PV{}
-                  | ID '=' alocacao_memoria  PV {}
-                  | tipo_ponteiro ID PV {}
-                  ;
-      
 parametros_rec : parametro {$$ = $1;}
                | parametro ',' parametros_rec {
                         char *str = cat($1->code, ", ", $3->code, "", "");
@@ -769,7 +708,6 @@ parametro : expre_logica {
             
 		
 }
-           | tipo '.' ID {}
            ;
 
 parametro_com_vazio: {$$ = createRecord("","");}
@@ -872,7 +810,6 @@ expre_logica : expre_logica AND expre_logica {
                           exit(0);
                   }
              }
-             | '!'  expre_logica {}
              | expre_logica_par {}
              | expre_arit {$$ = $1;}
              ;
@@ -968,7 +905,6 @@ termo: termo '*' fator {
                   exit(0);
             }
       }
-	| termo '%' fator {}
 	| fator {$$ = $1;}
 	;
 

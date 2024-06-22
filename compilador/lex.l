@@ -16,26 +16,19 @@
                     return TYPE;}
 "bool"              {yylval.sValue = strdup("bool"); 
                     return TYPE;}
-"string"            {yylval.sValue = strdup("string"); 
-                    return TYPE;}
 "true"              {return(TRUE);}
 "false"             {return(FALSE);}
 "function"          {return(FUNCTION);}
 "procedure"         {return(PROCEDURE);}
 "while"             {return(WHILE);}
-"break"             {return(BREAK);}
 "if"                {return(IF);}
 "else"              {return(ELSE);}
 "return"            {return(RETURN);}
 "print"             {return(PRINT);}
 "println"           {return(PRINTLN);}
 "input"             {return(SCANF);}
-"struct"            {return(STRUCT);}
-"malloc"            {return(MALLOC);}
-"free"              {return(FREE);}
 "&&"                {return(AND);}
 "||"                {return(OR);}
-"!"                 {return(yytext[0]);}
 ";"                 {return(PV);}
 "<="                {return(LESSTHENEQ);}
 ">="                {return(MORETHENEQ);}
@@ -62,7 +55,6 @@
 "/"                 {return(yytext[0]);}
 "+"                 {return(yytext[0]);}
 "-"                 {return(yytext[0]);}
-"%"                 {return(yytext[0]);}
 [\"]                {return(yytext[0]);}
 [-]*[0-9]+              {yylval.iValue = atoi(yytext); 
                        return NUMBER;}
