@@ -1,6 +1,6 @@
-prob ?=
+all: compilador
 
-compiler: lex.yy.c y.tab.c 
+compilador: lex.yy.c y.tab.c 
 	gcc lex.yy.c y.tab.c ./lib/record.c ./lib/semantics.c ./lib/hashTable.c ./lib/stack.c -o compiler
 
 lex.yy.c: lex.l
@@ -12,11 +12,12 @@ y.tab.c: parser.y
 clean:
 	rm -rf lex.yy.c y.tab.* compiler output.txt y.output teste.c
 
-run_example: compiler
-	./compiler prob teste.c -t
+compile:
+	./compiler declvar.txt teste.c -t
 
-generatec: run_example
+generatec:
 	gcc -o test teste.c -lm
 	./test
 
-recompile: clean compiler run_example generatec
+recompile: clean all compile
+	
