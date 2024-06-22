@@ -30,26 +30,17 @@ Caso o analisador sintático não encontre erros, o programa é encerrado.
 ## Executando utilizando o makefile
 
 Para facilitar a execução deixaremos aqui uma opção alternativa para utilizar o makefile.
-Executando apenas com:
+
+O seguinte comando a baixo compila o compilador a partir dos arquivos Lex e Yacc, executar o compilador com um arquivo de entrada especificado gerando o teste.c e e executar o código C gerado:
 
 ````
-make <alvoDeExecucao>
+make prob=<arquivoProblema.txt> recompile
 ````
 
-pode escolher dentre os seguintes alvos:
+Limpa todos os arquivos gerados:
 
-para o SO mac:
-- mac1
-- mac2
-- mac3
-- macQuickSort
-- macComandos
-
-para o SO linux:
-- linux1
-- linux2
-- linux3
-- linuxQuickSort
-- linuxComandos
+````
+make clean
+````
 
 
