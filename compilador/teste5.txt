@@ -1,21 +1,6 @@
-void main() {
-    int n;
-    int m;
-    int resultado;
-
-    println("Digite o valor de n: ");
-    input("%d", &n);
-    println("Digite o valor de m: ");
-    input("%d", &m);
-
-    mdc(n, m, &resultado);
-
-    println("O maior divisor comum de " + n + " e " + m + " é: " + resultado);
-}
-
-void mdc(int n, int m, int *r) {
+procedure mdc(int n, int m, int *r) {
     if (m % n == 0) {
-        *r = n;f
+        *r = n;
     } else if (n % m == 0) {
         *r = m;
     } else if (m > n) {
@@ -23,4 +8,19 @@ void mdc(int n, int m, int *r) {
     } else {
         mdc(m, n % m, r);
     }
+}
+
+void main() {
+    int n;
+    int m;
+    int resultado;
+
+    println("Digite o valor de n: ");
+    input(&n);
+    println("Digite o valor de m: ");
+    input(&m);
+
+    mdc(n, m, &resultado);
+
+    println("O maior divisor comum de " + n + " e " + m + " é: " + resultado);
 }
