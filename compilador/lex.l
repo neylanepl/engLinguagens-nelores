@@ -23,28 +23,19 @@
 "function"          {return(FUNCTION);}
 "procedure"         {return(PROCEDURE);}
 "while"             {return(WHILE);}
-"switch"            {return(SWITCH);}
-"case"              {return(CASE);}
 "break"             {return(BREAK);}
-"default"          {return(DEFAULT);}
 "if"                {return(IF);}
 "else"              {return(ELSE);}
 "return"            {return(RETURN);}
 "print"             {return(PRINT);}
 "println"           {return(PRINTLN);}
 "input"             {return(SCANF);}
-"enum"              {return(ENUM);}
 "struct"            {return(STRUCT);}
 "malloc"            {return(MALLOC);}
-"openFile"          {return(OPENFILE);}
-"readLine"          {return(READLINE);}
-"writeFile"         {return(WRITEFILE);}
-"closeFile"         {return(CLOSEFILE);}
 "free"              {return(FREE);}
 "&&"                {return(AND);}
 "||"                {return(OR);}
 "!"                 {return(yytext[0]);}
-"//"                {return(SINGLELINECOMMENT);}
 ";"                 {return(PV);}
 "<="                {return(LESSTHENEQ);}
 ">="                {return(MORETHENEQ);}
@@ -59,8 +50,6 @@
 "="                 {return(yytext[0]);}
 ","                 {return(yytext[0]);}
 "&"                 {return(yytext[0]);}
-"?"                 {return(yytext[0]);}
-":"                 {return(yytext[0]);}
 "("                 {return(yytext[0]);}
 ")"                 {return(yytext[0]);}
 "["                 {return(yytext[0]);}
@@ -82,9 +71,7 @@
 [a-zA-Z][a-zA-Z0-9_]* {yylval.sValue = strdup(yytext);
                        return ID;}
 "\""[^'"]*"\""       {yylval.sValue = strdup(yytext);
-                                          return WORD;}  
-\/\/[^\n]*           {yylval.sValue = strdup(yytext);
-                                          return COMMENT;}             
+                                          return WORD;}           
 .                     {yyerror("invalid character");}
 
 %%

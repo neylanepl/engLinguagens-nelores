@@ -40,13 +40,13 @@ char* lookup_type(record *, vatt *temp);
 %token <fValue> NUMBERFLOAT
 %token <iValue> NUMBER
 %token <sValue> TYPE
-%token WHILE IF ELSE ENUM  MAIN VOID
-%token FUNCTION SWITCH BREAK CASE DEFAULT
-%token RETURN PRINT PRINTLN SCANF STRUCT MALLOC OPENFILE READLINE
-%token WRITEFILE CLOSEFILE FREE SIZEOF CONCAT LENGHT SPLIT INCLUDES
-%token REPLACE PUSH POP INDEXOF REVERSE SLICE AND OR SINGLELINECOMMENT 
-%token LESSTHENEQ MORETHENEQ ISEQUAL ISDIFFERENT ANDCIRCUIT ORCIRCUIT  PV
-%token PROCEDURE TRUE FALSE DECREMENT INCREMENT MOREISEQUAL LESSISEQUAL EQUAL  COMMENT
+%token WHILE IF ELSE MAIN VOID
+%token FUNCTION BREAK
+%token RETURN PRINT PRINTLN SCANF STRUCT MALLOC
+%token FREE
+%token AND OR  
+%token LESSTHENEQ MORETHENEQ ISEQUAL ISDIFFERENT PV
+%token PROCEDURE TRUE FALSE DECREMENT INCREMENT MOREISEQUAL LESSISEQUAL
 %left OR 
 %left AND 
 %left LESSTHENEQ MORETHENEQ '<' '>' ISEQUAL ISDIFFERENT
@@ -59,9 +59,9 @@ char* lookup_type(record *, vatt *temp);
 
 %type <rec> decl_vars decl_variavel expre_logica expre_arit termo fator chamada_funcao 
 %type <rec> ops main args subprogs subprog decl_funcao decl_procedimento bloco comando args_com_vazio alocacao_memoria liberacao_memoria
-%type <rec> condicional else_block retorno iteracao selecao casos caso elementos_array base casoDefault listaCasos
-%type <rec> decl_array tamanho_array definicao_struct lista_campos atribuicao_struct expressao_tamanho_array elemento_matriz definicao_enum lista_enum decl_array_atr_tipada decl_array_atr
-%type <rec> entrada expre_logica_iterador saida saida_args saida_args_aux comentario_selecao comentario decl_var_atr_tipada decl_var_atr decl_var_ponteiro decl_var entrada_atribuicao
+%type <rec> condicional else_block retorno iteracao elementos_array base
+%type <rec> decl_array tamanho_array definicao_struct lista_campos atribuicao_struct expressao_tamanho_array elemento_matriz decl_array_atr_tipada decl_array_atr
+%type <rec> entrada expre_logica_iterador saida saida_args saida_args_aux decl_var_atr_tipada decl_var_atr decl_var_ponteiro decl_var entrada_atribuicao
 %type <rec> endereco tipo_ponteiro stmts base_case_array  parametros_rec parametro acesso_array parametro_com_vazio tipo tipo_array
 
 %start prog
@@ -84,8 +84,6 @@ stmts: {$$ = createRecord("","");}
             $$ = createRecord(s, "");
             free(s);
       }
-      | comentario  stmts {}
-      | definicao_enum stmts {}
       | definicao_struct stmts {}
       ;
 
@@ -271,13 +269,11 @@ bloco : {$$ = createRecord("","");}
                   free(typeVariable);
             }  
       }   
-      | comentario bloco {}
       | liberacao_memoria {}            
       ;
 
-comando : condicional {$$ = $1;} //palavra fimIF + usar o contador de condicional
+comando : condicional {$$ = $1;}
       | iteracao {$$ = $1;} 
-      | selecao {$$ = $1;}
       | BREAK PV {
             $$ = createRecord("break;\n", "");
       }
@@ -293,13 +289,6 @@ comando : condicional {$$ = $1;} //palavra fimIF + usar o contador de condiciona
       | definicao_struct {$$ = $1;}
       | retorno {$$ = $1;}
       ;
-
-definicao_enum : ENUM ID '{' lista_enum '}' PV {}
-               ;
-
-lista_enum : ID {}
-          | ID ',' lista_enum {}
-          ;
 
 definicao_struct : STRUCT ID '{' lista_campos '}' {}
                  | STRUCT tipo ID PV {}
@@ -327,29 +316,6 @@ iteracao : WHILE '(' expre_logica_iterador ')' '{' {pushS(scopeStack, cat("WHILE
 
 expre_logica_iterador: expre_logica {$$ = $1;}
                     ;
-
-selecao : SWITCH '(' ID ')' '{' comentario_selecao  casos '}' {}
-      ;
-
-comentario_selecao: {}
-                  | comentario comentario_selecao{}
-                  ;
-
-casos : listaCasos casoDefault {}
-      | listaCasos {} 
-      | casoDefault {}
-      ;
-
-listaCasos : caso listaCasos {}
-           | caso  {}
-           ;
-
-caso : CASE base_case_array ':' bloco  PV comentario_selecao  {}
-	;
-
-casoDefault : DEFAULT ':' bloco  PV comentario_selecao {}
-	       ;
-
 retorno : RETURN PV  {$$ = createRecord("return;\n", "");}
         | RETURN expre_logica  PV  {
             vatt *tmp = peekS(scopeStack);
@@ -1061,8 +1027,6 @@ base_case_array: ID {}
                   | FALSE {}
                   ;
 
-comentario: COMMENT {}
-            ;
 %%
 
 int main (int argc, char ** argv) {
