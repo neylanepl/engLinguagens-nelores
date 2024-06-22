@@ -31,13 +31,19 @@ Caso o analisador sintático não encontre erros, o programa é encerrado.
 
 Para facilitar a execução deixaremos aqui uma opção alternativa para utilizar o makefile.
 
-O seguinte comando a baixo compila o compilador a partir dos arquivos Lex e Yacc, executar o compilador com um arquivo de entrada especificado gerando o teste.c e e executar o código C gerado:
+O seguinte comando a baixo compila o compilador a partir dos arquivos Lex e Yacc, executar o compilador com um arquivo de entrada especificado gerando o teste.c e executar o código C gerado:
 
 ````
-make prob=<arquivoProblema.txt> recompile
+make prob=<arquivoProblema.txt> all
 ````
 
-Limpa todos os arquivos gerados:
+Caso não prefira rodar o código C gerado, utilize o seguinte comenado:
+
+````
+make prob=<arquivoProblema.txt> run
+````
+
+Para limpar todos os arquivos gerados:
 
 ````
 make clean
