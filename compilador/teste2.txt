@@ -6,7 +6,7 @@ function int analiseDeIntervalos() {
     int count76100 = 0;
 
     while (num > 0) {
-        print("Digite um número, caso deseje sair do loop insira um número negativo: ");
+        print("Digite um número, caso deseje sair do loop insira um negativo: ");
         input("%d", &num);
 
         if (num >= 0 && num <= 25) {
