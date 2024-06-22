@@ -3,7 +3,6 @@ struct rational_t{
     int denominador;
 }
 
-// Função para criar um número racional
 function rational_t criarRacional(int a, int b) {
     struct rational_t r;
     r.numerador = a;
@@ -11,12 +10,10 @@ function rational_t criarRacional(int a, int b) {
     return r;
 }
 
-// Função para verificar se dois números racionais são iguais
 function bool iguais(rational_t r1, rational_t r2) {
     return r1.numerador * r2.denominador == r2.numerador * r1.denominador;
 }
 
-// Função para somar dois números racionais
 function rational_t somar(rational_t r1, rational_t r2) {
     rational_t r;
     r.numerador = r1.numerador * r2.denominador + r2.numerador * r1.denominador;
@@ -24,13 +21,11 @@ function rational_t somar(rational_t r1, rational_t r2) {
     return r;
 }
 
-// Função para negar um número racional
 function rational_t negar(rational_t r) {
     r.numerador = -r.numerador;
     return r;
 }
 
-// Função para subtrair dois números racionais
 function rational_t subtrair(rational_t r1, rational_t r2) {
     rational_t r;
     r.numerador = r1.numerador * r2.denominador - r2.numerador * r1.denominador;
@@ -38,7 +33,6 @@ function rational_t subtrair(rational_t r1, rational_t r2) {
     return r;
 }
 
-// Função para multiplicar dois números racionais
 function rational_t multiplicar(rational_t r1, rational_t r2) {
     rational_t r;
     r.numerador = r1.numerador * r2.numerador;
@@ -46,7 +40,6 @@ function rational_t multiplicar(rational_t r1, rational_t r2) {
     return r;
 }
 
-// Função para encontrar o inverso de um número racional
 function rational_t inverso(rational_t r) {
     rational_t inv;
     inv.numerador = r.denominador;
@@ -54,12 +47,10 @@ function rational_t inverso(rational_t r) {
     return inv;
 }
 
-// Função para dividir dois números racionais
 function rational_t dividir(rational_t r1, rational_t r2) {
     return multiplicar(r1, inverso(r2));
 }
 
-// Função para imprimir um número racional
 procedure imprimirRacional(rational_t r) {
     println(r.numerador, r.denominador);
 }

@@ -14,46 +14,21 @@
                     return TYPE;}
 "float"             {yylval.sValue = strdup("float"); 
                     return TYPE;}
-"const"             {return(CONST);}
-"final"             {return(FINAL);}
 "bool"              {yylval.sValue = strdup("bool"); 
                     return TYPE;}
-"string"            {yylval.sValue = strdup("string"); 
-                    return TYPE;}
-"exception"         {return(EXCEPTION);}
-"throws"            {return(THROWS);}
 "true"              {return(TRUE);}
 "false"             {return(FALSE);}
-"try"               {return(TRY);}
-"catch"             {return(CATCH);}
-"finally"           {return(FINALLY);}
 "function"          {return(FUNCTION);}
 "procedure"         {return(PROCEDURE);}
 "while"             {return(WHILE);}
-"for"               {return(FOR);}
-"switch"            {return(SWITCH);}
-"case"              {return(CASE);}
-"break"             {return(BREAK);}
-"continue"          {return(CONTINUE);}
-"default"          {return(DEFAULT);}
 "if"                {return(IF);}
 "else"              {return(ELSE);}
 "return"            {return(RETURN);}
 "print"             {return(PRINT);}
 "println"           {return(PRINTLN);}
-"scanf"             {return(SCANF);}
-"enum"              {return(ENUM);}
-"struct"            {return(STRUCT);}
-"malloc"            {return(MALLOC);}
-"openFile"          {return(OPENFILE);}
-"readLine"          {return(READLINE);}
-"writeFile"         {return(WRITEFILE);}
-"closeFile"         {return(CLOSEFILE);}
-"free"              {return(FREE);}
+"input"             {return(SCANF);}
 "&&"                {return(AND);}
 "||"                {return(OR);}
-"!"                 {return(yytext[0]);}
-"//"                {return(SINGLELINECOMMENT);}
 ";"                 {return(PV);}
 "<="                {return(LESSTHENEQ);}
 ">="                {return(MORETHENEQ);}
@@ -67,11 +42,7 @@
 "--"                {return(DECREMENT);}
 "="                 {return(yytext[0]);}
 ","                 {return(yytext[0]);}
-"&&c"               {return(ANDCIRCUIT);}
-"||c"               {return(ORCIRCUIT);}
 "&"                 {return(yytext[0]);}
-"?"                 {return(yytext[0]);}
-":"                 {return(yytext[0]);}
 "("                 {return(yytext[0]);}
 ")"                 {return(yytext[0]);}
 "["                 {return(yytext[0]);}
@@ -84,7 +55,6 @@
 "/"                 {return(yytext[0]);}
 "+"                 {return(yytext[0]);}
 "-"                 {return(yytext[0]);}
-"%"                 {return(yytext[0]);}
 [\"]                {return(yytext[0]);}
 [-]*[0-9]+              {yylval.iValue = atoi(yytext); 
                        return NUMBER;}
@@ -93,9 +63,7 @@
 [a-zA-Z][a-zA-Z0-9_]* {yylval.sValue = strdup(yytext);
                        return ID;}
 "\""[^'"]*"\""       {yylval.sValue = strdup(yytext);
-                                          return WORD;}  
-\/\/[^\n]*           {yylval.sValue = strdup(yytext);
-                                          return COMMENT;}             
+                                          return WORD;}           
 .                     {yyerror("invalid character");}
 
 %%

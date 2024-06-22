@@ -14,9 +14,9 @@ char *incWhileID();
 char *getCondicionalID();
 char *incCondicionalID();
 
-void dec1(record **, record **, char **);
+void declaracaoVariavelTipada(record **, record **, char **);
 char *cat(char *, char *, char *, char *, char *);
-void init1(record **, record **, char **, record **);
+void atribuicaoVariavelTipada(record **, record **, char **, record **);
 void baseTrue(record **);
 void baseFalse(record **);
 void baseStringLiteral(record **, char **);
@@ -31,8 +31,8 @@ void argumentoTipoIdRecusao(record **ss, char **s1, record **s3, record **s5);
 void scanfPalavraIdeEndereco(record **ss, char **s3, char **s5);
 void ifBlock(record **ss, record **exp, record **commands, char *id);
 void ifElseBlock(record **ss, record **exp, record **ifCommands, record **elseCommands, char *id);
-void ctrl_b3(record **ss, record **exp, record **commands, char *id);
-void ex2(record **ss, record **s1, char *s2, record **s3, char *type);
+void iteradorWhile(record **ss, record **exp, record **commands, char *id);
+void expressaoAritmetica(record **ss, record **s1, char *s2, record **s3, char *type);
 void atribuicaoVariavel(record **ss, record **s1, record **s2);
 void atribuicaoVariavelMaisIgual(record **ss, record **s1, record **s2);
 void atribuicaoVariavelMenosIgual(record **ss, record **s1, record **s2);
@@ -43,6 +43,6 @@ void scanfPalavraAcessoArray(record **ss, char **s3, char **s5, char **s6);
 void atribuicaoArrayVariavel(record **ss, record **s1, record **s2, record **s4);
 void atribuicaoArrayMoreEqualVariavel(record **ss, record **s1, record **s2, record **s4);
 void atribuicaoArrayMinusEqualVariavel(record **ss, record **s1, record **s2, record **s4);
-void acessoArrayID(record **ss, char **s1, char **s2, char * type);
+void acessoArrayID(record **ss, char **s1, char **s2, char *type);
 
 #endif

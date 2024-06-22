@@ -3,22 +3,19 @@ void main() {
     int m;
     int resultado;
 
-    // Leitura dos valores de n e m
     println("Digite o valor de n: ");
-    scanf("%d", &n);
+    input("%d", &n);
     println("Digite o valor de m: ");
-    scanf("%d", &m);
+    input("%d", &m);
 
-    // Chamada da função mdc
     mdc(n, m, &resultado);
 
-    // Impressão do resultado
     println("O maior divisor comum de " + n + " e " + m + " é: " + resultado);
 }
 
 void mdc(int n, int m, int *r) {
     if (m % n == 0) {
-        *r = n;
+        *r = n;f
     } else if (n % m == 0) {
         *r = m;
     } else if (m > n) {

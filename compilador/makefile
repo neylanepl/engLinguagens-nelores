@@ -1,4 +1,5 @@
-all: compilador
+prob ?=
+
 
 compilador: lex.yy.c y.tab.c 
 	gcc lex.yy.c y.tab.c ./lib/record.c ./lib/semantics.c ./lib/hashTable.c ./lib/stack.c -o compiler
@@ -19,4 +20,4 @@ generatec: run
 	gcc -o test teste.c -lm
 	./test
 
-all: clean compiler run generatec
+all: clean compilador run generatec
