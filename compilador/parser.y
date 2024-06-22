@@ -178,23 +178,24 @@ subprog : decl_funcao           {$$ = $1;}
       | decl_procedimento        {$$ = $1;}                                           
       ;
 
-decl_funcao : FUNCTION tipo ID {pushS(scopeStack, $3, "");} '(' args_com_vazio ')' '{' bloco '}'       {
-                        vatt *tmp = peekS(scopeStack);
-                        if (lookup(variablesTable, tmp, $3 )) {
-                              yyerror(cat("error: redeclaration of function ", $3, "", "", ""));
-                        } else {
-                              insert(functionsTable, cat(tmp->subp, "#", $3,"",""),"return",$2->code);
-                              insertFunction(funcInfo, cat(tmp->subp, "#", $3,"",""), "return", $2->code, countFuncArgs);
-                              declaracaoFuncao(&$$, &$3, &$6, &$2->code, &$9);
-                              popS(scopeStack);
-                              countFuncArgs = 0;
-                        }  
+decl_funcao : FUNCTION tipo ID {pushS(scopeStack, $3, "");} '(' args_com_vazio ')' {
+      vatt *tmp = peekS(scopeStack);
+       if (lookup(functionsTable, tmp, $3 )) {
+            yyerror(cat("error: redeclaration of function ", $3, "", "", ""));
+      } else {
+            insert(functionsTable, cat(tmp->subp, "#", $3,"",""),"return",$2->code);
+            insertFunction(funcInfo, cat(tmp->subp, "#", $3,"",""), "return", $2->code, countFuncArgs);
+      }
+} '{' bloco '}'       {                       
+      declaracaoFuncao(&$$, &$3, &$6, &$2->code, &$10);
+      popS(scopeStack);
+      countFuncArgs = 0;
 }           
             ;
 
 decl_procedimento : PROCEDURE ID {pushS(scopeStack, $2, "");} '(' args_com_vazio ')' '{' bloco '}'  {
                         vatt *tmp = peekS(scopeStack);
-                        if (lookup(variablesTable, tmp, $2)) {
+                        if (lookup(functionsTable, tmp, $2)) {
                               yyerror(cat("error: redeclaration of procedure ", $2, "", "", ""));
                         } else {
                               insert(functionsTable, cat(tmp->subp, "#", $2,"",""),"r","void");
@@ -251,7 +252,6 @@ bloco : {$$ = createRecord("","");}
       ;
 
 comando : condicional {$$ = $1;} //palavra fimIF + usar o contador de condicional
-      | retorno {$$ = $1;}
       | iteracao {$$ = $1;} 
       | selecao {$$ = $1;}
       | BREAK PV {
@@ -267,6 +267,7 @@ comando : condicional {$$ = $1;} //palavra fimIF + usar o contador de condiciona
       | saida {$$ = $1;}
       | atribuicao_struct {$$ = $1;}
       | definicao_struct {$$ = $1;}
+      | retorno {$$ = $1;}
       ;
 
 definicao_enum : ENUM ID '{' lista_enum '}' PV {}
@@ -333,8 +334,29 @@ caso : CASE base_case_array ':' bloco  PV comentario_selecao  {}
 casoDefault : DEFAULT ':' bloco  PV comentario_selecao {}
 	       ;
 
-retorno : RETURN PV  {}
-        | RETURN expre_logica  PV  {}
+retorno : RETURN PV  {$$ = createRecord("return;\n", "");}
+        | RETURN expre_logica  PV  {
+            vatt *tmp = peekS(scopeStack);
+            SymbolInfos *foundFuncReturn = lookup(functionsTable, tmp, tmp->subp);
+            if(foundFuncReturn != NULL){
+			char funcType[100];
+			strcpy(funcType, foundFuncReturn->type);
+					
+			if(0 == strcmp(funcType, $2->opt1)){
+				char *str = cat("return ", ($2)->code, ";\n", "", "");
+                        $$ = createRecord(str, "");
+                        freeRecord($2);
+                        free(str);
+			} else {
+				yyerror(cat("erro: função com o retorno do tipo ", funcType, " e o retorno ", $2->opt1, " da expressão são incompatíveis."));
+                        exit(1);
+			}
+		} else {
+			yyerror("erro: retorno de função não encontrado");
+                  exit(1);
+		}
+            
+        }
         ;
 
 condicional : IF '(' expre_logica_iterador ')' '{' {
