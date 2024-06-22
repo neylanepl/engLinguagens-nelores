@@ -3,8 +3,10 @@ function int int1() {
 }
 
 void main() {
-    float x = (2.5);
-    float y = 4.0 * (2 + 1);
+    float* x;
+    float y = 4.0;
+
+    *x = 1.0;
     
-    println("O resultado da expressao: ", y);
+    println("O resultado da expressao: ", (*x) * 2.0);
 }
