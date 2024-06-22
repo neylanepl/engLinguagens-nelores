@@ -460,7 +460,6 @@ decl_array : tipo_array ID '=' '[' elementos_array ']' PV {}
                   arraySemAtribuicao(&$$, &$1, &rcdArrayAtribuicao, arrayType);
                    
             } 
-            | tipo_array ID '=' chamada_funcao PV
             | decl_array_atr {$$ = $1;}
             ;
 
