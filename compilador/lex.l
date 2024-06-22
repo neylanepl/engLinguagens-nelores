@@ -26,7 +26,7 @@
 "return"            {return(RETURN);}
 "print"             {return(PRINT);}
 "println"           {return(PRINTLN);}
-"input"             {return(SCANF);}
+"input"             {return(INPUT);}
 "&&"                {return(AND);}
 "||"                {return(OR);}
 ";"                 {return(PV);}

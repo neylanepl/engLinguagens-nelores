@@ -268,22 +268,11 @@ void argumentoTipoIdRecusao(record **ss, char **s1, record **s3, record **s5)
 	free(str);
 };
 
-// saida : SCANF '(' WORD ',' ID ')' PV
-void scanfPalavraIdeEndereco(record **ss, char **s3, char **s5)
-{
-	char *str = cat("scanf(", *s3, ",", (*s5), ");\n");
-	*ss = createRecord(str, "");
-	free(str);
-	free(*s3);
-	free(*s5);
-}
-
 //  expre_arit operador expressão aritmetica
 void expressaoAritmetica(record **ss, record **s1, char *s2, record **s3, char *type)
 {
 	char *str;
-	if (strcmp(s2, "^") == 0)
-	{
+	if (strcmp(s2, "^") == 0) {
 		if (strcmp(type, "int") == 0)
 		{
 			str = cat("(int)pow((double)(", (*s1)->code, "), (double)(", (*s3)->code, "))");
@@ -292,9 +281,9 @@ void expressaoAritmetica(record **ss, record **s1, char *s2, record **s3, char *
 		{
 			str = cat("pow(", (*s1)->code, ", ", (*s3)->code, ")");
 		}
-	}
-	else
-	{
+	} else if (!strcmp(s2, "/")) {
+		str = cat((*s1)->code, s2, "(float(", (*s3)->code, "))");
+	} else {
 		str = cat((*s1)->code, s2, (*s3)->code, "", "");
 	}
 
@@ -367,27 +356,6 @@ void arraySemAtribuicao(record **ss, record **s2, record **s3, char *type)
 	*ss = createRecord(str, "");
 	freeRecord(*s3);
 	free(str);
-}
-// saida : SCANF '(' WORD ',' endereco acesso_array ')' PV
-void scanfPalavraEnderecoAcessoArray(record **ss, char **s3, char **s4, char **s5)
-{
-	char *str = cat("scanf(", *s3, ",", (*s4), (*s5));
-	str = cat(str, ");\n", "", "", "");
-	*ss = createRecord(str, "");
-	free(str);
-	free(*s3);
-	free(*s5);
-	free(*s4);
-}
-// saida : SCANF '(' WORD ',' ID acesso_array ')' PV
-void scanfPalavraAcessoArray(record **ss, char **s3, char **s5, char **s6)
-{
-	char *str = cat("scanf(", *s3, ",", (*s5), (*s6));
-	str = cat(str, ");\n", "", "", "");
-	*ss = createRecord(str, "");
-	free(str);
-	free(*s3);
-	free(*s5);
 }
 
 // b[5][1] = expressao;

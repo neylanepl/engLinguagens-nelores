@@ -42,7 +42,7 @@ char* lookup_type(record *, vatt *temp);
 %token <sValue> TYPE
 %token WHILE IF ELSE MAIN VOID
 %token FUNCTION
-%token RETURN PRINT PRINTLN SCANF
+%token RETURN PRINT PRINTLN INPUT
 %token AND OR  
 %token LESSTHENEQ MORETHENEQ ISEQUAL ISDIFFERENT PV
 %token PROCEDURE TRUE FALSE DECREMENT INCREMENT MOREISEQUAL LESSISEQUAL
@@ -58,7 +58,7 @@ char* lookup_type(record *, vatt *temp);
 %type <rec> decl_vars decl_variavel expre_logica expre_arit termo fator chamada_funcao 
 %type <rec> ops main args subprogs subprog decl_funcao decl_procedimento bloco comando args_com_vazio 
 %type <rec> condicional else_block retorno iteracao elementos_array base
-%type <rec> decl_array tamanho_array expressao_tamanho_array elemento_matriz decl_array_atr_tipada decl_array_atr
+%type <rec> decl_array tamanho_array expressao_tamanho_array elemento_matriz decl_array_atr
 %type <rec> entrada expre_logica_iterador saida saida_args saida_args_aux decl_var_atr_tipada decl_var_atr decl_var
 %type <rec> endereco stmts base_case_array  parametros_rec parametro acesso_array parametro_com_vazio tipo tipo_array
 
@@ -359,17 +359,46 @@ chamada_funcao : ID {pushS(scopeStack, $1, "");} '(' parametro_com_vazio ')' {
       }
                ;
 
-entrada : SCANF '(' WORD ',' ID ')' PV {
-            scanfPalavraIdeEndereco(&$$, &$3, &$5);
+entrada : INPUT '(' endereco ')' PV {
+            vatt *tmp = peekS(scopeStack);
+            char *addressType = lookup_type($3, tmp);
+            char *type = strtok(addressType, "*");
+            
+            char *str;
+            if (!strcmp(type, "int")) {
+                  str = cat("scanf(\"%d\", ", $3->code, ");\n", "", "");
+            } else if (!strcmp(type, "float")) {
+                  str = cat("scanf(\"%f\", ", $3->code, ");\n", "", "");
+            } else if (!strcmp(type, "bool")) {
+                  str = cat("scanf(\"%d\", ", $3->code, ");\n", "", "");
+            } else {
+                  yyerror(cat("Erro: não é possivel usar o tipo ", type, " para entrada.", "", ""));
+            }
+
+            $$ = createRecord(str, "");
+            free(str);
+            free(addressType);
       }
-      | SCANF '(' WORD ',' ID acesso_array ')' PV {
-            scanfPalavraEnderecoAcessoArray(&$$, &$3, &$5, &$6->code);
-      }
-      | SCANF '(' WORD ',' endereco ')' PV {
-            scanfPalavraIdeEndereco(&$$, &$3, &$5->code);
-      }
-      | SCANF '(' WORD ',' endereco acesso_array ')' PV {
-            scanfPalavraEnderecoAcessoArray(&$$, &$3,  &$5->code, &$6->code);
+      | INPUT '(' endereco acesso_array ')' PV {
+            vatt *tmp = peekS(scopeStack);
+            char *addressType = lookup_type($3, tmp);
+            char *arrayType = strtok(addressType, "*");
+            char *type = strtok(arrayType, " ");
+            
+            char *str;
+            if (!strcmp(type, "int")) {
+                  str = cat("scanf(\"%d\", ", $3->code, $4->code, ");\n", "");
+            } else if (!strcmp(type, "float")) {
+                  str = cat("scanf(\"%f\", ", $3->code, $4->code, ");\n", "");
+            } else if (!strcmp(type, "bool")) {
+                  str = cat("scanf(\"%d\", ", $3->code, $4->code, ");\n", "");
+            } else {
+                  yyerror(cat("Erro: não é possivel usar o tipo ", type, " para entrada.", "", ""));
+            }
+
+            $$ = createRecord(str, "");
+            free(str);
+            free(addressType);
       }
       ;
 
@@ -394,6 +423,8 @@ saida_args : expre_arit saida_args_aux {
                   str1 = cat("printf((", $1->code, ") ? \"true\" : \"false\");\n", "", "");
             } else if (!strcmp(type, "string")) {
                   str1 = cat("printf(", $1->code,");\n", "", "");
+            } else {
+                  yyerror(cat("Erro: não é possivel usar o tipo ", type, " para saída.", "", ""));
             }
 
             char *str2 = cat(str1, $2->code, "", "", "");
@@ -429,14 +460,9 @@ decl_array : tipo_array ID '=' '[' elementos_array ']' PV {}
                   arraySemAtribuicao(&$$, &$1, &rcdArrayAtribuicao, arrayType);
                    
             } 
-            | decl_array_atr_tipada {$$ = $1;}
+            | tipo_array ID '=' chamada_funcao PV
             | decl_array_atr {$$ = $1;}
             ;
-
-decl_array_atr_tipada: tipo_array ID MOREISEQUAL expre_logica PV{}
-                  | tipo_array ID  LESSISEQUAL expre_logica PV{}
-                  | tipo_array ID '=' chamada_funcao PV {}
-                  ;
 
 decl_array_atr: ID tamanho_array '=' expre_logica PV {
                   vatt *tmp = peekS(scopeStack);
@@ -501,7 +527,6 @@ decl_array_atr: ID tamanho_array '=' expre_logica PV {
                        
                   }  
             }
-            | ID tamanho_array '=' chamada_funcao PV {}
             ;
             
 tamanho_array: '[' expressao_tamanho_array ']'  {
@@ -580,14 +605,11 @@ decl_var_atr_tipada:  TYPE ID '=' expre_logica PV{
                                     record *rcdIdDeclTipada = createRecord($2, "");
                                     atribuicaoVariavelTipada(&$$, &rcdIdDeclTipada, &$1, &$4);
                               } else {
-                                    yyerror(cat("Erro: Inicialização de ", $1, " pelos tipo ", lookup_type($4, tmp), " é incompatível!"));
+                                    yyerror(cat("Erro: Inicialização de ", $1, " pelo tipo ", lookup_type($4, tmp), " é incompatível!"));
                                     exit(0);
                               }
                         }  
                   }
-                  | TYPE ID MOREISEQUAL expre_logica PV{}
-                  | TYPE ID LESSISEQUAL expre_logica PV{}
-                  | TYPE ID '=' chamada_funcao PV {}
                   ;
 
 decl_var_atr: ID '=' expre_logica PV {
@@ -652,7 +674,6 @@ decl_var_atr: ID '=' expre_logica PV {
                               free(typeVariable);
                         }  
             }
-            | ID '=' chamada_funcao PV {}
             ;
 
 decl_var: TYPE ID PV {
@@ -810,7 +831,6 @@ expre_logica : expre_logica AND expre_logica {
                           exit(0);
                   }
              }
-             | expre_logica_par {}
              | expre_arit {$$ = $1;}
              ;
                
@@ -904,7 +924,7 @@ termo: termo '*' fator {
                   yyerror(cat("Erro: Tipos ", lookup_type($1, tmp), " and ", lookup_type($3, tmp), " não são compatíveis!"));
                   exit(0);
             }
-      }
+      } 
 	| fator {$$ = $1;}
 	;
 
@@ -944,15 +964,19 @@ fator : fator '^' base {
       | base {$$ = $1;}
       ;
 
-expre_logica_par: '(' expre_logica ')' {}
-      ;
-
 base : ID {baseID(&$$, &$1);}
       | NUMBER {baseIntNumber(&$$, &$1);}
       | NUMBERFLOAT {baseRealNumber(&$$, &$1);}
       | WORD {baseStringLiteral(&$$, &$1);}
       | TRUE {baseTrue(&$$);}
       | FALSE {baseFalse(&$$);}
+      | chamada_funcao {$$ = $1;}
+      | '(' expre_logica ')' {
+            char *s = cat("(", $2->code, ")", "", "");
+            $$ = createRecord(s, $2->opt1);
+            freeRecord($2);
+            free(s);
+      }
       ;
 
 base_case_array: ID {}
