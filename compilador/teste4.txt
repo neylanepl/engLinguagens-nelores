@@ -1,26 +1,113 @@
-void main(){
-
-    int[] arr;
-
-
-struct rational_t {
+struct rational_t{
     int numerador;
     int denominador;
-} 
-
 }
 
-rational_t simplificar(rational_t r) {
-    int divisor = mdc(r.numerador, r.denominador);
-    return r;
-}
-
-rational_t criar_racional(int a, int b) {
-    if(b != 0){
+// Função para criar um número racional
+function rational_t criarRacional(int a, int b) {
     struct rational_t r;
     r.numerador = a;
     r.denominador = b;
-    simplificar(&r);
-    return r;	
-    }   
+    return r;
+}
+
+// Função para verificar se dois números racionais são iguais
+function bool iguais(rational_t r1, rational_t r2) {
+    return r1.numerador * r2.denominador == r2.numerador * r1.denominador;
+}
+
+// Função para somar dois números racionais
+function rational_t somar(rational_t r1, rational_t r2) {
+    rational_t r;
+    r.numerador = r1.numerador * r2.denominador + r2.numerador * r1.denominador;
+    r.denominador = r1.denominador * r2.denominador;
+    return r;
+}
+
+// Função para negar um número racional
+function rational_t negar(rational_t r) {
+    r.numerador = -r.numerador;
+    return r;
+}
+
+// Função para subtrair dois números racionais
+function rational_t subtrair(rational_t r1, rational_t r2) {
+    rational_t r;
+    r.numerador = r1.numerador * r2.denominador - r2.numerador * r1.denominador;
+    r.denominador = r1.denominador * r2.denominador;
+    return r;
+}
+
+// Função para multiplicar dois números racionais
+function rational_t multiplicar(rational_t r1, rational_t r2) {
+    rational_t r;
+    r.numerador = r1.numerador * r2.numerador;
+    r.denominador = r1.denominador * r2.denominador;
+    return r;
+}
+
+// Função para encontrar o inverso de um número racional
+function rational_t inverso(rational_t r) {
+    rational_t inv;
+    inv.numerador = r.denominador;
+    inv.denominador = r.numerador;
+    return inv;
+}
+
+// Função para dividir dois números racionais
+function rational_t dividir(rational_t r1, rational_t r2) {
+    return multiplicar(r1, inverso(r2));
+}
+
+// Função para imprimir um número racional
+procedure imprimirRacional(rational_t r) {
+    println(r.numerador, r.denominador);
+}
+
+void main() {
+    struct rational_t r1;
+    r1.numerador = 1;
+    r1.denominador = 2;
+
+    struct rational_t r2;
+    r2.numerador = 3;
+    r2.denominador = 4;
+
+    println("r1: ");
+    imprimirRacional(r1);
+    println("r2: ");
+    imprimirRacional(r2);
+
+    rational_t soma = somar(r1, r2);
+    println("Soma: ");
+    imprimirRacional(soma);
+
+    rational_t negacao = negar(r1);
+    println("Negação de r1: ");
+    imprimirRacional(negacao);
+
+    rational_t subtracao = subtrair(r1, r2);
+    println("Subtração: ");
+    imprimirRacional(subtracao);
+
+    rational_t multiplicacao = multiplicar(r1, r2);
+    println("Multiplicação: ");
+    imprimirRacional(multiplicacao);
+
+    rational_t inversoR1 = inverso(r1);
+    println("Inverso de r1: ");
+    imprimirRacional(inversoR1);
+
+    rational_t divisao = dividir(r1, r2);
+    println("Divisão: ");
+    imprimirRacional(divisao);
+
+    bool saoIguais = iguais(r1, r2);
+
+   if(saoIguais){
+   println("São iguais");
+   } else {
+   println("Não são iguais");
+   }
+
 }
