@@ -59,7 +59,7 @@ char* lookup_type(record *, vatt *temp);
 %type <rec> ops main args subprogs subprog decl_funcao decl_procedimento bloco comando args_com_vazio 
 %type <rec> condicional else_block retorno iteracao elementos_array base
 %type <rec> decl_array tamanho_array expressao_tamanho_array elemento_matriz decl_array_atr
-%type <rec> entrada expre_logica_iterador saida saida_args saida_args_aux decl_var_atr_tipada decl_var_atr decl_var
+%type <rec> entrada expre_logica_iterador saida saida_args saida_args_aux decl_atr atr decl
 %type <rec> endereco stmts base_case_array  parametros_rec parametro acesso_array parametro_com_vazio tipo tipo_array
 
 %start prog
@@ -119,14 +119,6 @@ tipo_array: TYPE tamanho_array {
 
 tipo: TYPE {$$ = createRecord($1,"");}
       | tipo_array {$$ = $1;}
-      | ID {
-            vatt *tmp = peekS(scopeStack);
-            if(lookup(typedTable, tmp, $1) == NULL){
-                  yyerror(cat("Erro: tipo desconhecido ",$1,"","",""));
-                  exit(0);
-	      } 
-		$$ = createRecord($1,""); 
-      }
       | tipo '*' {
             char *s = cat($1->code, "*", "", "", "");
             $$ = createRecord(s, "");
@@ -299,13 +291,13 @@ retorno : RETURN PV  {$$ = createRecord("return;\n", "");}
 			char funcType[100];
 			strcpy(funcType, foundFuncReturn->type);
 					
-			if(0 == strcmp(funcType, $2->opt1)){
+			if(0 == strcmp(funcType, lookup_type($2, tmp))){
 				char *str = cat("return ", ($2)->code, ";\n", "", "");
                         $$ = createRecord(str, "");
                         freeRecord($2);
                         free(str);
 			} else {
-				yyerror(cat("erro: função com o retorno do tipo ", funcType, " e o retorno ", $2->opt1, " da expressão são incompatíveis."));
+				yyerror(cat("erro: função com o retorno do tipo ", funcType, " e o retorno ", lookup_type($2, tmp), " da expressão são incompatíveis."));
                         exit(1);
 			}
 		} else {
@@ -534,7 +526,7 @@ decl_array_atr: ID tamanho_array '=' expre_logica PV {
                   }  
             }
             ;
-            
+
 tamanho_array: '[' expressao_tamanho_array ']'  {
                   vatt *tmp = peekS(scopeStack);
                   if(0 == strcmp(lookup_type($2, tmp), "int")){
@@ -591,31 +583,31 @@ acesso_array: '[' expre_arit ']'  {
             }
             ;
 
-decl_variavel : decl_var_atr_tipada {$$ = $1;}
-              | decl_var_atr {$$ = $1;}
-              | decl_var {$$ = $1;}
+decl_variavel : decl_atr {$$ = $1;}
+              | atr {$$ = $1;}
+              | decl {$$ = $1;}
               ;
 
-decl_var_atr_tipada:  TYPE ID '=' expre_logica PV{
+decl_atr: tipo ID '=' expre_logica PV{
                         vatt *tmp = peekS(scopeStack);
                         if (lookup(variablesTable, tmp, $2)) {
                               yyerror(cat("Erro: redeclaração de variavel ", $2, "", "", ""));
                               exit(0);
                         } else {
-                              insert(variablesTable, cat(tmp->subp, "#", $2,"",""), $2, $1);
+                              insert(variablesTable, cat(tmp->subp, "#", $2,"",""), $2, $1->code);
 
-                              if (strcmp($1, lookup_type($4, tmp)) == 0) {
+                              if (strcmp($1->code, lookup_type($4, tmp)) == 0) {
                                     record *rcdIdDeclTipada = createRecord($2, "");
-                                    atribuicaoVariavelTipada(&$$, &rcdIdDeclTipada, &$1, &$4);
+                                    atribuicaoVariavelTipada(&$$, &rcdIdDeclTipada, &$1->code, &$4);
                               } else {
-                                    yyerror(cat("Erro: Inicialização de ", $1, " pelo tipo ", lookup_type($4, tmp), " é incompatível!"));
+                                    yyerror(cat("Erro: Inicialização de ", $1->code, " pelo tipo ", lookup_type($4, tmp), " é incompatível!"));
                                     exit(0);
                               }
                         }  
                   }
                   ;
 
-decl_var_atr: ID '=' expre_logica PV {
+atr: ID '=' expre_logica PV {
                         vatt *tmp = peekS(scopeStack);
                         if (!lookup(variablesTable, tmp, $1)) {
                               yyerror(cat("Erro: variavel não declarada ", $1, "", "", ""));
@@ -704,7 +696,7 @@ decl_var_atr: ID '=' expre_logica PV {
             }
             ;
 
-decl_var: tipo ID PV {
+decl: tipo ID PV {
       vatt *tmp = peekS(scopeStack);
       if (lookup(variablesTable, tmp, $2)) {
             yyerror(cat("Erro: redeclaração de variavel ", $2, "", "", ""));
@@ -953,6 +945,21 @@ termo: termo '*' fator {
                   exit(0);
             }
       } 
+      | termo '%' fator {
+            vatt *tmp = peekS(scopeStack);
+            int intint = !strcmp(lookup_type($1, tmp), "int") && !strcmp(lookup_type($3, tmp), "int");
+            int intfloat = !(strcmp(lookup_type($1, tmp), "int") || strcmp(lookup_type($3, tmp), "float"));
+            int floatint = !(strcmp(lookup_type($1, tmp), "float") || strcmp(lookup_type($3, tmp), "int"));
+
+            if (intint) {
+                  expressaoAritmetica(&$$, &$1, "%", &$3, "int");
+            } else if ((0 == strcmp(lookup_type($1, tmp), lookup_type($3, tmp))) || intfloat || floatint) {
+                  expressaoAritmetica(&$$, &$1, "%", &$3, "float");
+            } else {
+                  yyerror(cat("Erro: Tipos ", lookup_type($1, tmp), " and ", lookup_type($3, tmp), " não são compatíveis!"));
+                  exit(0);
+            }
+      } 
 	| fator {$$ = $1;}
 	;
 
@@ -1000,8 +1007,9 @@ base : ID {baseID(&$$, &$1);}
       | FALSE {baseFalse(&$$);}
       | chamada_funcao {$$ = $1;}
       | '(' expre_logica ')' {
+            vatt *tmp = peekS(scopeStack);
             char *s = cat("(", $2->code, ")", "", "");
-            $$ = createRecord(s, $2->opt1);
+            $$ = createRecord(s, lookup_type($2, tmp));
             freeRecord($2);
             free(s);
       }

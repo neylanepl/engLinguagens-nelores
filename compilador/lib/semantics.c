@@ -283,6 +283,9 @@ void expressaoAritmetica(record **ss, record **s1, char *s2, record **s3, char *
 		}
 	} else if (!strcmp(s2, "/")) {
 		str = cat((*s1)->code, s2, "(float(", (*s3)->code, "))");
+	} else if (!strcmp(s2, "%") && !strcmp(type, "float")) {
+		printf("==== %s ====\n", type);
+		str = cat((*s1)->code, s2, "(float(", (*s3)->code, "))");
 	} else {
 		str = cat((*s1)->code, s2, (*s3)->code, "", "");
 	}
@@ -316,7 +319,7 @@ void atribuicaoVariavelMaisIgual(record **ss, record **s1, record **s2)
 // b -= expressao;
 void atribuicaoVariavelMenosIgual(record **ss, record **s1, record **s2)
 {
-	char *str = cat((*s1)->code, "+=", (*s2)->code, ";\n", "");
+	char *str = cat((*s1)->code, "-=", (*s2)->code, ";\n", "");
 	*ss = createRecord(str, "");
 	freeRecord(*s1);
 	freeRecord(*s2);
