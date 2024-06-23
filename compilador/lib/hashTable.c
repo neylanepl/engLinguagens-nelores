@@ -136,7 +136,7 @@ void printTable(SymbolTable *table)
                 printf("Chave:  | %s\n", current->function->key);
                 printf("Nome:   | %s\n", current->function->name);
                 printf("Tipo de retorno:   | %s\n", current->function->returnType);
-                printf("Número de Parâmetros:   | %d\n", current->function->numParams);
+                printf("Número de Argumentos:   | %d\n", current->function->numParams);
             }
             current = current->nextNode;
         }

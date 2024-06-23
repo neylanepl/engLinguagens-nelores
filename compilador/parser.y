@@ -179,17 +179,20 @@ decl_funcao : FUNCTION tipo ID {pushS(scopeStack, $3, "");} '(' args_com_vazio '
 }           
             ;
 
-decl_procedimento : PROCEDURE ID {pushS(scopeStack, $2, "");} '(' args_com_vazio ')' '{' bloco '}'  {
-                        vatt *tmp = peekS(scopeStack);
-                        if (lookup(functionsTable, tmp, $2)) {
-                              yyerror(cat("Erro: redeclaração de procedimento ", $2, "", "", ""));
-                        } else {
-                              insert(functionsTable, cat(tmp->subp, "#", $2,"",""),"r","void");
-                              declaracaoProcedimento(&$$, &$2, &$5, &$8);
-                              popS(scopeStack);
-                        }  
+decl_procedimento : PROCEDURE ID {pushS(scopeStack, $2, "");} '(' args_com_vazio ')' {
+      vatt *tmp = peekBelowTop(scopeStack);
+      if (lookup(functionsTable, tmp, $2)) {
+            yyerror(cat("Erro: redeclaração de procedimento ", $2, "", "", ""));
+      } else {
+            insert(functionsTable, cat(tmp->subp, "#", $2,"",""),"r","void");
+            insertFunction(funcInfo, cat(peekS(scopeStack)->subp, "#", $2,"",""), "r", "void", countFuncArgs);
+      }
+}'{' bloco '}'  {
+      declaracaoProcedimento(&$$, &$2, &$5, &$9);
+      popS(scopeStack);
+      countFuncArgs = 0;
 }                   
-                  ;
+            ;
 
 bloco : {$$ = createRecord("","");}
       | decl_variavel bloco  { 
