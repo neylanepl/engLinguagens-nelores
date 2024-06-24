@@ -29,7 +29,7 @@ void declaracaoProcedimento(record **ss, char **s2, record **s4, record **s7);
 void argumentoTipoId(record **ss, char **s1, record **s3);
 void argumentoTipoIdRecusao(record **ss, char **s1, record **s3, record **s5);
 void ifBlock(record **ss, record **exp, record **commands, char *id);
-void ifElseBlock(record **ss, record **exp, record **ifCommands, record **elseCommands, char *id);
+void ifElseBlock(record **ss, record **exp, record **ifCommands, record **elseCommands, char *id, char* type);
 void iteradorWhile(record **ss, record **exp, record **commands, char *id);
 void expressaoAritmetica(record **ss, record **s1, char *s2, record **s3, char *type);
 void atribuicaoVariavel(record **ss, record **s1, record **s2);

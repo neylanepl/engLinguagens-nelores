@@ -97,7 +97,7 @@ endereco: '&' ID {
       SymbolInfos *info = lookup(variablesTable, tmp, $2);
       if (info == NULL) {
         yyerror(cat("Erro: Não pode usar variavel", $2, " antes da inicialização!", "", ""));
-        exit(0);
+        exit(1);
       } else {
         char address[100];
         snprintf(address, sizeof(address), "&%s", $2);
@@ -123,7 +123,7 @@ tipo: TYPE {$$ = createRecord($1,"");}
             stackElement *tmp = peekS(scopeStack);
             if(lookup(typedTable, tmp, $1) == NULL){
                   yyerror(cat("Erro: tipo desconhecido ",$1,"","",""));
-                  exit(0);
+                  exit(1);
 	      } 
 		$$ = createRecord($1,""); 
       }
@@ -167,7 +167,7 @@ decl_funcao : FUNCTION tipo ID {pushS(scopeStack, $3, "");} '(' args_com_vazio '
       stackElement *tmp = peekBelowTop(scopeStack);
        if (lookup(functionsTable, tmp, $3 )) {
             yyerror(cat("Erro: redeclaração de função ", $3, "", "", ""));
-            exit(0);
+            exit(1);
       } else {
             insert(functionsTable, cat(tmp->subp, "#", $3,"",""),"return",$2->code);
             insertFunction(funcInfo, cat(peekS(scopeStack)->subp, "#", $3,"",""), "return", $2->code, countFuncArgs);
@@ -179,17 +179,21 @@ decl_funcao : FUNCTION tipo ID {pushS(scopeStack, $3, "");} '(' args_com_vazio '
 }           
             ;
 
-decl_procedimento : PROCEDURE ID {pushS(scopeStack, $2, "");} '(' args_com_vazio ')' '{' bloco '}'  {
-                        stackElement *tmp = peekS(scopeStack);
-                        if (lookup(functionsTable, tmp, $2)) {
-                              yyerror(cat("Erro: redeclaração de procedimento ", $2, "", "", ""));
-                        } else {
-                              insert(functionsTable, cat(tmp->subp, "#", $2,"",""),"r","void");
-                              declaracaoProcedimento(&$$, &$2, &$5, &$8);
-                              popS(scopeStack);
-                        }  
+decl_procedimento : PROCEDURE ID {pushS(scopeStack, $2, "");} '(' args_com_vazio ')' {
+      stackElement *tmp = peekBelowTop(scopeStack);
+      if (lookup(functionsTable, tmp, $2)) {
+            yyerror(cat("Erro: redeclaração de procedimento ", $2, "", "", ""));
+            exit(1);
+      } else {
+            insert(functionsTable, cat(tmp->subp, "#", $2,"",""),"r","void");
+            insertFunction(funcInfo, cat(peekS(scopeStack)->subp, "#", $2,"",""), "r", "void", countFuncArgs);
+      }
+}'{' bloco '}'  {
+      declaracaoProcedimento(&$$, &$2, &$5, &$9);
+      popS(scopeStack);
+      countFuncArgs = 0;
 }                   
-                  ;
+            ;
 
 bloco : {$$ = createRecord("","");}
       | decl_variavel bloco  { 
@@ -217,7 +221,7 @@ bloco : {$$ = createRecord("","");}
             stackElement *tmp = peekS(scopeStack);
              if (!lookup(variablesTable, tmp, $1)) {
                   yyerror(cat("Erro: variavel não declarada ", $1, "", "", ""));
-                  exit(0);
+                  exit(1);
             } else {
                   record *rcdAtribuicao = createRecord($1, "");    
                   char *typeVariable = lookup_variable_type(variablesTable, tmp, $1);  
@@ -229,7 +233,7 @@ bloco : {$$ = createRecord("","");}
                         free(declIncremento);
                   } else {
                         yyerror(cat("Erro: Inicialização de ", $1, " from type ", typeVariable, " não é compatível!"));
-                        exit(0);
+                        exit(1);
                   }
                   free(typeVariable);
             }  
@@ -238,7 +242,7 @@ bloco : {$$ = createRecord("","");}
             stackElement *tmp = peekS(scopeStack);
             if (!lookup(variablesTable, tmp, $2)) {
                   yyerror(cat("Erro: variavel não declarada ", $2, "", "", ""));
-                  exit(0);
+                  exit(1);
             } else {
                   record *rcdAtribuicao = createRecord($2, "");    
                   char *typeVariable = lookup_variable_type(variablesTable, tmp, $2);  
@@ -250,14 +254,20 @@ bloco : {$$ = createRecord("","");}
                         free(declIncremento);
                   } else {
                         yyerror(cat("Erro: Inicialização de ", $2, " from type ", typeVariable, " não é compatível!"));
-                        exit(0);
+                        exit(1);
                   }
                   free(typeVariable);
             }  
       }   
       ;
 
-comando : condicional {$$ = $1;}
+comando : {pushS(scopeStack, cat("IFZAO_", getIfID(), "", "", ""), "0");} condicional 
+{
+char *str3 = cat($2->code, "endif",peekS(scopeStack)->subp, ":\n\n", "");
+	$$ = createRecord(str3, "");
+      freeRecord($2);
+      free(str3);
+popS(scopeStack);}
       | iteracao {$$ = $1;} 
       | chamada_funcao PV {
             char *s = cat($1->code,";\n","","","");
@@ -278,7 +288,7 @@ iteracao : WHILE '(' expre_logica_iterador ')' '{' {pushS(scopeStack, cat("WHILE
                   popS(scopeStack);
             } else {
                   yyerror(cat("Erro: tipo da expressão inválido ",$3->code," (esperava bool, recebido ",lookup_type($3, tmp),")"));
-                  exit(0);
+                  exit(1);
             }
       }
            ;
@@ -299,11 +309,11 @@ retorno : RETURN PV  {$$ = createRecord("return;\n", "");}
                         freeRecord($2);
                         free(str);
 			} else {
-				yyerror(cat("erro: função com o retorno do tipo ", funcType, " e o retorno ", $2->opt1, " da expressão são incompatíveis."));
+				yyerror(cat("Erro: função com o retorno do tipo ", funcType, " e o retorno ", $2->opt1, " da expressão são incompatíveis."));
                         exit(1);
 			}
 		} else {
-			yyerror("erro: retorno de função não encontrado");
+			yyerror("Erro: retorno de função não encontrado");
                   exit(1);
 		}
             
@@ -311,8 +321,9 @@ retorno : RETURN PV  {$$ = createRecord("return;\n", "");}
         ;
 
 condicional : IF '(' expre_logica_iterador ')' '{' {
-            pushS(scopeStack, cat("IF_", getIfID(), "", "", ""), "");
-            incIfID();
+            pushS(scopeStack, cat(peekS(scopeStack)->subp, "IF_", getIfID(), "", ""), "");
+            popS(scopeStack);
+            incIfID(); 
       } bloco '}' else_block {
             stackElement *tmp = peekS(scopeStack);
 
@@ -320,13 +331,18 @@ condicional : IF '(' expre_logica_iterador ')' '{' {
                   if (!strcmp($9->code, "")) {
                         ifBlock(&$$, &$3, &$7, tmp->subp);
                   } else {
-                        ifElseBlock(&$$, &$3, &$7, &$9, tmp->subp);
+                        ifElseBlock(&$$, &$3, &$7, &$9, tmp->subp, tmp->type);
+	                  int nextIf = atoi(tmp->type) + 1;
+	                  int length = snprintf( NULL, 0, "%d", nextIf );
+	                  char* nextIfStr= malloc( length + 1 );
+	                  snprintf( nextIfStr, length + 1, "%d", nextIf );
+                        tmp->type = nextIfStr;
                   }
             } else {
                   yyerror(cat("Erro: tipo da expressão inválido ",$3->code," (esperava bool, recebido ",lookup_type($3, tmp),")"));
-                  exit(0);
+                  exit(1);
             }
-            popS(scopeStack);
+            
       }
 ;
 
@@ -350,11 +366,11 @@ chamada_funcao : ID {pushS(scopeStack, $1, "");} '(' parametro_com_vazio ')' {
                   }
                   else{
                         fprintf(stderr, "Erro: Função '%s' esperava %d argumentos, mas %d foram passados.\n", $1, funcInfoaux->numParams, countFuncCallParams);
-                        exit(0);
+                        exit(1);
                   }
             } else {
                   yyerror(cat("Erro: função indefinida ",$1,"","",""));
-                  exit(0);
+                  exit(1);
             }
       }
                ;
@@ -451,7 +467,7 @@ decl_array : tipo_array ID '=' '[' elementos_array ']' PV {}
                  stackElement *tmp = peekS(scopeStack);
                   if (lookup(variablesTable, tmp, $2)) {
                         yyerror(cat("Erro: redeclaração de variavel ", $2, "", "", ""));
-                        exit(0);
+                        exit(1);
                   }
                   char *arrayType = $1->code;
                   insert(variablesTable, cat(tmp->subp, "#", $2,"",""), $2, arrayType);
@@ -467,7 +483,7 @@ decl_array_atr: ID tamanho_array '=' expre_logica PV {
                   stackElement *tmp = peekS(scopeStack);
                   if (!lookup(variablesTable, tmp, $1)) {
                         yyerror(cat("Erro: variavel não declarada ", $1, "", "", ""));
-                        exit(0);
+                        exit(1);
                   } else {
                         char *typeVariable = lookup_variable_type(variablesTable, tmp, $1);
                         char *typeSplited = strtok(typeVariable, " ");
@@ -478,7 +494,7 @@ decl_array_atr: ID tamanho_array '=' expre_logica PV {
                               atribuicaoArrayVariavel(&$$, &rcdArrayAtribuicao, &$2, &$4);
                         } else {
                               yyerror(cat("Erro: Inicialização of ", $1, " pelo tipo ", lookup_type($4, tmp), " é incompatível!"));
-                              exit(0);
+                              exit(1);
                         }
                        
                   }  
@@ -488,7 +504,7 @@ decl_array_atr: ID tamanho_array '=' expre_logica PV {
                   stackElement *tmp = peekS(scopeStack);
                   if (!lookup(variablesTable, tmp, $1)) {
                         yyerror(cat("Erro: variavel não declarada ", $1, "", "", ""));
-                        exit(0);
+                        exit(1);
                   } else {
                         char *typeVariable = lookup_variable_type(variablesTable, tmp, $1);
                         char *typeSplited = strtok(typeVariable, " ");
@@ -500,7 +516,7 @@ decl_array_atr: ID tamanho_array '=' expre_logica PV {
                               atribuicaoArrayMoreEqualVariavel(&$$, &rcdArrayAtribuicao, &$2, &$4);
                         } else {
                               yyerror(cat("Erro: Inicialização de ", $1, " pelo tipo ", lookup_type($4, tmp), " é incompatível!"));
-                              exit(0);
+                              exit(1);
                         }
                        
                   }  
@@ -509,7 +525,7 @@ decl_array_atr: ID tamanho_array '=' expre_logica PV {
                   stackElement *tmp = peekS(scopeStack);
                   if (!lookup(variablesTable, tmp, $1)) {
                         yyerror(cat("Erro: variavel não declarada ", $1, "", "", ""));
-                        exit(0);
+                        exit(1);
                   } else {
                         char *typeVariable = lookup_variable_type(variablesTable, tmp, $1);
                         char *typeSplited = strtok(typeVariable, " ");
@@ -521,7 +537,7 @@ decl_array_atr: ID tamanho_array '=' expre_logica PV {
                               atribuicaoArrayMinusEqualVariavel(&$$, &rcdArrayAtribuicao, &$2, &$4);
                         } else {
                               yyerror(cat("Erro: Inicialização de ", $1, " pelo tipo ", lookup_type($4, tmp), " é incompatível!"));
-                              exit(0);
+                              exit(1);
                         }
                        
                   }  
@@ -537,7 +553,7 @@ tamanho_array: '[' expressao_tamanho_array ']'  {
                         freeRecord($2);
                   } else {
                         yyerror(cat("Erro: Tipos ", lookup_type($2, tmp), " não são compatíveis!", "", ""));
-                        exit(0);
+                        exit(1);
                   }
                  
              }
@@ -572,7 +588,7 @@ acesso_array: '[' expre_arit ']'  {
                         freeRecord($2);
                   } else {
                         yyerror(cat("Erro: Tipos ", lookup_type($2, tmp), "  não são compatíveis!", "", ""));
-                         exit(0);
+                         exit(1);
                   }
             }
             | '[' expre_arit ']' acesso_array {
@@ -593,7 +609,7 @@ decl_var_atr_tipada:  TYPE ID '=' expre_logica PV{
                         stackElement *tmp = peekS(scopeStack);
                         if (lookup(variablesTable, tmp, $2)) {
                               yyerror(cat("Erro: redeclaração de variavel ", $2, "", "", ""));
-                              exit(0);
+                              exit(1);
                         } else {
                               insert(variablesTable, cat(tmp->subp, "#", $2,"",""), $2, $1);
 
@@ -605,7 +621,7 @@ decl_var_atr_tipada:  TYPE ID '=' expre_logica PV{
                                     atribuicaoVariavelTipada(&$$, &rcdIdDeclTipada, &$1, &$4);
                               } else {
                                     yyerror(cat("Erro: Inicialização de ", $1, " pelo tipo ", lookup_type($4, tmp), " é incompatível!"));
-                                    exit(0);
+                                    exit(1);
                               }
                         }  
                   }
@@ -615,7 +631,7 @@ decl_var_atr: ID '=' expre_logica PV {
                         stackElement *tmp = peekS(scopeStack);
                         if (!lookup(variablesTable, tmp, $1)) {
                               yyerror(cat("Erro: variavel não declarada ", $1, "", "", ""));
-                               exit(0);
+                               exit(1);
                         } else {
                               char *typeVariable = lookup_variable_type(variablesTable, tmp, $1);
                               record *rcdAtribuicao = createRecord($1, "");
@@ -626,7 +642,7 @@ decl_var_atr: ID '=' expre_logica PV {
                                     atribuicaoVariavel(&$$, &rcdAtribuicao, &$3);
                               } else {
                                     yyerror(cat("Erro: Inicialização de ", $1, " pelo tipo ", lookup_type($3, tmp), " é incompatível!"));
-                                     exit(0);
+                                     exit(1);
                               }
                               free(typeVariable);
                         }  
@@ -635,7 +651,7 @@ decl_var_atr: ID '=' expre_logica PV {
                         stackElement *tmp = peekS(scopeStack);
                         if (!lookup(variablesTable, tmp, $1)) {
                               yyerror(cat("Erro: variavel não declarada ", $1, "", "", ""));
-                              exit(0);
+                              exit(1);
                         } else {
                               char *typeVariable = lookup_variable_type(variablesTable, tmp, $1);
                               record *rcdAtribuicao = createRecord($1, "");
@@ -647,7 +663,7 @@ decl_var_atr: ID '=' expre_logica PV {
                                     atribuicaoVariavelMaisIgual(&$$, &rcdAtribuicao, &$3);
                               } else {
                                     yyerror(cat("Erro: Inicialização de ", $1, "  pelo tipo ", lookup_type($3, tmp), " é incompatível!"));
-                                      exit(0);
+                                      exit(1);
                               }
                               free(typeVariable);
                         }  
@@ -656,7 +672,7 @@ decl_var_atr: ID '=' expre_logica PV {
                   stackElement *tmp = peekS(scopeStack);
                   if (!lookup(variablesTable, tmp, $1)) {
                               yyerror(cat("Erro: variavel não declarada ", $1, "", "", ""));
-                                exit(0);
+                                exit(1);
                         } else {
                               char *typeVariable = lookup_variable_type(variablesTable, tmp, $1);
                               record *rcdAtribuicao = createRecord($1, "");
@@ -668,7 +684,7 @@ decl_var_atr: ID '=' expre_logica PV {
                                     atribuicaoVariavelMenosIgual(&$$, &rcdAtribuicao, &$3);
                               } else {
                                     yyerror(cat("Erro: Inicialização de ", $1, " pelo tipo ", lookup_type($3, tmp), " é incompatível!"));
-                                    exit(0);
+                                    exit(1);
                               }
                               free(typeVariable);
                         }  
@@ -679,7 +695,7 @@ decl_var: TYPE ID PV {
       stackElement *tmp = peekS(scopeStack);
       if (lookup(variablesTable, tmp, $2)) {
             yyerror(cat("Erro: redeclaração de variavel ", $2, "", "", ""));
-            exit(0);
+            exit(1);
       }
       insert(variablesTable, cat(tmp->subp, "#", $2,"",""), $2, $1);
       record *rcdIdDeclVar = createRecord($2, ""); 
@@ -714,17 +730,17 @@ parametro : expre_logica {
                               $$ = $1;
                         } else {
                               yyerror(cat("Erro: Tipo esperado ", typeParametro, " e atual ", lookup_type($1, tmp), " são incompatíveis!"));
-                              exit(0);
+                              exit(1);
                         }
 
                         countFuncCallParams++;
                    }else {
                         yyerror(cat("Erro: Não existe função ",tmp->subp," definida com esses parâmetros","",""));
-                        exit(0);
+                        exit(1);
                   }
             }else {
                   yyerror(cat("Erro: Não existe função ",tmp->subp," definida.","",""));
-                  exit(0);
+                  exit(1);
             }
             
 		
@@ -744,7 +760,7 @@ expre_logica : expre_logica AND expre_logica {
                         expressaoAritmetica(&$$, &$1, "&&", &$3, "bool");
                   } else {
                         yyerror(cat("Erro: Tipos ", lookup_type($1, tmp), " and ", lookup_type($3, tmp), " são incompatíveis!"));
-                        exit(0);
+                        exit(1);
                   }
              }
              | expre_logica OR expre_logica {
@@ -756,7 +772,7 @@ expre_logica : expre_logica AND expre_logica {
                         expressaoAritmetica(&$$, &$1, "||", &$3, "bool");
                   } else {
                         yyerror(cat("Erro: Tipos ", lookup_type($1, tmp), " and ", lookup_type($3, tmp), " são incompatíveis!"));
-                        exit(0);
+                        exit(1);
                   }
              }
              | expre_logica LESSTHENEQ expre_logica {
@@ -768,7 +784,7 @@ expre_logica : expre_logica AND expre_logica {
                         expressaoAritmetica(&$$, &$1, "<=", &$3, "bool");
                   } else {
                         yyerror(cat("Erro: Tipos ", lookup_type($1, tmp), " and ", lookup_type($3, tmp), " são incompatíveis!"));
-                        exit(0);
+                        exit(1);
                   }
              }
              | expre_logica MORETHENEQ expre_logica {
@@ -780,7 +796,7 @@ expre_logica : expre_logica AND expre_logica {
                         expressaoAritmetica(&$$, &$1, ">=", &$3, "bool");
                   } else {
                         yyerror(cat("Erro: Tipos ", lookup_type($1, tmp), " and ", lookup_type($3, tmp), " são incompatíveis!"));
-                        exit(0);
+                        exit(1);
                   }
              }
              | expre_logica '<' expre_logica {
@@ -792,7 +808,7 @@ expre_logica : expre_logica AND expre_logica {
                         expressaoAritmetica(&$$, &$1, "<", &$3, "bool");
                   } else {
                         yyerror(cat("Erro: Tipos ", lookup_type($1, tmp), " and ", lookup_type($3, tmp), " são incompatíveis!"));
-                          exit(0);
+                          exit(1);
                   }
              }
              | expre_logica '>' expre_logica {
@@ -804,7 +820,7 @@ expre_logica : expre_logica AND expre_logica {
                         expressaoAritmetica(&$$, &$1, ">", &$3, "bool");
                   } else {
                         yyerror(cat("Erro: Tipos ", lookup_type($1, tmp), " and ", lookup_type($3, tmp), " são incompatíveis!"));
-                          exit(0);
+                          exit(1);
                   }
              }
              | expre_logica ISEQUAL expre_logica {
@@ -816,7 +832,7 @@ expre_logica : expre_logica AND expre_logica {
                         expressaoAritmetica(&$$, &$1, "==", &$3, "bool");
                   } else {
                         yyerror(cat("Erro: Tipos ", lookup_type($1, tmp), " and ", lookup_type($3, tmp), " são incompatíveis!"));
-                          exit(0);
+                          exit(1);
                   }
              }
              | expre_logica ISDIFFERENT expre_logica {
@@ -828,7 +844,7 @@ expre_logica : expre_logica AND expre_logica {
                         expressaoAritmetica(&$$, &$1, "!=", &$3, "bool");
                   } else {
                         yyerror(cat("Erro: Tipos ", lookup_type($1, tmp), " and ", lookup_type($3, tmp), " são incompatíveis!"));
-                          exit(0);
+                          exit(1);
                   }
              }
              | expre_arit {$$ = $1;}
@@ -849,7 +865,7 @@ expre_arit : expre_arit '+' termo {
                         expressaoAritmetica(&$$, &$1, "+", &$3, inType);
                   } else {
                         yyerror(cat("Erro: Tipos ", lookup_type($1, tmp), " and ", lookup_type($3, tmp), " são incompatíveis!"));
-                          exit(0);
+                          exit(1);
                   }
             }
             | expre_arit '-' termo {
@@ -867,7 +883,7 @@ expre_arit : expre_arit '+' termo {
                         expressaoAritmetica(&$$, &$1, "-", &$3, inType);
                   } else {
                         yyerror(cat("Erro: Tipos ", lookup_type($1, tmp), " and ", lookup_type($3, tmp), " são incompatíveis!"));
-                          exit(0);
+                          exit(1);
                   }
             }
             | ops termo {
@@ -876,7 +892,7 @@ expre_arit : expre_arit '+' termo {
                               atribuicaoIncreDecre(&$$, &$1->code, &$2->code);
                         } else {
                               yyerror(cat("Erro: Tipo ", lookup_type($2, tmp), "", "", " não é compatível!"));
-                                exit(0);
+                                exit(1);
                         }                  
             }
             | termo ops { 
@@ -885,7 +901,7 @@ expre_arit : expre_arit '+' termo {
                               atribuicaoIncreDecre(&$$, &$1->code, &$2->code);
                         } else {
                               yyerror(cat("Erro: Tipo ", lookup_type($1, tmp), "", "", " não é compatível!"));
-                              exit(0);
+                              exit(1);
                         } 
             }
             | termo {$$ = $1;}
@@ -910,7 +926,7 @@ termo: termo '*' fator {
                   expressaoAritmetica(&$$, &$1, "*", &$3, inType);
             } else {
                   yyerror(cat("Erro: Tipos ", lookup_type($1, tmp), " and ", lookup_type($3, tmp), " não são compatíveis!"));
-                  exit(0);
+                  exit(1);
             }
       }
 	| termo '/' fator {
@@ -922,7 +938,7 @@ termo: termo '*' fator {
                   expressaoAritmetica(&$$, &$1, "/", &$3, "float");
             } else {
                   yyerror(cat("Erro: Tipos ", lookup_type($1, tmp), " and ", lookup_type($3, tmp), " não são compatíveis!"));
-                  exit(0);
+                  exit(1);
             }
       } 
 	| fator {$$ = $1;}
@@ -945,7 +961,7 @@ fator : fator '^' base {
                   expressaoAritmetica(&$$, &$1, "^", &$3, resultType);
             } else {
                   yyerror(cat("Erro: Tipos ", lookup_type($1, tmp), " and ", lookup_type($3, tmp), " não são compatíveis para exponenciação!"));
-                  exit(0);
+                  exit(1);
             }
 
 }
@@ -996,7 +1012,7 @@ int main (int argc, char ** argv) {
 
       if (argc < 3) {
             printf("Usage: $./compiler input.txt output.txt\nClosing application...\n");
-            exit(0);
+            exit(1);
       }
       
       if(argc == 4) {
@@ -1071,7 +1087,7 @@ char* lookup_type(record *r, stackElement *tmp) {
 		SymbolInfos *info = lookup(variablesTable, tmp, r->code);
 		if (info == NULL) {
                   yyerror(cat("Erro: Não pode usar variavel ", r->code, " antes da inicialização!", "", ""));
-                  exit(0);
+                  exit(1);
 		} else {
                   return info->type;
             }
