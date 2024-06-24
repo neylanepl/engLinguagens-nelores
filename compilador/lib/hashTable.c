@@ -72,7 +72,7 @@ void insertFunction(SymbolTable *table, char *key, char *name, char *returnType,
     table->symbols[index] = newNode;
 }
 
-SymbolInfos *lookup(SymbolTable *table, vatt *currentScope, char *name)
+SymbolInfos *lookup(SymbolTable *table, stackElement *currentScope, char *name)
 {
     while (currentScope->next != NULL)
     {
@@ -173,7 +173,7 @@ void freeSymbolTable(SymbolTable *table)
     free(table);
 }
 
-char *lookup_variable_type(SymbolTable *table, vatt *currentScope, char *name)
+char *lookup_variable_type(SymbolTable *table, stackElement *currentScope, char *name)
 {
     while (currentScope->next != NULL)
     {

@@ -20,8 +20,8 @@ flex lexer.l
 yacc parser.y -d -v
 #Compila o arquivo `lex.yy.c` e gera o executável “a.out”.
 gcc lex.yy.c y.tab.c -o a.out
-#Executa o analisador léxico, fornecendo como entrada o arquivo de teste “arquivoTeste.txt” que disponibilizamos para a análise.
-./a.out < arquivoTeste.txt
+#Executa o analisador léxico, fornecendo como entrada o arquivo de teste “arquivoTeste.nel” que disponibilizamos para a análise.
+./a.out < arquivoTeste.nel
 ```
 
 Após a execução, caso tenha erros o analisador sintático irá imprimir no terminal.
@@ -34,13 +34,13 @@ Para facilitar a execução deixaremos aqui uma opção alternativa para utiliza
 O seguinte comando a baixo compila o compilador a partir dos arquivos Lex e Yacc, executar o compilador com um arquivo de entrada especificado gerando o teste.c e executar o código C gerado:
 
 ````
-make prob=<arquivoProblema.txt> all
+make prob=<arquivoProblema.nel> all
 ````
 
 Caso não prefira rodar o código C gerado, utilize o seguinte comenado:
 
 ````
-make prob=<arquivoProblema.txt> run
+make prob=<arquivoProblema.nel> run
 ````
 
 Para limpar todos os arquivos gerados:
