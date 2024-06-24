@@ -199,8 +199,8 @@ void ifElseBlock(record **ss, record **exp, record **ifCommands, record **elseCo
 {	
 	char *str1 = cat("{\nif (!(", (*exp)->code, "))", "goto else","");
 	char* str11 = cat(str1, id, "_", type,";\n");
-	char *str2 = cat(str11, (*ifCommands)->code, "goto endif", id, cat(";\nelse", id, "_", type, ":"));
-	char *str3 = cat(str2, (*elseCommands)->code, "}\n", "", "");
+	char *str2 = cat(str11, (*ifCommands)->code, "goto endif", id, cat(";\n}\nelse", id, "_", type, ":\n"));
+	char *str3 = cat(str2, (*elseCommands)->code, "\n", "", "");
 	*ss = createRecord(str3, id);
 	freeRecord(*exp);
 	freeRecord(*ifCommands);
