@@ -336,8 +336,6 @@ condicional : IF '(' expre_logica_iterador ')' '{' {
 	                  char* nextIfStr= malloc( length + 1 );
 	                  snprintf( nextIfStr, length + 1, "%d", nextIf );
                         tmp->type = nextIfStr;
-                  
-                        
                   }
             } else {
                   yyerror(cat("Erro: tipo da expressão inválido ",$3->code," (esperava bool, recebido ",lookup_type($3, tmp),")"));
