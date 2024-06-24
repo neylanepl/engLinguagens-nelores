@@ -260,7 +260,13 @@ bloco : {$$ = createRecord("","");}
       }   
       ;
 
-comando : condicional {$$ = $1;}
+comando : {pushS(scopeStack, cat("IFZAO_", getIfID(), "", "", ""), "0");} condicional 
+{
+char *str3 = cat($2->code, "endif",peekS(scopeStack)->subp, ":\n\n", "");
+	$$ = createRecord(str3, "");
+      freeRecord($2);
+      free(str3);
+popS(scopeStack);}
       | iteracao {$$ = $1;} 
       | chamada_funcao PV {
             char *s = cat($1->code,";\n","","","");
@@ -314,8 +320,9 @@ retorno : RETURN PV  {$$ = createRecord("return;\n", "");}
         ;
 
 condicional : IF '(' expre_logica_iterador ')' '{' {
-            pushS(scopeStack, cat("IF_", getIfID(), "", "", ""), "");
-            incIfID();
+            pushS(scopeStack, cat(peekS(scopeStack)->subp, "IF_", getIfID(), "", ""), "");
+            popS(scopeStack);
+            incIfID(); 
       } bloco '}' else_block {
             vatt *tmp = peekS(scopeStack);
 
@@ -323,13 +330,20 @@ condicional : IF '(' expre_logica_iterador ')' '{' {
                   if (!strcmp($9->code, "")) {
                         ifBlock(&$$, &$3, &$7, tmp->subp);
                   } else {
-                        ifElseBlock(&$$, &$3, &$7, &$9, tmp->subp);
+                        ifElseBlock(&$$, &$3, &$7, &$9, tmp->subp, tmp->type);
+	                  int nextIf = atoi(tmp->type) + 1;
+	                  int length = snprintf( NULL, 0, "%d", nextIf );
+	                  char* nextIfStr= malloc( length + 1 );
+	                  snprintf( nextIfStr, length + 1, "%d", nextIf );
+                        tmp->type = nextIfStr;
+                  
+                        
                   }
             } else {
                   yyerror(cat("Erro: tipo da expressão inválido ",$3->code," (esperava bool, recebido ",lookup_type($3, tmp),")"));
                   exit(0);
             }
-            popS(scopeStack);
+            
       }
 ;
 

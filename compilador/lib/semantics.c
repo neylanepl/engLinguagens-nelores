@@ -195,16 +195,18 @@ void ifBlock(record **ss, record **exp, record **commands, char *id)
 }
 
 // if_else : IF '(' expre_logica_iterador ')' '{' bloco '}' ELSE else_aux
-void ifElseBlock(record **ss, record **exp, record **ifCommands, record **elseCommands, char *id)
-{
-	char *str1 = cat("if (!(", (*exp)->code, ")) goto else", id, ";\n");
-	char *str2 = cat(str1, (*ifCommands)->code, "goto endif", id, cat(";\nelse", id, ":\n", "", ""));
-	char *str3 = cat(str2, (*elseCommands)->code, "endif", id, ":\n");
+void ifElseBlock(record **ss, record **exp, record **ifCommands, record **elseCommands, char *id, char* type)
+{	
+	char *str1 = cat("if (!(", (*exp)->code, "))", "goto else","");
+	char* str11 = cat(str1, id, "_", type,";\n");
+	char *str2 = cat(str11, (*ifCommands)->code, "goto endif", id, cat(";\nelse", id, "_", type, ":\n"));
+	char *str3 = cat(str2, (*elseCommands)->code, "", "", "");
 	*ss = createRecord(str3, id);
 	freeRecord(*exp);
 	freeRecord(*ifCommands);
 	freeRecord(*elseCommands);
 	free(str1);
+	free(str11);
 	free(str2);
 	free(str3);
 }
