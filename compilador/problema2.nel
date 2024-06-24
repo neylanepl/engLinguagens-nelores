@@ -1,4 +1,4 @@
-function int analiseDeIntervalos() {
+procedure analiseDeIntervalos() {
     int num = 1;
     int count025 = 0;
     int count2650 = 0;
