@@ -260,7 +260,7 @@ bloco : {$$ = createRecord("","");}
 
 comando : {pushS(scopeStack, cat("IFZAO_", getIfID(), "", "", ""), "0");} condicional 
 {
-char *str3 = cat($2->code, "endif",peekS(scopeStack)->subp, ":\n\n", "");
+char *str3 = cat("{", $2->code, "} endif",peekS(scopeStack)->subp, ":\n\n");
 	$$ = createRecord(str3, "");
       freeRecord($2);
       free(str3);

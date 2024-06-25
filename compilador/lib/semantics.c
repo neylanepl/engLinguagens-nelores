@@ -185,8 +185,8 @@ void declaracaoProcedimento(record **ss, char **s2, record **s4, record **s7)
 // if_simples : IF '(' expre_logica_iterador ')' '{' bloco '}'
 void ifBlock(record **ss, record **exp, record **commands, char *id)
 {
-	char *str1 = cat("{\nif (!(", (*exp)->code, ")) goto endif", id, ";\n");
-	char *str2 = cat(str1, (*commands)->code, "}\n", "", "");
+	char *str1 = cat("\nif (!(", (*exp)->code, ")) goto endif", id, ";\n");
+	char *str2 = cat(str1, (*commands)->code, "\n", "", "");
 	*ss = createRecord(str2, "");
 	freeRecord(*exp);
 	freeRecord(*commands);
@@ -197,9 +197,9 @@ void ifBlock(record **ss, record **exp, record **commands, char *id)
 // if_else : IF '(' expre_logica_iterador ')' '{' bloco '}' ELSE else_aux
 void ifElseBlock(record **ss, record **exp, record **ifCommands, record **elseCommands, char *id, char* type)
 {	
-	char *str1 = cat("{\nif (!(", (*exp)->code, "))", "goto else","");
+	char *str1 = cat("\nif (!(", (*exp)->code, "))", "goto else","");
 	char* str11 = cat(str1, id, "_", type,";\n");
-	char *str2 = cat(str11, (*ifCommands)->code, "goto endif", id, cat(";\n}\nelse", id, "_", type, ":\n"));
+	char *str2 = cat(str11, (*ifCommands)->code, "goto endif", id, cat(";\n}\nelse", id, "_", type, ":\n{"));
 	char *str3 = cat(str2, (*elseCommands)->code, "\n", "", "");
 	*ss = createRecord(str3, id);
 	freeRecord(*exp);

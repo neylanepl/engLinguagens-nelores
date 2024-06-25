@@ -20,11 +20,11 @@ mdc(n, m%n, r);
 goto endifIFZAO_0;
 }
 elseIFZAO_0_0:
-mdc(m, n%m, r);
+{mdc(m, n%m, r);
 
 
 
-endifIFZAO_0:
+} endifIFZAO_0:
 
 }
 
