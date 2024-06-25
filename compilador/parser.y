@@ -55,11 +55,11 @@ char* lookup_type(record *, stackElement *temp);
 %nonassoc UMINUS
 
 
-%type <rec> decl_vars decl_variavel expre_logica expre_arit termo fator chamada_funcao 
+%type <rec> decl_vars decl_variavel expre_logica expre_arit termo fator chamada_funcao acesso_ponteiro
 %type <rec> ops main args subprogs subprog decl_funcao decl_procedimento bloco comando args_com_vazio 
 %type <rec> condicional else_block retorno iteracao elementos_array base
 %type <rec> decl_array tamanho_array expressao_tamanho_array elemento_matriz decl_array_atr
-%type <rec> entrada expre_logica_iterador saida saida_args saida_args_aux decl_var_atr_tipada decl_var_atr decl_var
+%type <rec> entrada expre_logica_iterador saida saida_args saida_args_aux decl_atr atr decl
 %type <rec> endereco stmts base_case_array  parametros_rec parametro acesso_array parametro_com_vazio tipo tipo_array
 
 %start prog
@@ -118,14 +118,11 @@ tipo_array: TYPE tamanho_array {
             ;
 
 tipo: TYPE {$$ = createRecord($1,"");}
-      | tipo_array {$$ = $1;}
-      | ID {
-            stackElement *tmp = peekS(scopeStack);
-            if(lookup(typedTable, tmp, $1) == NULL){
-                  yyerror(cat("Erro: tipo desconhecido ",$1,"","",""));
-                  exit(1);
-	      } 
-		$$ = createRecord($1,""); 
+      | tipo '*' {
+            char *s = cat($1->code, "*", "", "", "");
+            $$ = createRecord(s, "");
+            freeRecord($1);
+            free(s);
       }
       ;
  
@@ -140,7 +137,7 @@ args : tipo ID   {
             stackElement *tmp = peekS(scopeStack);
             insert(variablesTable, cat(tmp->subp, "#", $4,"",""), $4, $3->code);
 	      insertFunctionParam(tmp, $4, $3->code);
-            argumentoTipoIdRecusao(&$$, &$4, &$3, &$1);
+            argumentoTipoIdRecusao(&$$, &$1, &$3, &$4);
             countFuncArgs++; 
       }
       ;
@@ -263,7 +260,7 @@ bloco : {$$ = createRecord("","");}
 
 comando : {pushS(scopeStack, cat("IFZAO_", getIfID(), "", "", ""), "0");} condicional 
 {
-char *str3 = cat($2->code, "endif",peekS(scopeStack)->subp, ":\n\n", "");
+char *str3 = cat("{", $2->code, "} endif",peekS(scopeStack)->subp, ":\n\n");
 	$$ = createRecord(str3, "");
       freeRecord($2);
       free(str3);
@@ -303,13 +300,13 @@ retorno : RETURN PV  {$$ = createRecord("return;\n", "");}
 			char funcType[100];
 			strcpy(funcType, foundFuncReturn->type);
 					
-			if(0 == strcmp(funcType, $2->opt1)){
+			if(0 == strcmp(funcType, lookup_type($2, tmp))){
 				char *str = cat("return ", ($2)->code, ";\n", "", "");
                         $$ = createRecord(str, "");
                         freeRecord($2);
                         free(str);
 			} else {
-				yyerror(cat("Erro: função com o retorno do tipo ", funcType, " e o retorno ", $2->opt1, " da expressão são incompatíveis."));
+				yyerror(cat("Erro: função com o retorno do tipo ", funcType, " e o retorno ", lookup_type($2, tmp), " da expressão são incompatíveis."));
                         exit(1);
 			}
 		} else {
@@ -543,7 +540,7 @@ decl_array_atr: ID tamanho_array '=' expre_logica PV {
                   }  
             }
             ;
-            
+
 tamanho_array: '[' expressao_tamanho_array ']'  {
                   stackElement *tmp = peekS(scopeStack);
                   if(0 == strcmp(lookup_type($2, tmp), "int")){
@@ -600,34 +597,31 @@ acesso_array: '[' expre_arit ']'  {
             }
             ;
 
-decl_variavel : decl_var_atr_tipada {$$ = $1;}
-              | decl_var_atr {$$ = $1;}
-              | decl_var {$$ = $1;}
+decl_variavel : decl_atr {$$ = $1;}
+              | atr {$$ = $1;}
+              | decl {$$ = $1;}
               ;
 
-decl_var_atr_tipada:  TYPE ID '=' expre_logica PV{
+decl_atr: tipo ID '=' expre_logica PV{
                         stackElement *tmp = peekS(scopeStack);
                         if (lookup(variablesTable, tmp, $2)) {
                               yyerror(cat("Erro: redeclaração de variavel ", $2, "", "", ""));
                               exit(1);
                         } else {
-                              insert(variablesTable, cat(tmp->subp, "#", $2,"",""), $2, $1);
+                              insert(variablesTable, cat(tmp->subp, "#", $2,"",""), $2, $1->code);
 
-                              int intfloat = !strcmp($1, "int") && !strcmp(lookup_type($4, tmp), "int");
-                              int floatint = !strcmp($1, "float") && !strcmp(lookup_type($4, tmp), "float");
-
-                              if (strcmp($1, lookup_type($4, tmp)) == 0 || intfloat || floatint) {
+                              if (strcmp($1->code, lookup_type($4, tmp)) == 0) {
                                     record *rcdIdDeclTipada = createRecord($2, "");
-                                    atribuicaoVariavelTipada(&$$, &rcdIdDeclTipada, &$1, &$4);
+                                    atribuicaoVariavelTipada(&$$, &rcdIdDeclTipada, &$1->code, &$4);
                               } else {
-                                    yyerror(cat("Erro: Inicialização de ", $1, " pelo tipo ", lookup_type($4, tmp), " é incompatível!"));
+                                    yyerror(cat("Erro: Inicialização de ", $1->code, " pelo tipo ", lookup_type($4, tmp), " é incompatível!"));
                                     exit(1);
                               }
                         }  
                   }
                   ;
 
-decl_var_atr: ID '=' expre_logica PV {
+atr: ID '=' expre_logica PV {
                         stackElement *tmp = peekS(scopeStack);
                         if (!lookup(variablesTable, tmp, $1)) {
                               yyerror(cat("Erro: variavel não declarada ", $1, "", "", ""));
@@ -635,10 +629,8 @@ decl_var_atr: ID '=' expre_logica PV {
                         } else {
                               char *typeVariable = lookup_variable_type(variablesTable, tmp, $1);
                               record *rcdAtribuicao = createRecord($1, "");
-                              int intfloat = !strcmp(typeVariable, "int") && !strcmp(lookup_type($3, tmp), "int");
-                              int floatint = !strcmp(typeVariable, "float") && !strcmp(lookup_type($3, tmp), "float");
                               
-                              if (strcmp(typeVariable, lookup_type($3, tmp)) == 0 || intfloat || floatint) {
+                              if (strcmp(typeVariable, lookup_type($3, tmp)) == 0) {
                                     atribuicaoVariavel(&$$, &rcdAtribuicao, &$3);
                               } else {
                                     yyerror(cat("Erro: Inicialização de ", $1, " pelo tipo ", lookup_type($3, tmp), " é incompatível!"));
@@ -646,6 +638,32 @@ decl_var_atr: ID '=' expre_logica PV {
                               }
                               free(typeVariable);
                         }  
+            }
+            | acesso_ponteiro '=' expre_logica PV {
+                  stackElement *tmp = peekS(scopeStack);
+                  char *ponteiro = strdup($1->code);
+                  char *varName = strtok(ponteiro, "*");
+
+                
+
+                  if (!lookup(variablesTable, tmp, varName)) {
+                        yyerror(cat("Erro: variavel não declarada ", varName, "", "", ""));
+                              exit(0);
+                  } else {
+                        char *type = lookup_type($1, tmp);
+
+
+                        record *rcdAtribuicao = createRecord($1->code, "");
+                        
+                        if (strcmp(type, lookup_type($3, tmp)) == 0) {
+                              atribuicaoVariavel(&$$, &rcdAtribuicao, &$3);
+                        } else {
+                              yyerror(cat("Erro: Inicialização de ", varName, " pelo tipo ", lookup_type($3, tmp), " é incompatível!"));
+                                    exit(0);
+                        }
+                        free(type);
+                  }  
+                  free(ponteiro);
             }
             | ID MOREISEQUAL expre_logica PV {
                         stackElement *tmp = peekS(scopeStack);
@@ -691,15 +709,15 @@ decl_var_atr: ID '=' expre_logica PV {
             }
             ;
 
-decl_var: TYPE ID PV {
+decl: tipo ID PV {
       stackElement *tmp = peekS(scopeStack);
       if (lookup(variablesTable, tmp, $2)) {
             yyerror(cat("Erro: redeclaração de variavel ", $2, "", "", ""));
             exit(1);
       }
-      insert(variablesTable, cat(tmp->subp, "#", $2,"",""), $2, $1);
+      insert(variablesTable, cat(tmp->subp, "#", $2,"",""), $2, $1->code);
       record *rcdIdDeclVar = createRecord($2, ""); 
-      declaracaoVariavelTipada(&$$, &rcdIdDeclVar, &$1);
+      declaracaoVariavelTipada(&$$, &rcdIdDeclVar, &$1->code);
 };
       
 parametros_rec : parametro {$$ = $1;}
@@ -941,6 +959,21 @@ termo: termo '*' fator {
                   exit(1);
             }
       } 
+      | termo '%' fator {
+            stackElement *tmp = peekS(scopeStack);
+            int intint = !strcmp(lookup_type($1, tmp), "int") && !strcmp(lookup_type($3, tmp), "int");
+            int intfloat = !(strcmp(lookup_type($1, tmp), "int") || strcmp(lookup_type($3, tmp), "float"));
+            int floatint = !(strcmp(lookup_type($1, tmp), "float") || strcmp(lookup_type($3, tmp), "int"));
+
+            if (intint) {
+                  expressaoAritmetica(&$$, &$1, "%", &$3, "int");
+            } else if ((0 == strcmp(lookup_type($1, tmp), lookup_type($3, tmp))) || intfloat || floatint) {
+                  expressaoAritmetica(&$$, &$1, "%", &$3, "float");
+            } else {
+                  yyerror(cat("Erro: Tipos ", lookup_type($1, tmp), " and ", lookup_type($3, tmp), " não são compatíveis!"));
+                  exit(0);
+            }
+      } 
 	| fator {$$ = $1;}
 	;
 
@@ -988,12 +1021,36 @@ base : ID {baseID(&$$, &$1);}
       | FALSE {baseFalse(&$$);}
       | chamada_funcao {$$ = $1;}
       | '(' expre_logica ')' {
+            stackElement *tmp = peekS(scopeStack);
             char *s = cat("(", $2->code, ")", "", "");
-            $$ = createRecord(s, $2->opt1);
+            $$ = createRecord(s, lookup_type($2, tmp));
             freeRecord($2);
             free(s);
       }
+      | acesso_ponteiro {$$ = $1;}
       ;
+
+acesso_ponteiro : '*' ID {
+            stackElement *tmp = peekS(scopeStack);
+
+            char *s = cat("*", $2, "", "", "");
+            char *tipoPonteiro = strdup(lookup_variable_type(variablesTable, tmp, $2));
+            char *type = strtok(tipoPonteiro, "*");
+
+            $$ = createRecord(s, type);
+            free(s);
+            free(type);
+      }
+      | '*' ID acesso_array {
+            stackElement *tmp = peekS(scopeStack);
+
+            char *s = cat("*(", $2, $3->code, ")", "");
+            char *type = lookup_variable_type(variablesTable, tmp, $2);  
+
+            $$ = createRecord(s, type);
+            freeRecord($3);
+            free(s);
+      }
 
 base_case_array: ID {}
                   | NUMBER {}
@@ -1089,9 +1146,11 @@ char* lookup_type(record *r, stackElement *tmp) {
                   yyerror(cat("Erro: Não pode usar variavel ", r->code, " antes da inicialização!", "", ""));
                   exit(1);
 		} else {
+                  printf("----- %s %s -----\n", r->code, info->type);
                   return info->type;
             }
 	} else {
+            printf("----- %s %s -----\n", r->code, r->opt1);
             return r->opt1;
       }
 }

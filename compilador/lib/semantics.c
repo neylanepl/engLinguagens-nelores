@@ -185,8 +185,8 @@ void declaracaoProcedimento(record **ss, char **s2, record **s4, record **s7)
 // if_simples : IF '(' expre_logica_iterador ')' '{' bloco '}'
 void ifBlock(record **ss, record **exp, record **commands, char *id)
 {
-	char *str1 = cat("{\nif (!(", (*exp)->code, ")) goto endif", id, ";\n");
-	char *str2 = cat(str1, (*commands)->code, "}\n", "", "");
+	char *str1 = cat("\nif (!(", (*exp)->code, ")) goto endif", id, ";\n");
+	char *str2 = cat(str1, (*commands)->code, "\n", "", "");
 	*ss = createRecord(str2, "");
 	freeRecord(*exp);
 	freeRecord(*commands);
@@ -197,9 +197,9 @@ void ifBlock(record **ss, record **exp, record **commands, char *id)
 // if_else : IF '(' expre_logica_iterador ')' '{' bloco '}' ELSE else_aux
 void ifElseBlock(record **ss, record **exp, record **ifCommands, record **elseCommands, char *id, char* type)
 {	
-	char *str1 = cat("{\nif (!(", (*exp)->code, "))", "goto else","");
+	char *str1 = cat("\nif (!(", (*exp)->code, "))", "goto else","");
 	char* str11 = cat(str1, id, "_", type,";\n");
-	char *str2 = cat(str11, (*ifCommands)->code, "goto endif", id, cat(";\n}\nelse", id, "_", type, ":\n"));
+	char *str2 = cat(str11, (*ifCommands)->code, "goto endif", id, cat(";\n}\nelse", id, "_", type, ":\n{"));
 	char *str3 = cat(str2, (*elseCommands)->code, "\n", "", "");
 	*ss = createRecord(str3, id);
 	freeRecord(*exp);
@@ -246,27 +246,27 @@ void argumentoTipoId(record **ss, char **s1, record **s3)
 	free(str);
 };
 
-// args : tipo ID ',' args
-void argumentoTipoIdRecusao(record **ss, char **s1, record **s3, record **s5)
+// args : args ',' tipo ID 
+void argumentoTipoIdRecusao(record **ss, record **args, record **tipo, char **id)
 {
 	char *str;
 
-	if (0 == strcmp((*s3)->code, "string"))
+	if (0 == strcmp((*tipo)->code, "string"))
 	{
-		str = cat("char *", " ", (*s1), ", ", (*s5)->code);
+		str = cat((*args)->code, ", char *", " ", (*id), "");
 	}
-	else if (0 == strcmp((*s3)->code, "bool"))
+	else if (0 == strcmp((*tipo)->code, "bool"))
 	{
-		str = cat("int", " ", (*s1), ", ", (*s5)->code);
+		str = cat((*args)->code , ", int", " ", (*id), "");
 	}
 	else
 	{
-		str = cat((*s3)->code, " ", (*s1), ", ", (*s5)->code);
+		str = cat((*args)->code, ", ", (*tipo)->code, " ", (*id));
 	}
 	*ss = createRecord(str, "");
-	freeRecord(*s3);
-	freeRecord(*s5);
-	free(*s1);
+	freeRecord(*tipo);
+	freeRecord(*args);
+	free(*id);
 	free(str);
 };
 
@@ -284,6 +284,9 @@ void expressaoAritmetica(record **ss, record **s1, char *s2, record **s3, char *
 			str = cat("pow(", (*s1)->code, ", ", (*s3)->code, ")");
 		}
 	} else if (!strcmp(s2, "/")) {
+		str = cat((*s1)->code, s2, "(float(", (*s3)->code, "))");
+	} else if (!strcmp(s2, "%") && !strcmp(type, "float")) {
+		printf("==== %s ====\n", type);
 		str = cat((*s1)->code, s2, "(float(", (*s3)->code, "))");
 	} else {
 		str = cat((*s1)->code, s2, (*s3)->code, "", "");
@@ -318,7 +321,7 @@ void atribuicaoVariavelMaisIgual(record **ss, record **s1, record **s2)
 // b -= expressao;
 void atribuicaoVariavelMenosIgual(record **ss, record **s1, record **s2)
 {
-	char *str = cat((*s1)->code, "+=", (*s2)->code, ";\n", "");
+	char *str = cat((*s1)->code, "-=", (*s2)->code, ";\n", "");
 	*ss = createRecord(str, "");
 	freeRecord(*s1);
 	freeRecord(*s2);
