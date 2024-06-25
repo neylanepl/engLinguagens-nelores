@@ -136,11 +136,11 @@ args : tipo ID   {
             argumentoTipoId(&$$, &$2, &$1);
             countFuncArgs++;
       }
-      | tipo ID ',' args  {
+      | args ',' tipo ID  {
             stackElement *tmp = peekS(scopeStack);
-            insert(variablesTable, cat(tmp->subp, "#", $2,"",""), $2, $1->code);
-	      insertFunctionParam(tmp, $2, $1->code);
-            argumentoTipoIdRecusao(&$$, &$2, &$1, &$4);
+            insert(variablesTable, cat(tmp->subp, "#", $4,"",""), $4, $3->code);
+	      insertFunctionParam(tmp, $4, $3->code);
+            argumentoTipoIdRecusao(&$$, &$4, &$3, &$1);
             countFuncArgs++; 
       }
       ;
@@ -703,16 +703,16 @@ decl_var: TYPE ID PV {
 };
       
 parametros_rec : parametro {$$ = $1;}
-               | parametro ',' parametros_rec {
-                        char *str = cat($1->code, ", ", $3->code, "", "");
-                        $$ = createRecord(str, "");
-                        freeRecord($1);
-                        freeRecord($3);
-                        free(str);
+      | parametro ',' parametros_rec {
+            char *str = cat($1->code, ", ", $3->code, "", "");
+            $$ = createRecord(str, "");
+            freeRecord($1);
+            freeRecord($3);
+            free(str);
                   
                   
-               }
-               ;
+      }
+      ;
 
 parametro : expre_logica {
             char strP[30];
