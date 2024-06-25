@@ -14,7 +14,6 @@ typedef struct FunctionInfos
     int numParams;
 } FunctionInfos;
 
-
 typedef struct SymbolInfos
 {
     char *key;
@@ -42,10 +41,10 @@ listNode *createListNode(SymbolInfos *symbol, FunctionInfos *function);
 SymbolTable *createSymbolTable(int size);
 void insert(SymbolTable *table, char *key, char *name, char *type);
 void insertFunction(SymbolTable *table, char *key, char *name, char *returnType, int numParams);
-SymbolInfos *lookup(SymbolTable *table, vatt *currentScope, char *key);
+SymbolInfos *lookup(SymbolTable *table, stackElement *currentScope, char *key);
 FunctionInfos *lookupFunction(SymbolTable *table, char *key);
 void printTable(SymbolTable *table);
 void freeSymbolTable(SymbolTable *table);
-char *lookup_variable_type(SymbolTable *table, vatt *currentScope, char *key);
+char *lookup_variable_type(SymbolTable *table, stackElement *currentScope, char *key);
 
 #endif
