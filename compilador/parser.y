@@ -137,7 +137,7 @@ args : tipo ID   {
             stackElement *tmp = peekS(scopeStack);
             insert(variablesTable, cat(tmp->subp, "#", $4,"",""), $4, $3->code);
 	      insertFunctionParam(tmp, $4, $3->code);
-            argumentoTipoIdRecusao(&$$, &$4, &$3, &$1);
+            argumentoTipoIdRecusao(&$$, &$1, &$3, &$4);
             countFuncArgs++; 
       }
       ;

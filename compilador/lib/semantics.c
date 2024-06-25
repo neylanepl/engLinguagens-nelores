@@ -246,27 +246,27 @@ void argumentoTipoId(record **ss, char **s1, record **s3)
 	free(str);
 };
 
-// args : tipo ID ',' args
-void argumentoTipoIdRecusao(record **ss, char **s1, record **s3, record **s5)
+// args : args ',' tipo ID 
+void argumentoTipoIdRecusao(record **ss, record **args, record **tipo, char **id)
 {
 	char *str;
 
-	if (0 == strcmp((*s3)->code, "string"))
+	if (0 == strcmp((*tipo)->code, "string"))
 	{
-		str = cat("char *", " ", (*s1), ", ", (*s5)->code);
+		str = cat((*args)->code, ", char *", " ", (*id), "");
 	}
-	else if (0 == strcmp((*s3)->code, "bool"))
+	else if (0 == strcmp((*tipo)->code, "bool"))
 	{
-		str = cat("int", " ", (*s1), ", ", (*s5)->code);
+		str = cat((*args)->code , ", int", " ", (*id), "");
 	}
 	else
 	{
-		str = cat((*s3)->code, " ", (*s1), ", ", (*s5)->code);
+		str = cat((*args)->code, ", ", (*tipo)->code, " ", (*id));
 	}
 	*ss = createRecord(str, "");
-	freeRecord(*s3);
-	freeRecord(*s5);
-	free(*s1);
+	freeRecord(*tipo);
+	freeRecord(*args);
+	free(*id);
 	free(str);
 };
 

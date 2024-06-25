@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <math.h>
 
-int mdc(int n, int m, int* r){
+void mdc(int n, int m, int* r){
 {
 if (!(m%n==0))goto elseIFZAO_0_2;
 *r=n;
@@ -16,18 +16,18 @@ goto endifIFZAO_0;
 elseIFZAO_0_1:
 {
 if (!(m>n))goto elseIFZAO_0_0;
-mdc(r, m%n, n);
+mdc(n, m%n, r);
 goto endifIFZAO_0;
 }
 elseIFZAO_0_0:
-mdc(r, n%m, m);
+mdc(m, n%m, r);
 
 
 
 endifIFZAO_0:
 
-return 0;
 }
+
 int main(){
 int n;
 int m;
@@ -38,7 +38,7 @@ scanf("%d", &n);
 printf("Digite o valor de m: ");
 printf("\n");
 scanf("%d", &m);
-mdc(&resultado, m, n);
+mdc(n, m, &resultado);
 printf("O mdc de ");
 printf("%d", n);
 printf(" e ");
