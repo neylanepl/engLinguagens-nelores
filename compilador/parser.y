@@ -644,7 +644,7 @@ atr: ID '=' expre_logica PV {
                   char *ponteiro = strdup($1->code);
                   char *varName = strtok(ponteiro, "*");
 
-                  printf("----- %s -----\n", varName);
+                
 
                   if (!lookup(variablesTable, tmp, varName)) {
                         yyerror(cat("Erro: variavel não declarada ", varName, "", "", ""));
@@ -652,7 +652,6 @@ atr: ID '=' expre_logica PV {
                   } else {
                         char *type = lookup_type($1, tmp);
 
-                        printf("----- %s -----\n", type);
 
                         record *rcdAtribuicao = createRecord($1->code, "");
                         
@@ -744,8 +743,6 @@ parametro : expre_logica {
                   if(typeParametro){
                         int intfloat = !strcmp(typeParametro, "int") && !strcmp(lookup_type($1, tmp), "int");
                         int floatint = !strcmp(typeParametro, "float") && !strcmp(lookup_type($1, tmp), "float");
-
-                        printf("===== %s %s %s =====\n", $1->code, lookup_type($1, tmp), typeParametro);
 
                         if((0 == strcmp(typeParametro, lookup_type($1, tmp))) || intfloat || floatint ){
                               $$ = $1;
