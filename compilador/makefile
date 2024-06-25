@@ -1,30 +1,23 @@
-mac: lex byacc gcc_mac run_mac
+prob ?=
 
-linux: lex yacc gcc_linux run_linux
 
-lex:
+compilador: lex.yy.c y.tab.c 
+	gcc lex.yy.c y.tab.c ./lib/record.c ./lib/semantics.c ./lib/hashTable.c ./lib/stack.c -o compiler
+
+lex.yy.c: lex.l
 	flex lex.l
 
-byacc:
-	byacc -d -v parser.y
-
-yacc:
+y.tab.c: parser.y  
 	yacc parser.y -d -v
 
-conflicts:
-	yacc parser.y -d -v -Wcounterexamples
-
-gcc_mac: lex byacc
-	gcc lex.yy.c y.tab.c -o a.out
-
-gcc_linux: lex yacc
-	gcc lex.yy.c y.tab.c -o a.out
-
-run_mac: gcc_mac 
-	./a.out < teste.txt
-
-run_linux: gcc_linux
-	./a.out < teste.txt
-
 clean:
-	rm -f lex.yy.c y.tab.c y.tab.h a.out y.output
+	rm -rf lex.yy.c y.tab.* compiler output.txt y.output teste.c
+
+run: compiler
+	./compiler $(prob) teste.c -t
+
+generatec: run
+	gcc -o test teste.c -lm
+	./test
+
+all: clean compilador run generatec

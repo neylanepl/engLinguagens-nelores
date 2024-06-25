@@ -1,0 +1,26 @@
+procedure mdc(int n, int m, int *r) {
+    if (m % n == 0) {
+        *r = n;
+    } else if (n % m == 0) {
+        *r = m;
+    } else if (m > n) {
+        mdc(n, m % n, r);
+    } else {
+        mdc(m, n % m, r);
+    }
+}
+
+void main() {
+    int n;
+    int m;
+    int resultado;
+
+    println("Digite o valor de n: ");
+    input(&n);
+    println("Digite o valor de m: ");
+    input(&m);
+
+    mdc(n, m, &resultado);
+
+    println("O mdc de ", n, " e ", m, " é: ", resultado);
+}
