@@ -1,43 +1,49 @@
 #include <stdio.h>
 #include <math.h>
 
-
-int main(){
-int a = 10;
-printf("Valor de x no escopo principal: ");
-printf("%d", a);
-printf("\n");
+void mdc(int n, int m, int* r){
 {
-if (!(a==10)) goto endifIFZAO_0;
-int x = 20;
-printf("Valor de x no escopo aninhado: ");
-printf("%d", x);
-printf("\n");
+if (!(m%n==0))goto elseIFZAO_0_2;
+*r=n;
+goto endifIFZAO_0;
+}
+elseIFZAO_0_2:
 {
-if (!(x==20)) goto endifIFZAO_1;
-int b = 30;
-printf("Valor de x no escopo mais interno: \n");
-printf("%d", x);
-printf("\n");
-
-} endifIFZAO_1:
-
+if (!(n%m==0))goto elseIFZAO_0_1;
+*r=m;
+goto endifIFZAO_0;
+}
+elseIFZAO_0_1:
 {
-if (!(x==20)) goto endifIFZAO_2;
-int b = 30;
-printf("Valor de x no escopo mais interno: \n");
-printf("%d", x);
-printf("\n");
+if (!(m>n))goto elseIFZAO_0_0;
+mdc(n, m%n, r);
+goto endifIFZAO_0;
+}
+elseIFZAO_0_0:
+{mdc(m, n%m, r);
 
-} endifIFZAO_2:
 
-printf("Valor de x após o escopo mais interno: ");
-printf("%d", x);
-printf("\n");
 
 } endifIFZAO_0:
 
-printf("Valor de x após o escopo aninhado: ");
-printf("%d", a);
+}
+
+int main(){
+int n;
+int m;
+int resultado;
+printf("Digite o valor de n: ");
+printf("\n");
+scanf("%d", &n);
+printf("Digite o valor de m: ");
+printf("\n");
+scanf("%d", &m);
+mdc(n, m, &resultado);
+printf("O mdc de ");
+printf("%d", n);
+printf(" e ");
+printf("%d", m);
+printf(" é: ");
+printf("%d", resultado);
 printf("\n");
 }
