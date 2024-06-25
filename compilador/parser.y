@@ -17,7 +17,6 @@ extern FILE * yyin, * yyout;
 char * cat(char *, char *, char *, char *, char *);
 SymbolTable *variablesTable;
 SymbolTable *functionsTable;
-SymbolTable *typedTable;
 SymbolTable *funcInfo;
 stack *scopeStack;
 int countFuncCallParams;
@@ -1083,7 +1082,6 @@ int main (int argc, char ** argv) {
 
       variablesTable = createSymbolTable(TABLE_SIZE);
 	functionsTable = createSymbolTable(TABLE_SIZE);
-	typedTable = createSymbolTable(TABLE_SIZE);
       funcInfo = createSymbolTable(TABLE_SIZE);
       scopeStack = newStack();
       countFuncCallParams = 0;
